@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+@theme {
+  --font-dm-sans: var(--font-dm-sans);
+}
+
+:root {
+  color-scheme: light !important;
+  scroll-behavior: smooth !important;
+
+  /* Brand Colors */
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --secondary: #475569;
+  --secondary-foreground: #f8fafc;
+  --accent: #8b5cf6;
+  --accent-foreground: #ffffff;
+
+  /* Backgrounds & Surfaces */
+  --background: #ffffff;
+  --surface: #f8fafc;
+  --surface-hover: #f1f5f9;
+  --border: #e2e8f0;
+
+  /* Typography */
+  --foreground: #0f172a;
+  --muted: #64748b;
+  --muted-foreground: #94a3b8;
+
+  /* Spacing & Radius */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-full: 9999px;
+
+  /* Font Variables for Tailwind v4 */
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Base Styles */
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Utility Class Aliases (if needed) */
+.btn {
+  @apply inline-flex items-center justify-center rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2;
+}
