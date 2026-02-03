@@ -2,6 +2,9 @@
 .DS_Store
 Thumbs.db
 
+# vscode ext
+.vscode/
+
 # Dependencies
 node_modules/
 .pnp

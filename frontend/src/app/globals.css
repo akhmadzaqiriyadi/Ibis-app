@@ -2,30 +2,27 @@
 
 @theme {
   --font-dm-sans: var(--font-dm-sans);
+  
+  /* Brand Colors - Tailwind v4 way */
+  --color-primary: #2563EB;
+  --color-primary-foreground: #2050B7;
+  --color-secondary: #FFD600;
+  --color-secondary-foreground: #D0AA12;
+  --color-dark: #0F172A;
+  --color-light: #FFFFFF;
+  
+  /* Typography */
+  --color-foreground: #0f172a;
+  --color-muted: #64748b;
+  --color-muted-foreground: #94a3b8;
 }
 
 :root {
   color-scheme: light !important;
   scroll-behavior: smooth !important;
 
-  /* Brand Colors */
-  --primary: #2563eb;
-  --primary-foreground: #ffffff;
-  --secondary: #475569;
-  --secondary-foreground: #f8fafc;
-  --accent: #8b5cf6;
-  --accent-foreground: #ffffff;
-
-  /* Backgrounds & Surfaces */
-  --background: #ffffff;
-  --surface: #f8fafc;
-  --surface-hover: #f1f5f9;
-  --border: #e2e8f0;
-
-  /* Typography */
-  --foreground: #0f172a;
-  --muted: #64748b;
-  --muted-foreground: #94a3b8;
+  /* Linear Gradients */
+  --linear-1: linear-gradient(135deg, #2563EB 0%, rgba(37, 99, 235, 0.65) 50%, #2050B7 100%);
 
   /* Spacing & Radius */
   --radius-sm: 0.25rem;
@@ -35,6 +32,11 @@
 
   /* Font Variables for Tailwind v4 */
   --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Gradient Utilities */
+.bg-linear-1 {
+  background: var(--linear-1);
 }
 
 /* Base Styles */
@@ -49,4 +51,42 @@ body {
 /* Utility Class Aliases (if needed) */
 .btn {
   @apply inline-flex items-center justify-center rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2;
+}
+
+/* Custom Pulse Animation - 1s pulse, 2s wait = 3s total */
+@keyframes pulse-slow {
+  0%, 33.33% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  66.66% {
+    transform: scale(2);
+    opacity: 0;
+  }
+  66.67%, 100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Marquee Animation for scrolling text */
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 15s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
 }

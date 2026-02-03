@@ -1,14 +1,16 @@
 export const CONTENT = {
   nav: {
-    logo: "IBISTEK UTY",
+    image: "/images/logos/brand.png",
     links: [
       { label: "Home", href: "#home" },
-      { label: "About Us", href: "#about" },
+      { label: "About", href: "#about" },
+      { label: "Our Team", href: "#team" },
       { label: "Programs", href: "#programs" },
       { label: "Updates", href: "#updates" },
+      { label: "Partners", href: "#partners" },
       { label: "Contact Us", href: "#contact" },
     ],
-    cta: "Login / Register",
+    cta: "Sign In",
   },
   hero: {
     headline: "Mewujudkan Inovasi, Mengakselerasi Bisnis, Menciptakan Dampak",
