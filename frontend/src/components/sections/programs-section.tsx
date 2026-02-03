@@ -1,13 +1,11 @@
 "use client";
 
-import { CONTENT } from "@/constants/content";
 import { Container } from "@/components/ui/container";
-import { Badge } from "@/components/ui/badge";
-import { ProgramCard } from "@/components/molecules/program-card";
 import { useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import Image from "next/image";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -16,7 +14,7 @@ export const ProgramsSection = () => {
 
   useGSAP(() => {
     // Simple, robust animation that guarantees visibility eventually
-    gsap.from(".program-card", {
+    gsap.from(".program-item", {
       scrollTrigger: {
         trigger: containerRef.current,
         start: "top 90%", // Trigger as soon as section enters view
@@ -31,30 +29,174 @@ export const ProgramsSection = () => {
   }, { scope: containerRef });
 
   return (
-    <section ref={containerRef} id="programs" className="py-24 bg-slate-50">
-      <Container>
+    <section ref={containerRef} id="programs" className="py-2 relative">{/* removed: overflow-hidden bg-light */}
+      {/* Decorative Blur Elements */}
+      {/* <div className="absolute -top-70 -right-50 w-96 h-96 pointer-events-none">
+        <Image
+          src="/images/assets/blue-blur.png"
+          alt=""
+          width={384}
+          height={384}
+          className="w-full h-full object-contain opacity-60"
+        />
+      </div> */}
+
+      <Container className="relative z-10">
+        {/* Header with Icon */}
         <div className="text-center mb-16">
-           <Badge className="mb-4">Services</Badge>
-           <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-            Program Inkubasi & Layanan
-          </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-600">
-            Bergabunglah dengan ekosistem kami untuk mengembangkan potensi bisnis Anda.
-          </p>
+          <div className="inline-flex items-center gap-2 mb-4">
+            <h2 className="text-3xl md:text-4xl font-semibold text-dark">
+              Program
+            </h2>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {CONTENT.programs.map((program) => (
-            <ProgramCard
-              key={program.id}
-              title={program.title}
-              description={program.description}
-              cta={program.cta}
-              href={program.href}
-              requiresAuth={program.requiresAuth}
-              className="program-card"
-            />
-          ))}
+        {/* Two Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          {/* Left Column - Image */}
+          <div className="relative align-center order-2 lg:order-1">
+            <div className="relative w-full rounded-2xl overflow-hidden">
+              <Image
+                src="/images/assets/about-us-left2.webp"
+                alt="Tim IBIS UTY"
+                width={800}
+                height={600}
+                className="w-full h-auto object-contain"
+              />
+            </div>
+          </div>
+
+          {/* Right Column - Programs List */}
+          <div className="space-y-12 order-1 lg:order-2">
+            {/* Inkubasi Bisnis */}
+            <div className="flex gap-4 items-start program-item">
+              <div className="shrink-0">
+                <Image
+                  src="/svgs/incube.svg"
+                  alt="Inkubasi Bisnis"
+                  width={48}
+                  height={48}
+                  className="w-12 h-12"
+                />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-semibold text-dark mb-3">
+                  Inkubasi bisnis
+                </h3>
+                <p className="text-slate-700 leading-relaxed mb-4">
+                  Inkubasi bisnis adalah program pembinaan, pendampingan, dan pengembangan terstruktur bagi usaha rintisan. Program inkubasi bisnis di IBISTEK UTY diselenggarakan secara periodik bagi sejumlah unit bisnis yang terpilih untuk diinkubasi.
+                </p>
+                <a
+                  href="/auth/register?program=inkubasi"
+                  className="inline-flex items-center gap-2 text-primary font-medium hover:gap-3 transition-all"
+                >
+                  Daftar Sekarang
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="transition-transform"
+                  >
+                    <path
+                      d="M6 12L10 8L6 4"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </a>
+              </div>
+            </div>
+
+            {/* Konsultasi Bisnis */}
+            <div className="flex gap-4 items-start program-item">
+              <div className="shrink-0">
+                <Image
+                  src="/svgs/like-dislike.svg"
+                  alt="Konsultasi Bisnis"
+                  width={48}
+                  height={48}
+                  className="w-12 h-12"
+                />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-semibold text-dark mb-3">
+                  Konsultasi bisnis
+                </h3>
+                <p className="text-slate-700 leading-relaxed mb-4">
+                  Konsultasi bisnis adalah layanan konsultasi dengan mentor atau praktisi untuk menyelesaikan problem-problem yang dihadapi pelaku bisnis secara gratis. Pendaftar dapat mengajukan layanan konsultasi bisnis ke IBISTEK UTY. Selanjutnya akan dijadwalkan waktu untuk berkonsultasi langsung dengan mentor atau praktisi yang sesuai. Ayo konsultasikan problem bisnismu.
+                </p>
+                <a
+                  href="/auth/register?program=konsultasi"
+                  className="inline-flex items-center gap-2 text-primary font-medium hover:gap-3 transition-all"
+                >
+                  Daftar Sekarang
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="transition-transform"
+                  >
+                    <path
+                      d="M6 12L10 8L6 4"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </a>
+              </div>
+            </div>
+
+            {/* Kredensial Mikro */}
+            <div className="flex gap-4 items-start program-item">
+              <div className="shrink-0">
+                <Image
+                  src="/svgs/vuesax.svg"
+                  alt="Kredensial Mikro"
+                  width={48}
+                  height={48}
+                  className="w-12 h-12"
+                />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-semibold text-dark mb-3">
+                  Kredensial Mikro
+                </h3>
+                <p className="text-slate-700 leading-relaxed mb-4">
+                  Kredensial Mikro adalah program pelatihan dan sertifikasi jangka pendek yang dirancang untuk meningkatkan pengetahuan dan keterampilan berwirausaha secara cepat, relevan dengan kebutuhan dunia usaha, dan diakui secara formal.
+                </p>
+                <a
+                  href="/auth/register?program=kredensial"
+                  className="inline-flex items-center gap-2 text-primary font-medium hover:gap-3 transition-all"
+                >
+                  Daftar Sekarang
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="transition-transform"
+                  >
+                    <path
+                      d="M6 12L10 8L6 4"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
       </Container>
     </section>
