@@ -74,7 +74,7 @@ export const AboutSection = () => {
             <div className="relative">
               <div className="relative w-full rounded-2xl overflow-hidden">
                 <Image
-                  src="/images/assets/about-us-right2.webp"
+                  src="/images/assets/about-us-right.webp"
                   alt="Tim IBIS UTY"
                   width={800}
                   height={600}

@@ -6,6 +6,7 @@ import { ProgramsSection } from "@/components/sections/programs-section";
 import { TeamSection } from "@/components/sections/team-section";
 import { UpdatesSection } from "@/components/sections/updates-section";
 import { ContactSection } from "@/components/sections/contact-section";
+import FAQSection from "@/components/sections/faq-section";
 import Image from "next/image";
 
 export default function Home() {
@@ -32,6 +33,7 @@ export default function Home() {
         </div>
         <TeamSection />
         <UpdatesSection />
+        <FAQSection />
         <ContactSection />
       </main>
       <Footer />

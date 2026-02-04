@@ -156,7 +156,7 @@ export const UpdatesSection = () => {
           </div>
 
           {/* Navigation Arrows */}
-          <div className="flex justify-center gap-4 mb-8">
+          <div className="flex justify-center gap-4 mb-16">
             {/* Left Arrow with Pulse */}
             <div className="relative">
               {/* Pulse Animation */}
@@ -247,7 +247,7 @@ export const UpdatesSection = () => {
             </div>
 
             {/* Feed Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-0">
+            <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-0">
               {feedImages.map((image, index) => (
                 <Link
                   key={index}

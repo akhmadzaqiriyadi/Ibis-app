@@ -46,7 +46,7 @@ export const ProgramsSection = () => {
           <div className="relative align-center order-2 lg:order-1">
             <div className="relative w-full rounded-2xl overflow-hidden">
               <Image
-                src="/images/assets/about-us-left2.webp"
+                src="/images/assets/about-us-left.webp"
                 alt="Tim IBIS UTY"
                 width={800}
                 height={600}
