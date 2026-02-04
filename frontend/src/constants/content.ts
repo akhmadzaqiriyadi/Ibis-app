@@ -113,6 +113,7 @@ export const CONTENT = {
     address:
       "Gedung UTY Creative Hub, Jl. Siliwangi (Ringroad Utara), Jombor, Sleman, D.I. Yogyakarta 55285",
     email: "ibistek@uty.ac.id",
+    whatsapp: "+62877-1234-1234",
     instagram: "@ibistek.uty",
   },
 };

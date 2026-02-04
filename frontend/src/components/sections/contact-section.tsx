@@ -1,119 +1,181 @@
 "use client";
 
-import { Container } from "@/components/ui/container";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { CONTENT } from "@/constants/content";
-import { Mail, MapPin, Send } from "lucide-react";
 
 export const ContactSection = () => {
   return (
-    <section id="contact" className="py-24 bg-slate-50">
-      <Container>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24">
-          
-          {/* Contact Info Side */}
-          <div>
-            <Badge className="mb-4">Contact Us</Badge>
-            <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl mb-6">
-              Hubungi Kami
-            </h2>
-            <p className="text-lg text-slate-600 mb-8">
-              Punya pertanyaan seputar inkubasi bisnis atau program kami? Jangan ragu untuk menghubungi kami.
-            </p>
+    <section id="contact" className="relative py-24 bg-light overflow-hidden">
+      {/* Background decorations */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-secondary/10 rounded-full blur-3xl -z-10"></div>
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl -z-10"></div>
 
-            <div className="space-y-6">
-              <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
-                  <MapPin className="h-6 w-6" />
-                </div>
-                <div>
-                  <h4 className="text-base font-bold text-slate-900">Alamat</h4>
-                  <p className="text-slate-600 mt-1">{CONTENT.contact.address}</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
-                  <Mail className="h-6 w-6" />
-                </div>
-                <div>
-                  <h4 className="text-base font-bold text-slate-900">Email</h4>
-                  <a href={`mailto:${CONTENT.contact.email}`} className="text-slate-600 mt-1 hover:text-blue-600 transition-colors">
-                    {CONTENT.contact.email}
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
+      <div className="container mx-auto px-4">
+        {/* Title with decorative element */}
+        <div className="text-center mb-16 relative">
+          <h2 className="text-4xl font-semibold text-dark inline-block relative">
+            Hubungi Kami
+            {/* Decorative yellow accent */}
+            {/* <div className="absolute -top-6 -right-8 w-12 h-12">
+              <div className="absolute top-0 right-0 w-8 h-1 bg-secondary rotate-45"></div>
+              <div className="absolute top-2 right-2 w-6 h-1 bg-secondary rotate-45"></div>
+            </div> */}
+          </h2>
+        </div>
 
-          {/* Contact Form Side */}
-          <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
-            <h3 className="text-xl font-bold text-slate-900 mb-6">Kirim Pesan</h3>
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 max-w-6xl mx-auto">
+          {/* Left Side - Contact Form */}
+          <div className="order-2 lg:order-1">
             <form 
               action={`mailto:${CONTENT.contact.email}`} 
               method="post" 
               encType="text/plain"
-              className="space-y-4"
+              className="space-y-6"
             >
-              <div className="grid grid-cols-2 gap-4">
+              {/* Name and Email Row */}
+              <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label htmlFor="name" className="text-sm font-medium text-slate-700">Nama</label>
                   <input 
                     type="text" 
                     id="name" 
                     name="name" 
                     required
-                    className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 transition-all"
-                    placeholder="Nama Anda"
+                    className="w-full px-0 py-3 text-base text-dark bg-transparent border-0 border-b-2 border-dark/20 focus:border-primary focus:outline-none transition-colors placeholder:text-dark/40"
+                    placeholder="Nama Lengkap"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="email" className="text-sm font-medium text-slate-700">Email</label>
                   <input 
                     type="email" 
                     id="email" 
                     name="email" 
                     required
-                    className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 transition-all"
-                    placeholder="email@anda.com"
+                    className="w-full px-0 py-3 text-base text-dark bg-transparent border-0 border-b-2 border-dark/20 focus:border-primary focus:outline-none transition-colors placeholder:text-dark/40"
+                    placeholder="Alamat Email"
                   />
                 </div>
               </div>
               
+              {/* Subject */}
               <div className="space-y-2">
-                <label htmlFor="subject" className="text-sm font-medium text-slate-700">Subject</label>
                 <input 
                   type="text" 
                   id="subject" 
                   name="subject" 
                   required
-                  className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 transition-all"
-                  placeholder="Subject pesan..."
+                  className="w-full px-0 py-3 text-base text-dark bg-transparent border-0 border-b-2 border-dark/20 focus:border-primary focus:outline-none transition-colors placeholder:text-dark/40"
+                  placeholder="Subjek"
                 />
               </div>
 
+              {/* Message */}
               <div className="space-y-2">
-                <label htmlFor="message" className="text-sm font-medium text-slate-700">Pesan</label>
                 <textarea 
                   id="message" 
                   name="message" 
-                  rows={4}
+                  rows={6}
                   required
-                  className="flex w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 transition-all resize-none"
-                  placeholder="Tulis pesan Anda disini..."
+                  className="w-full px-0 py-3 text-base text-dark bg-transparent border-0 border-b-2 border-dark/20 focus:border-primary focus:outline-none transition-colors placeholder:text-dark/40 resize-none"
+                  placeholder="Pesan"
                 />
               </div>
 
-              <Button type="submit" className="w-full gap-2">
-                <Send className="h-4 w-4" />
-                Kirim Email
-              </Button>
+              {/* Submit Button */}
+              <div className="pt-4">
+                <Button 
+                  type="submit" 
+                  className="px-8 py-6 text-base font-semibold bg-linear-3 text-white rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105"
+                >
+                  Kirim Pesan
+                </Button>
+              </div>
             </form>
           </div>
-          
+
+          {/* Right Side - Contact Info */}
+          <div className="order-1 lg:order-2">
+            <div className="space-y-8">
+              <div>
+                <h3 className="text-2xl font-bold text-dark mb-4">
+                  Hubungi Lebih Lanjut
+                </h3>
+                <p className="text-dark/70 leading-relaxed">
+                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Officiis, distinctio ad. Laudantium veniam esse dicta animi obcaecati deserunt debitis.
+                </p>
+              </div>
+
+              {/* Contact Details */}
+              <div className="space-y-6">
+                {/* Email */}
+                <div className="flex items-start gap-4">
+                  <div className="shrink-0 w-10 h-10 rounded-full flex items-center justify-center">
+                    <Image 
+                      src="/svgs/mail.svg" 
+                      alt="Email Icon" 
+                      width={32} 
+                      height={32}
+                      className="w-6 h-6"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-dark mb-1">Email</h4>
+                    <a 
+                      href={`mailto:${CONTENT.contact.email}`}
+                      className="text-dark/70 hover:text-primary transition-colors"
+                    >
+                      {CONTENT.contact.email}
+                    </a>
+                  </div>
+                </div>
+
+                {/* Location */}
+                <div className="flex items-start gap-4">
+                  <div className="shrink-0 w-10 h-10 rounded-full flex items-center justify-center">
+                    <Image 
+                      src="/svgs/map.svg" 
+                      alt="Map Icon" 
+                      width={32} 
+                      height={32}
+                      className="w-7 h-7"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-dark mb-1">Basecamp IBISTEK UTY</h4>
+                    <p className="text-dark/70 leading-relaxed">
+                      {CONTENT.contact.address}
+                    </p>
+                  </div>
+                </div>
+
+                {/* WhatsApp */}
+                <div className="flex items-start gap-4">
+                  <div className="shrink-0 w-10 h-10 rounded-full flex items-center justify-center">
+                    <Image 
+                      src="/svgs/whatsapp.svg" 
+                      alt="WhatsApp Icon" 
+                      width={32} 
+                      height={32}
+                      className="w-6 h-6"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-dark mb-1">Whatsapp</h4>
+                    <a 
+                      href={`https://wa.me/${CONTENT.contact.whatsapp.replace(/[^0-9]/g, '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-dark/70 hover:text-primary transition-colors"
+                    >
+                      {CONTENT.contact.whatsapp}
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </Container>
+      </div>
     </section>
   );
 };
