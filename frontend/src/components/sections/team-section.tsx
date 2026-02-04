@@ -1,82 +1,232 @@
-import { CONTENT } from "@/constants/content";
+"use client";
+
 import { Container } from "@/components/ui/container";
-import { User } from "lucide-react";
+import Image from "next/image";
+import { Instagram, Linkedin, ArrowLeft, ArrowRight } from "lucide-react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Pagination } from "swiper/modules";
+import { useRef } from "react";
+import type { Swiper as SwiperType } from "swiper";
+
+// Import Swiper styles
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
 
 export const TeamSection = () => {
+  const swiperRef = useRef<SwiperType | null>(null);
+
+  // Team members data
+  const members = [
+    {
+      division: "Public Relations",
+      name: "Fransisca Laksmi",
+      prodi: "Ilmu Komunikasi 2024",
+      image: "/images/assets/member-2.png",
+      instagram: "#",
+      linkedin: "#",
+    },
+    {
+      division: "DVE",
+      name: "Ayudya Priagus",
+      prodi: "Perencanaan Wilayah dan Kota 24",
+      image: "/images/assets/member-1.png",
+      instagram: "#",
+      linkedin: "#",
+    },
+    {
+      division: "Social Media Management",
+      name: "Adam Prasetya Deva",
+      prodi: "Manajemen 2023",
+      image: "/images/assets/member-3.png",
+      instagram: "#",
+      linkedin: "#",
+    },
+    {
+      division: "Web Developer",
+      name: "Nehemia Hasbadhana",
+      prodi: "Informatika 2023",
+      image: "/images/assets/member-4.png",
+      instagram: "#",
+      linkedin: "#",
+    },
+    {
+      division: "Public Relations",
+      name: "Fransisca Laksmi",
+      prodi: "Ilmu Komunikasi 2024",
+      image: "/images/assets/member-2.png",
+      instagram: "#",
+      linkedin: "#",
+    },
+    {
+      division: "DVE",
+      name: "Ayudya Priagus",
+      prodi: "Perencanaan Wilayah dan Kota 24",
+      image: "/images/assets/member-1.png",
+      instagram: "#",
+      linkedin: "#",
+    },
+    {
+      division: "Social Media Management",
+      name: "Adam Prasetya Deva",
+      prodi: "Manajemen 2023",
+      image: "/images/assets/member-3.png",
+      instagram: "#",
+      linkedin: "#",
+    },
+  ];
+
   return (
-    <section id="team" className="py-24 bg-white">
-      <Container>
-        {/* Team Section */}
-        <div>
-          <h3 className="text-3xl font-bold text-slate-900 mb-12 text-center">
-            Tim Pembina & Pengelola
-          </h3>
-          
-          {/* Leaders */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-16">
-            {CONTENT.about.team.leaders.map((leader, index) => (
-              <div key={index} className="text-center group">
-                <div className="mx-auto h-40 w-40 rounded-full bg-slate-200 mb-4 overflow-hidden relative">
-                   {/* Placeholder for real image */}
-                   <div className="absolute inset-0 flex items-center justify-center bg-slate-100 text-slate-400">
-                      <User className="h-16 w-16" />
-                   </div>
-                </div>
-                <h4 className="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
-                  {leader.name}
-                </h4>
-                <p className="text-sm text-slate-500 mt-1 max-w-xs mx-auto">
-                  {leader.role}
-                </p>
+    <section id="team" className="relative">
+      {/* Team Section with Blue Gradient */}
+      <div className="py-24 bg-linear-4 relative overflow-hidden">
+        <Container>
+          {/* Header */}
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 mb-4">
+              <h2 className="text-3xl md:text-4xl font-semibold text-white">
+                Team Kami
+              </h2>
+            </div>
+          </div>
+
+          {/* Team Members Slider */}
+          <div className="mb-12">
+            <Swiper
+              onSwiper={(swiper) => (swiperRef.current = swiper)}
+              modules={[Navigation, Pagination]}
+              spaceBetween={32}
+              slidesPerView={1}
+              loop={true}
+              breakpoints={{
+                640: {
+                  slidesPerView: 2,
+                },
+                1024: {
+                  slidesPerView: 4,
+                },
+              }}
+              className="team-swiper"
+            >
+              {members.map((member, index) => (
+                <SwiperSlide key={index}>
+                  <div className="flex flex-col items-center text-center">
+                    {/* Photo with Yellow Accent */}
+                    <div className="relative mb-6">
+                      <div className="relative w-48 h-48 rounded-full overflow-hidden shadow-xl bg-linear-2">
+                        <Image
+                          src={member.image}
+                          alt={member.name}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Division (in secondary color) */}
+                    <p className="text-sm font-semibold text-secondary mb-2">
+                      {member.division}
+                    </p>
+
+                    {/* Name */}
+                    <h3 className="text-lg font-semibold text-light mb-1">
+                      {member.name}
+                    </h3>
+
+                    {/* Prodi */}
+                    <p className="text-sm text-light mb-4">{member.prodi}</p>
+
+                    {/* Social Media Icons */}
+                    <div className="flex gap-3 pb-4">
+                      <a
+                        href={member.instagram}
+                        className="w-8 h-8 rounded-full bg-linear-2 flex items-center justify-center text-light hover:scale-110 transition-all"
+                      >
+                        <Instagram className="w-4 h-4" />
+                      </a>
+                      <a
+                        href={member.linkedin}
+                        className="w-8 h-8 rounded-full bg-linear-2 flex items-center justify-center text-light hover:scale-110 transition-all"
+                      >
+                        <Linkedin className="w-4 h-4" />
+                      </a>
+                    </div>
+                  </div>
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          </div>
+
+          {/* Navigation Arrows */}
+          <div className="flex justify-center gap-4 mb-8">
+            {/* Left Arrow with Pulse */}
+            <div className="relative">
+              {/* Pulse Animation */}
+              <div className="absolute inset-0 rounded-full bg-primary/60 animate-pulse-nav"></div>
+              <button
+                onClick={() => swiperRef.current?.slidePrev()}
+                className="relative w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white hover:text-blue-600 transition-all z-10 cursor-pointer"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Right Arrow with Pulse */}
+            <div className="relative">
+              {/* Pulse Animation */}
+              <div className="absolute inset-0 rounded-full bg-primary/60 animate-pulse-nav"></div>
+              <button
+                onClick={() => swiperRef.current?.slideNext()}
+                className="relative w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white hover:text-blue-600 transition-all z-10 cursor-pointer"
+              >
+                <ArrowRight className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Selengkapnya Button */}
+          <div className="text-center">
+            <button className="px-8 py-3 rounded-md bg-linear-3 text-light font-medium hover:scale-105 cursor-pointer transition-all">
+              Selengkapnya
+            </button>
+          </div>
+        </Container>
+      </div>
+
+      {/* Partners Section with Yellow Gradient */}
+      <div className="py-24 bg-light relative overflow-hidden">
+        <Container>
+          {/* Header */}
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 mb-4">
+              <h2 className="text-3xl md:text-4xl font-semibold text-dark">
+                Kerjasama IBISTEK
+              </h2>
+            </div>
+            <p className="text-slate-700 max-w-2xl mx-auto">
+              IBISTEK memiliki program kerjasama dengan beberapa komunitas dan startup
+            </p>
+          </div>
+
+          {/* Partners Grid */}
+          <div className="flex flex-wrap justify-center gap-6">
+            {Array.from({ length: 15 }).map((_, index) => (
+              <div
+                key={index}
+                className="bg-white rounded-2xl p-6 flex items-center justify-center shadow-sm hover:shadow-md transition-all border border-slate-100 w-[calc(50%-0.75rem)] sm:w-[calc(33.333%-1rem)] md:w-[calc(25%-1.125rem)] lg:w-[calc(20%-1.2rem)] max-w-[200px]"
+              >
+                <Image
+                  src="/images/assets/partners-1.png"
+                  alt="UTY Software House"
+                  width={120}
+                  height={60}
+                  className="w-full h-auto object-contain"
+                />
               </div>
             ))}
           </div>
-
-          {/* Staff Grid */}
-          {/* <div className="mb-16">
-            <h3 className="text-xl font-bold text-slate-900 mb-8 text-center text-blue-600">
-              Staff Divisi
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-              {CONTENT.about.team.staff.map((staff, index) => (
-                <div key={index} className="flex flex-col items-center text-center p-4 rounded-xl bg-slate-50 hover:bg-white hover:shadow-md transition-all border border-transparent hover:border-slate-100">
-                  <div className="h-16 w-16 rounded-full bg-slate-200 mb-3 flex items-center justify-center text-slate-400">
-                    <User className="h-8 w-8" />
-                  </div>
-                  <h5 className="text-sm font-bold text-slate-900 leading-tight mb-1">
-                    {staff.name}
-                  </h5>
-                  <p className="text-xs text-slate-500">
-                    {staff.role}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div> */}
-
-          {/* Mentors Grid */}
-          {/* <div>
-            <h3 className="text-xl font-bold text-slate-900 mb-8 text-center text-blue-600">
-              Mentor Bisnis
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {CONTENT.about.team.mentors.map((mentor, index) => (
-                <div key={index} className="flex flex-col items-center text-center p-6 rounded-xl bg-slate-50 hover:bg-white hover:shadow-md transition-all border border-transparent hover:border-slate-100 group">
-                  <div className="h-20 w-20 rounded-full bg-white mb-4 flex items-center justify-center text-blue-600 border border-slate-200 group-hover:border-blue-100 group-hover:bg-blue-50 transition-colors">
-                    <User className="h-10 w-10" />
-                  </div>
-                  <h5 className="text-base font-bold text-slate-900 mb-1">
-                    {mentor.name}
-                  </h5>
-                  <p className="text-xs font-medium text-blue-600 uppercase tracking-wider">
-                    {mentor.role}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div> */}
-        </div>
-      </Container>
+        </Container>
+      </div>
     </section>
   );
 };

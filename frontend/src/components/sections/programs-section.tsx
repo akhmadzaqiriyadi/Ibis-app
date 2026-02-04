@@ -29,18 +29,7 @@ export const ProgramsSection = () => {
   }, { scope: containerRef });
 
   return (
-    <section ref={containerRef} id="programs" className="py-2 relative">{/* removed: overflow-hidden bg-light */}
-      {/* Decorative Blur Elements */}
-      {/* <div className="absolute -top-70 -right-50 w-96 h-96 pointer-events-none">
-        <Image
-          src="/images/assets/blue-blur.png"
-          alt=""
-          width={384}
-          height={384}
-          className="w-full h-full object-contain opacity-60"
-        />
-      </div> */}
-
+    <section ref={containerRef} id="programs" className="pt-2 pb-24 relative">
       <Container className="relative z-10">
         {/* Header with Icon */}
         <div className="text-center mb-16">

@@ -100,10 +100,7 @@ export const HeroSection = () => {
     <section
       ref={containerRef}
       id="home"
-      className="relative min-h-screen overflow-hidden"
-      style={{
-        background: 'linear-gradient(135deg, #2563EB 0%, rgba(37, 99, 235, 0.65) 50%, #2050B7 100%)'
-      }}
+      className="relative bg-linear-3 min-h-screen overflow-hidden"
     >
 
       <Container className="relative z-10 pt-32 pb-20 lg:pt-36 lg:pb-0">
@@ -190,10 +187,7 @@ export const HeroSection = () => {
             {/* CTA Button */}
             <Link
               href="#about"
-              className="hero-cta inline-flex items-center justify-center px-8 py-3 text-light font-semibold rounded-md transition-all duration-300 w-fit hover:brightness-105 hover:shadow-lg"
-              style={{
-                background: 'linear-gradient(135deg, #FFD600 0%, rgba(255, 214, 0, 0.65) 100%, #D0AA12 100%)'
-              }}
+              className="hero-cta inline-flex items-center justify-center px-8 py-3 bg-linear-1 text-light font-semibold rounded-md transition-all duration-300 w-fit hover:brightness-105 hover:shadow-lg"
             >
               Tak Kenal Maka Tak Sayang
             </Link>
