@@ -148,10 +148,10 @@ export const HeroSection = () => {
               onMouseLeave={() => setIsPaused(false)}
             >
               {/* Left Gradient Fade Overlay */}
-              <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-light/40 via-primary/20 to-transparent z-10 pointer-events-none rounded-l-full" />
+              <div className="absolute left-0 top-0 bottom-0 w-24 bg-linear-to-r from-light/40 via-primary/20 to-transparent z-10 pointer-events-none rounded-l-full" />
               
               {/* Right Gradient Fade Overlay */}
-              <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-light/40 via-primary/20 to-transparent z-10 pointer-events-none rounded-r-full" />
+              <div className="absolute right-0 top-0 bottom-0 w-24 bg-linear-to-l from-light/40 via-primary/20 to-transparent z-10 pointer-events-none rounded-r-full" />
               
               {/* Scrolling Text with react-fast-marquee */}
               <Marquee

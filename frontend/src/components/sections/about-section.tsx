@@ -24,10 +24,6 @@ export const AboutSection = () => {
           {/* Header with Icon */}
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 mb-4">
-              {/* <div className="flex gap-1">
-                <div className="w-1 h-6 bg-yellow-400 rounded-full"></div>
-                <div className="w-1 h-6 bg-yellow-400 rounded-full"></div>
-              </div> */}
               <h2 className="text-3xl md:text-4xl font-semibold text-dark">
                 Tentang Kami
               </h2>

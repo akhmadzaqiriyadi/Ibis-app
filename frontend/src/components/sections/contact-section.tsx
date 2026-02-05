@@ -16,11 +16,6 @@ export const ContactSection = () => {
         <div className="text-center mb-16 relative">
           <h2 className="text-4xl font-semibold text-dark inline-block relative">
             Hubungi Kami
-            {/* Decorative yellow accent */}
-            {/* <div className="absolute -top-6 -right-8 w-12 h-12">
-              <div className="absolute top-0 right-0 w-8 h-1 bg-secondary rotate-45"></div>
-              <div className="absolute top-2 right-2 w-6 h-1 bg-secondary rotate-45"></div>
-            </div> */}
           </h2>
         </div>
 

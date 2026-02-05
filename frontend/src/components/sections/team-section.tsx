@@ -7,6 +7,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
 import { useRef } from "react";
 import type { Swiper as SwiperType } from "swiper";
+import { CONTENT } from "@/constants/content";
 
 // Import Swiper styles
 import "swiper/css";
@@ -15,66 +16,6 @@ import "swiper/css/pagination";
 
 export const TeamSection = () => {
   const swiperRef = useRef<SwiperType | null>(null);
-
-  // Team members data
-  const members = [
-    {
-      division: "Public Relations",
-      name: "Fransisca Laksmi",
-      prodi: "Ilmu Komunikasi 2024",
-      image: "/images/assets/member-2.webp",
-      instagram: "#",
-      linkedin: "#",
-    },
-    {
-      division: "DVE",
-      name: "Ayudya Priagus",
-      prodi: "Perencanaan Wilayah dan Kota 2024",
-      image: "/images/assets/member-1.webp",
-      instagram: "#",
-      linkedin: "#",
-    },
-    {
-      division: "Social Media Management",
-      name: "Adam Prasetya Deva",
-      prodi: "Manajemen 2023",
-      image: "/images/assets/member-3.webp",
-      instagram: "#",
-      linkedin: "#",
-    },
-    {
-      division: "Web Developer",
-      name: "Nehemia Hasbadhana",
-      prodi: "Informatika 2023",
-      image: "/images/assets/member-4.webp",
-      instagram: "#",
-      linkedin: "#",
-    },
-    {
-      division: "Public Relations",
-      name: "Fransisca Laksmi",
-      prodi: "Ilmu Komunikasi 2024",
-      image: "/images/assets/member-2.webp",
-      instagram: "#",
-      linkedin: "#",
-    },
-    {
-      division: "DVE",
-      name: "Ayudya Priagus",
-      prodi: "Perencanaan Wilayah dan Kota 2024",
-      image: "/images/assets/member-1.webp",
-      instagram: "#",
-      linkedin: "#",
-    },
-    {
-      division: "Social Media Management",
-      name: "Adam Prasetya Deva",
-      prodi: "Manajemen 2023",
-      image: "/images/assets/member-3.webp",
-      instagram: "#",
-      linkedin: "#",
-    },
-  ];
 
   return (
     <section id="team" className="relative">
@@ -86,7 +27,7 @@ export const TeamSection = () => {
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 mb-4">
               <h2 className="text-3xl md:text-4xl font-semibold text-white">
-                Team Kami
+                {CONTENT.team.title}
               </h2>
             </div>
           </div>
@@ -109,7 +50,7 @@ export const TeamSection = () => {
               }}
               className="team-swiper"
             >
-              {members.map((member, index) => (
+              {CONTENT.team.members.map((member, index) => (
                 <SwiperSlide key={index}>
                   <div className="flex flex-col items-center text-center">
                     {/* Photo with Yellow Accent */}
@@ -188,7 +129,7 @@ export const TeamSection = () => {
           {/* Selengkapnya Button */}
           <div className="text-center">
             <button className="px-8 py-3 rounded-md bg-linear-3 text-light font-medium hover:scale-105 cursor-pointer transition-all">
-              Selengkapnya
+              {CONTENT.team.cta}
             </button>
           </div>
         </Container>
@@ -201,23 +142,23 @@ export const TeamSection = () => {
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 mb-4">
               <h2 className="text-3xl md:text-4xl font-semibold text-dark">
-                Kerjasama IBISTEK
+                {CONTENT.partners.title}
               </h2>
             </div>
             <p className="text-slate-700 max-w-2xl mx-auto">
-              IBISTEK memiliki program kerjasama dengan beberapa komunitas dan startup
+              {CONTENT.partners.description}
             </p>
           </div>
 
           {/* Partners Grid */}
           <div className="flex flex-wrap justify-center gap-6">
-            {Array.from({ length: 15 }).map((_, index) => (
+            {Array.from({ length: CONTENT.partners.count }).map((_, index) => (
               <div
                 key={index}
                 className="bg-white rounded-2xl p-6 flex items-center justify-center shadow-sm hover:shadow-md transition-all border border-slate-100 w-[calc(50%-0.75rem)] sm:w-[calc(33.333%-1rem)] md:w-[calc(25%-1.125rem)] lg:w-[calc(20%-1.2rem)] max-w-[200px]"
               >
                 <Image
-                  src="/images/assets/partners-1.webp"
+                  src={CONTENT.partners.logo}
                   alt="UTY Software House"
                   width={120}
                   height={60}

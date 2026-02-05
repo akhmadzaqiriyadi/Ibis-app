@@ -12,6 +12,7 @@ import type { Swiper as SwiperType } from "swiper";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import { CONTENT } from "@/constants/content";
 
 // Import Swiper styles
 import "swiper/css";
@@ -19,56 +20,6 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 
 gsap.registerPlugin(ScrollTrigger);
-
-const events = [
-  {
-    date: "4-5 Desember 2025",
-    title: "UTY Growpath Season 3",
-    description: "GROWPATH EXPO SEASON 3 Siap memamerkan hasil akhir yuk datang ke Growpath Expo Season 3 yang akan di adakan di Kampus UTY 3 4-5 Desember 2025",
-    image: "/images/assets/news-1.webp",
-  },
-  {
-    date: "30 Januari 2026",
-    title: "Sosialisasi P2MW 2026",
-    description: (
-      <>
-        Halo Young Entrepreneur<br />
-        Mau usahamu Tumbuh ya? Ingin tau? Ayo raih keinginan ingin dan mimpi! Temang, semua ada jalannya karena kesempatan itu harus di gapai dengan semangat!
-      </>
-    ),
-    image: "/images/assets/news-2.png",
-  },
-  {
-    date: "4-5 Desember 2025",
-    title: "UTY Growpath Season 3",
-    description: (
-      <>
-        GROWPATH EXPO SEASON 3<br />
-        Siap memamerkan hasil akhir yuk?<br /> 
-        Datang ke Growpath Expo Season 3 yang akan di adakan di Kampus UTY 3 4-5 Desember 2025
-      </>
-    ),
-    image: "/images/assets/news-1.png",
-  },
-  {
-    date: "30 Januari 2026",
-    title: "Sosialisasi P2MW 2026",
-    description: (
-      <>
-        Halo Young Entrepreneur<br />
-        Mau usahamu Tumbuh ya? Ingin tau? Ayo raih keinginan ingin dan mimpi! Temang, semua ada jalannya karena kesempatan itu harus di gapai dengan semangat!
-      </>
-    ),
-    image: "/images/assets/news-2.webp",
-  },
-];
-
-const feedImages = [
-  "/images/assets/feed-1.webp",
-  "/images/assets/feed-2.webp",
-  "/images/assets/feed-3.webp",
-  "/images/assets/feed-4.webp",
-];
 
 export const UpdatesSection = () => {
   const containerRef = useRef(null);
@@ -104,7 +55,7 @@ export const UpdatesSection = () => {
         {/* Event Terbaru Section */}
         <div className="events-section mb-24">
           <h2 className="text-3xl md:text-4xl font-bold text-center text-white mb-12">
-            Event Terbaru
+            {CONTENT.updates.title}
           </h2>
 
           {/* Event Cards Swiper */}
@@ -122,7 +73,7 @@ export const UpdatesSection = () => {
               }}
               className="events-swiper"
             >
-              {events.map((event, index) => (
+              {CONTENT.updates.events.map((event, index) => (
                 <SwiperSlide key={index}>
                   <div className="event-card bg-linear-2 rounded-2xl overflow-hidden shadow-xl">
                     <div className="p-6">
@@ -138,7 +89,7 @@ export const UpdatesSection = () => {
                       <h3 className="text-xl font-semibold text-light mb-3">
                         {event.title}
                       </h3>
-                      <p className="text-sm font-light text-light/60 mb-4 line-clamp-3">
+                      <p className="text-sm font-light text-light/60 mb-4 line-clamp-3" style={{ whiteSpace: 'pre-line' }}>
                         {event.description}
                       </p>
                       <a 
@@ -187,7 +138,7 @@ export const UpdatesSection = () => {
           {/* Selengkapnya Button */}
           <div className="text-center">
             <button className="px-8 py-3 rounded-md bg-linear-3 text-light font-medium hover:scale-105 cursor-pointer transition-all">
-              Selengkapnya
+              {CONTENT.updates.cta}
             </button>
           </div>
         </div>
@@ -197,10 +148,10 @@ export const UpdatesSection = () => {
           {/* Header */}
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-light mb-4">
-              Kenal lebih dekat dengan IBISTEK
+              {CONTENT.updates.instagram.title}
             </h2>
             <p className="text-light/70 max-w-2xl mx-auto">
-              Kunjungi media sosial IBISTEK UTY untuk mendapatkan informasi terbaru
+              {CONTENT.updates.instagram.description}
             </p>
           </div>
 
@@ -212,7 +163,7 @@ export const UpdatesSection = () => {
                 {/* Logo */}
                 <div className="relative w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden ring-4 ring-blue-100 shrink-0">
                   <Image
-                    src="/images/logos/brand-raw.webp"
+                    src={CONTENT.updates.instagram.logo}
                     alt="IBISTEK UTY Logo"
                     fill
                     className="object-cover"
@@ -222,14 +173,14 @@ export const UpdatesSection = () => {
                 {/* Profile Info */}
                 <div>
                   <h3 className="text-2xl md:text-3xl font-bold text-dark mb-2">
-                    @ibistek.uty
+                    {CONTENT.updates.instagram.handle}
                   </h3>
                   <div className="flex items-center gap-6 text-base text-dark/70">
                     <span>
-                      <strong className="text-dark font-semibold">163</strong> Posts
+                      <strong className="text-dark font-semibold">{CONTENT.updates.instagram.stats.posts}</strong> Posts
                     </span>
                     <span>
-                      <strong className="text-dark font-semibold">1.3k</strong> Followers
+                      <strong className="text-dark font-semibold">{CONTENT.updates.instagram.stats.followers}</strong> Followers
                     </span>
                   </div>
                 </div>
@@ -248,7 +199,7 @@ export const UpdatesSection = () => {
 
             {/* Feed Grid */}
             <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-0">
-              {feedImages.map((image, index) => (
+              {CONTENT.updates.instagram.feedImages.map((image, index) => (
                 <Link
                   key={index}
                   href="https://instagram.com/ibistek.uty"
@@ -269,42 +220,29 @@ export const UpdatesSection = () => {
             {/* Social Links Footer */}
             <div className="p-8">
               <div className="flex flex-wrap items-center justify-center gap-8">
-                <Link 
-                  href="https://instagram.com/ibistek.uty" 
-                  target="_blank"
-                  className="group flex items-center gap-3 text-light transition-colors"
-                >
-                  <div className="w-10 h-10 rounded-full bg-linear-2 shadow-sm flex items-center justify-center group-hover:shadow-md group-hover:scale-110 transition-all">
-                    <Instagram className="w-5 h-5" />
-                  </div>
-                  <span className="font-medium text-dark">@ibistek.uty</span>
-                </Link>
-                
-                <Link 
-                  href="https://twitter.com/ibistek.uty" 
-                  target="_blank"
-                  className="group flex items-center gap-3 transition-colors"
-                >
-                  <div className="w-10 h-10 rounded-full bg-linear-2 shadow-sm flex items-center justify-center group-hover:shadow-md group-hover:scale-110 transition-all">
-                    <svg className="w-5 h-5 text-light" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                    </svg>
-                  </div>
-                  <span className="font-medium text-dark">@ibistek.uty</span>
-                </Link>
-                
-                <Link 
-                  href="https://youtube.com/@ibistekuty" 
-                  target="_blank"
-                  className="group flex items-center gap-3 transition-colors"
-                >
-                  <div className="w-10 h-10 rounded-full bg-linear-2 shadow-sm flex items-center justify-center group-hover:shadow-md group-hover:scale-110 transition-all">
-                    <svg className="w-5 h-5 text-light" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                    </svg>
-                  </div>
-                  <span className="font-medium text-dark">Ibistek UTY</span>
-                </Link>
+                {CONTENT.updates.instagram.socialLinks.map((social, index) => (
+                  <Link 
+                    key={index}
+                    href={social.url} 
+                    target="_blank"
+                    className="group flex items-center gap-3 transition-colors"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-linear-2 shadow-sm flex items-center justify-center group-hover:shadow-md group-hover:scale-110 transition-all">
+                      {social.icon === 'instagram' && <Instagram className="w-5 h-5 text-light" />}
+                      {social.icon === 'twitter' && (
+                        <svg className="w-5 h-5 text-light" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                        </svg>
+                      )}
+                      {social.icon === 'youtube' && (
+                        <svg className="w-5 h-5 text-light" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                        </svg>
+                      )}
+                    </div>
+                    <span className="font-medium text-dark">{social.handle}</span>
+                  </Link>
+                ))}
               </div>
             </div>
           </div>

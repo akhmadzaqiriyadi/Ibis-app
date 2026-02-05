@@ -6,6 +6,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import Image from "next/image";
+import { CONTENT } from "@/constants/content";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -57,134 +58,49 @@ export const ProgramsSection = () => {
 
           {/* Right Column - Programs List */}
           <div className="space-y-12 order-1 lg:order-2">
-            {/* Inkubasi Bisnis */}
-            <div className="flex gap-4 items-start program-item">
-              <div className="shrink-0">
-                <Image
-                  src="/svgs/incube.svg"
-                  alt="Inkubasi Bisnis"
-                  width={48}
-                  height={48}
-                  className="w-12 h-12"
-                />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-xl font-semibold text-dark mb-3">
-                  Inkubasi bisnis
-                </h3>
-                <p className="text-slate-700 leading-relaxed mb-4">
-                  Inkubasi bisnis adalah program pembinaan, pendampingan, dan pengembangan terstruktur bagi usaha rintisan. Program inkubasi bisnis di IBISTEK UTY diselenggarakan secara periodik bagi sejumlah unit bisnis yang terpilih untuk diinkubasi.
-                </p>
-                <a
-                  href="/auth/register?program=inkubasi"
-                  className="inline-flex items-center gap-2 text-primary font-medium hover:gap-3 transition-all"
-                >
-                  Daftar Sekarang
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="transition-transform"
+            {CONTENT.programs.map((program) => (
+              <div key={program.id} className="flex gap-4 items-start program-item">
+                <div className="shrink-0">
+                  <Image
+                    src={program.icon}
+                    alt={program.title}
+                    width={48}
+                    height={48}
+                    className="w-12 h-12"
+                  />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-semibold text-dark mb-3">
+                    {program.title}
+                  </h3>
+                  <p className="text-slate-700 leading-relaxed mb-4">
+                    {program.description}
+                  </p>
+                  <a
+                    href={program.href}
+                    className="inline-flex items-center gap-2 text-primary font-medium hover:gap-3 transition-all"
                   >
-                    <path
-                      d="M6 12L10 8L6 4"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </a>
+                    {program.cta}
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="transition-transform"
+                    >
+                      <path
+                        d="M6 12L10 8L6 4"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </a>
+                </div>
               </div>
-            </div>
-
-            {/* Konsultasi Bisnis */}
-            <div className="flex gap-4 items-start program-item">
-              <div className="shrink-0">
-                <Image
-                  src="/svgs/like-dislike.svg"
-                  alt="Konsultasi Bisnis"
-                  width={48}
-                  height={48}
-                  className="w-12 h-12"
-                />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-xl font-semibold text-dark mb-3">
-                  Konsultasi bisnis
-                </h3>
-                <p className="text-slate-700 leading-relaxed mb-4">
-                  Konsultasi bisnis adalah layanan konsultasi dengan mentor atau praktisi untuk menyelesaikan problem-problem yang dihadapi pelaku bisnis secara gratis. Pendaftar dapat mengajukan layanan konsultasi bisnis ke IBISTEK UTY. Selanjutnya akan dijadwalkan waktu untuk berkonsultasi langsung dengan mentor atau praktisi yang sesuai. Ayo konsultasikan problem bisnismu.
-                </p>
-                <a
-                  href="/auth/register?program=konsultasi"
-                  className="inline-flex items-center gap-2 text-primary font-medium hover:gap-3 transition-all"
-                >
-                  Daftar Sekarang
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="transition-transform"
-                  >
-                    <path
-                      d="M6 12L10 8L6 4"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </a>
-              </div>
-            </div>
-
-            {/* Kredensial Mikro */}
-            <div className="flex gap-4 items-start program-item">
-              <div className="shrink-0">
-                <Image
-                  src="/svgs/vuesax.svg"
-                  alt="Kredensial Mikro"
-                  width={48}
-                  height={48}
-                  className="w-12 h-12"
-                />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-xl font-semibold text-dark mb-3">
-                  Kredensial Mikro
-                </h3>
-                <p className="text-slate-700 leading-relaxed mb-4">
-                  Kredensial Mikro adalah program pelatihan dan sertifikasi jangka pendek yang dirancang untuk meningkatkan pengetahuan dan keterampilan berwirausaha secara cepat, relevan dengan kebutuhan dunia usaha, dan diakui secara formal.
-                </p>
-                <a
-                  href="/auth/register?program=kredensial"
-                  className="inline-flex items-center gap-2 text-primary font-medium hover:gap-3 transition-all"
-                >
-                  Daftar Sekarang
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="transition-transform"
-                  >
-                    <path
-                      d="M6 12L10 8L6 4"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </a>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </Container>
