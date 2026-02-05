@@ -20,8 +20,8 @@ export default function Home() {
           {/* Blue Blur Effect - positioned between About and Programs */}
           <div className="absolute top-1/2 -translate-y-1/2 -right-70 lg:-right-50 w-96 h-96 pointer-events-none z-0">
             <Image
-              src="/images/assets/blue-blur.png"
-              alt=""
+              src="/images/assets/blue-blur.webp"
+              alt="Blue Blur Effect"
               width={384}
               height={384}
               className="w-full h-full object-contain opacity-60"
@@ -31,10 +31,43 @@ export default function Home() {
           <AboutSection />
           <ProgramsSection />
         </div>
-        <TeamSection />
-        <UpdatesSection />
-        <FAQSection />
-        <ContactSection />
+        <div className="relative bg-light overflow-hidden">
+          {/* Yellow Blur Effect - positioned between Team and Partner*/}
+          <div className="absolute top-1/2 -translate-y-1/2 -right-70 lg:-right-50 w-96 h-96 pointer-events-none z-10">
+            <Image
+              src="/images/assets/yellow-blur.webp"
+              alt="Blue Blur Effect"
+              width={384}
+              height={384}
+              className="w-full h-full object-contain opacity-60"
+            />
+          </div>
+          <TeamSection />
+        </div>
+        <div className="relative bg-light overflow-hidden">
+          {/* Yellow Blur Effect - positioned between Team and Partner*/}
+          <div className="absolute top-[48%] -translate-y-1/2 -left-60 lg:-right-50 w-96 h-96 pointer-events-none z-10">
+            <Image
+              src="/images/assets/yellow-blur.webp"
+              alt="Yellow Blur Effect"
+              width={384}
+              height={384}
+              className="w-full h-full object-contain opacity-60"
+            />
+          </div>
+          <UpdatesSection />
+          <FAQSection />
+          <div className="absolute bottom-[8%] -translate-y-1/2 -right-70 lg:-right-50 w-96 h-96 pointer-events-none z-10">
+            <Image
+              src="/images/assets/blue-blur.webp"
+              alt="Yellow Blur Effect"
+              width={384}
+              height={384}
+              className="w-full h-full object-contain opacity-60"
+            />
+          </div>
+          <ContactSection />
+        </div>
       </main>
       <Footer />
     </div>

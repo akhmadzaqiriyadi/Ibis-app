@@ -10,7 +10,7 @@ export const AboutSection = () => {
       {/* Decorative Blur Elements */}
       <div className="absolute -top-50 -left-50 w-96 h-96 pointer-events-none">
         <Image
-          src="/images/assets/yellow-blur.png"
+          src="/images/assets/yellow-blur.webp"
           alt=""
           width={384}
           height={384}

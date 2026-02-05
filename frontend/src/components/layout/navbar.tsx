@@ -62,7 +62,17 @@ export const Navbar = () => {
                     e.preventDefault();
                     const target = document.querySelector(link.href);
                     if (target) {
-                      target.scrollIntoView({ behavior: "smooth" });
+                      // Special offset for programs section to show headline
+                      if (link.href === "#programs") {
+                        const targetPosition = target.getBoundingClientRect().top + window.pageYOffset;
+                        const offset = 120; // Offset to account for fixed navbar
+                        window.scrollTo({
+                          top: targetPosition - offset,
+                          behavior: "smooth"
+                        });
+                      } else {
+                        target.scrollIntoView({ behavior: "smooth" });
+                      }
                     }
                   }
                 }}
@@ -106,7 +116,17 @@ export const Navbar = () => {
                       e.preventDefault();
                       const target = document.querySelector(link.href);
                       if (target) {
-                        target.scrollIntoView({ behavior: "smooth" });
+                        // Special offset for programs section to show headline
+                        if (link.href === "#programs") {
+                          const targetPosition = target.getBoundingClientRect().top + window.pageYOffset;
+                          const offset = 120; // Offset to account for fixed navbar
+                          window.scrollTo({
+                            top: targetPosition - offset,
+                            behavior: "smooth"
+                          });
+                        } else {
+                          target.scrollIntoView({ behavior: "smooth" });
+                        }
                       }
                     }
                   }}

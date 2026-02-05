@@ -1,13 +1,13 @@
 export const CONTENT = {
   nav: {
-    image: "/images/logos/brand.png",
+    image: "/images/logos/brand.webp",
     links: [
       { label: "Home", href: "#home" },
       { label: "About", href: "#about" },
-      { label: "Our Team", href: "#team" },
       { label: "Programs", href: "#programs" },
-      { label: "Updates", href: "#updates" },
+      { label: "Our Team", href: "#team" },
       { label: "Partners", href: "#partners" },
+      { label: "Updates", href: "#updates" },
       { label: "Contact Us", href: "#contact" },
     ],
     cta: "Sign In",

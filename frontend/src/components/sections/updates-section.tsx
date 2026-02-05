@@ -25,7 +25,7 @@ const events = [
     date: "4-5 Desember 2025",
     title: "UTY Growpath Season 3",
     description: "GROWPATH EXPO SEASON 3 Siap memamerkan hasil akhir yuk datang ke Growpath Expo Season 3 yang akan di adakan di Kampus UTY 3 4-5 Desember 2025",
-    image: "/images/assets/news-1.png",
+    image: "/images/assets/news-1.webp",
   },
   {
     date: "30 Januari 2026",
@@ -59,7 +59,7 @@ const events = [
         Mau usahamu Tumbuh ya? Ingin tau? Ayo raih keinginan ingin dan mimpi! Temang, semua ada jalannya karena kesempatan itu harus di gapai dengan semangat!
       </>
     ),
-    image: "/images/assets/news-2.png",
+    image: "/images/assets/news-2.webp",
   },
 ];
 
@@ -127,12 +127,12 @@ export const UpdatesSection = () => {
                   <div className="event-card bg-linear-2 rounded-2xl overflow-hidden shadow-xl">
                     <div className="p-6">
                       <div className="text-xs font-semibold text-light/80 mb-3">{event.date}</div>
-                      <div className="relative h-48 mb-4 rounded-xl overflow-hidden">
+                      <div className="relative h-48 mb-4 rounded-xl overflow-hidden group cursor-pointer">
                         <Image
                           src={event.image}
                           alt={event.title}
                           fill
-                          className="object-cover"
+                          className="object-cover group-hover:scale-110 transition-transform duration-500"
                         />
                       </div>
                       <h3 className="text-xl font-semibold text-light mb-3">

@@ -22,15 +22,15 @@ export const TeamSection = () => {
       division: "Public Relations",
       name: "Fransisca Laksmi",
       prodi: "Ilmu Komunikasi 2024",
-      image: "/images/assets/member-2.png",
+      image: "/images/assets/member-2.webp",
       instagram: "#",
       linkedin: "#",
     },
     {
       division: "DVE",
       name: "Ayudya Priagus",
-      prodi: "Perencanaan Wilayah dan Kota 24",
-      image: "/images/assets/member-1.png",
+      prodi: "Perencanaan Wilayah dan Kota 2024",
+      image: "/images/assets/member-1.webp",
       instagram: "#",
       linkedin: "#",
     },
@@ -38,7 +38,7 @@ export const TeamSection = () => {
       division: "Social Media Management",
       name: "Adam Prasetya Deva",
       prodi: "Manajemen 2023",
-      image: "/images/assets/member-3.png",
+      image: "/images/assets/member-3.webp",
       instagram: "#",
       linkedin: "#",
     },
@@ -46,7 +46,7 @@ export const TeamSection = () => {
       division: "Web Developer",
       name: "Nehemia Hasbadhana",
       prodi: "Informatika 2023",
-      image: "/images/assets/member-4.png",
+      image: "/images/assets/member-4.webp",
       instagram: "#",
       linkedin: "#",
     },
@@ -54,15 +54,15 @@ export const TeamSection = () => {
       division: "Public Relations",
       name: "Fransisca Laksmi",
       prodi: "Ilmu Komunikasi 2024",
-      image: "/images/assets/member-2.png",
+      image: "/images/assets/member-2.webp",
       instagram: "#",
       linkedin: "#",
     },
     {
       division: "DVE",
       name: "Ayudya Priagus",
-      prodi: "Perencanaan Wilayah dan Kota 24",
-      image: "/images/assets/member-1.png",
+      prodi: "Perencanaan Wilayah dan Kota 2024",
+      image: "/images/assets/member-1.webp",
       instagram: "#",
       linkedin: "#",
     },
@@ -70,7 +70,7 @@ export const TeamSection = () => {
       division: "Social Media Management",
       name: "Adam Prasetya Deva",
       prodi: "Manajemen 2023",
-      image: "/images/assets/member-3.png",
+      image: "/images/assets/member-3.webp",
       instagram: "#",
       linkedin: "#",
     },
@@ -78,6 +78,7 @@ export const TeamSection = () => {
 
   return (
     <section id="team" className="relative">
+      
       {/* Team Section with Blue Gradient */}
       <div className="py-24 bg-linear-4 relative overflow-hidden">
         <Container>
@@ -194,7 +195,7 @@ export const TeamSection = () => {
       </div>
 
       {/* Partners Section with Yellow Gradient */}
-      <div className="py-24 bg-light relative overflow-hidden">
+      <div id="partners" className="py-24 bg-light relative overflow-hidden">
         <Container>
           {/* Header */}
           <div className="text-center mb-12">
@@ -216,7 +217,7 @@ export const TeamSection = () => {
                 className="bg-white rounded-2xl p-6 flex items-center justify-center shadow-sm hover:shadow-md transition-all border border-slate-100 w-[calc(50%-0.75rem)] sm:w-[calc(33.333%-1rem)] md:w-[calc(25%-1.125rem)] lg:w-[calc(20%-1.2rem)] max-w-[200px]"
               >
                 <Image
-                  src="/images/assets/partners-1.png"
+                  src="/images/assets/partners-1.webp"
                   alt="UTY Software House"
                   width={120}
                   height={60}
