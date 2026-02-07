@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Instagram } from "lucide-react";
+import { ArrowLeft, ArrowRight, Instagram, Calendar, MapPin } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
 import { useRef } from "react";
@@ -92,6 +92,17 @@ export const UpdatesSection = () => {
                       <p className="text-sm font-light text-light/60 mb-4 line-clamp-3" style={{ whiteSpace: 'pre-line' }}>
                         {event.description}
                       </p>
+                      {/* Date and Location */}
+                      <div className="flex items-center gap-4 text-xs text-light/60 mb-4">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4" />
+                          <span>{event.date}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-4 h-4" />
+                          <span>{event.location}</span>
+                        </div>
+                      </div>
                       <a 
                         href={`/events/${index + 1}`}
                         className="group inline-flex items-center gap-2 text-yellow-400 hover:text-yellow-300 font-semibold transition-colors"
@@ -137,9 +148,9 @@ export const UpdatesSection = () => {
 
           {/* Selengkapnya Button */}
           <div className="text-center">
-            <button className="px-8 py-3 rounded-md bg-linear-3 text-light font-medium hover:scale-105 cursor-pointer transition-all">
+            <Link href="/event" className="inline-block px-8 py-3 rounded-md bg-linear-3 text-light font-medium hover:scale-105 cursor-pointer transition-all">
               {CONTENT.updates.cta}
-            </button>
+            </Link>
           </div>
         </div>
 
