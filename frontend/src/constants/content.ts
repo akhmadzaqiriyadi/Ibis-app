@@ -332,6 +332,38 @@ export const CONTENT = {
       ],
     },
   },
+  eventDetails: {
+    title: "UTY Growpath Season 3 Sukses Digelar Dengan Hasil yang Memuaskan dan Mencapai Target",
+    date: "4-5 Desember 2025",
+    location: "UTY Campus 1",
+    image: "/images/assets/event-detail-1.webp",
+    content: [
+      {
+        type: "paragraph",
+        text: "Universitas Teknologi Yogyakarta (UTY) sukses menggelar kegiatan UTY Growpath Expo Season 3 tahun 2025, yang berlangsung selama 2 hari di halaman belakang Kampus 1 UTY, dari tanggal 4 sampai 5 Desember 2025 kemarin. Kegiatan ini diikuti oleh seluruh mahasiswa UTY, yang padu semester Ganjil TA 2025/2026, sedang mengambil mata kuliah Kewirausahaan. Adapun total tenant, dalam gelaran UTY Growpath Expo Season ke-3 kali ini mencapai 383 Tenant, yang menampilkan berbagai karya kreatif mahasiswa."
+      },
+      {
+        type: "paragraph",
+        text: "Kegiatan Growpath Expo ini diikuti oleh Wakil Rektor IV Bidang Kreativitas, Kewirausahaan dan Pengabdian Masyarakat UTY, MS Hendriawan A, S.T., M.Eng., Ph.D; Wakil Rektor III Bidang Kemahasiswaan dan Alumni UTY, Dr. Eko Saryo Hermatha, M.Hum; Kepala Bidang Kewirausahaan UTY, Adi Wibawa, S.IP., MA; Kepala Bidang Kreativitas & Inovasi UTY, Puji Utomo, S.T., M.Eng; Perwakilan dari Kementerian Pendidikan Tinggi Sains dan Teknologi (Kemendikbudristek) RI, Satria Yudha Hermawan dan Burhanuddin Ali; Dekan, Kaprodi, Dosen, dan seluruh mahasiswa UTY, serta tamu undangan yang mengikuti kegiatan ini."
+      },
+      {
+        type: "paragraph",
+        text: "Acara dibuka dengan sambutan dari Wakil Rektor IV UTY, Ms. Hendriawan A, yang menyampaikan bahwa kegiatan ini adalah wujud aktualisasi diri mahasiswa UTY, untuk menunjukkan kreativitasnya dalam bidang teknologi dan kewirausahaan."
+      },
+      {
+        type: "paragraph",
+        text: "\"Kegiatan ini adalah wadah dari aktualisasi kreativitas mahasiswa, lebih itu, tahun ini adalah tahun ketiga dan semakin meningkat. Saya berharap kedepannya akan lebih baik lagi, dan mahasiswa harus mampu memberikan solusi dari problem yang ada di masyarakat. Harapan kami, semoga kegiatan ini mampu memberikan gambaran nyata mengenai dunia bisnis dan menjadi bekal bagi mahasiswa untuk menghadapi dunia nyata,\" ungkapnya."
+      },
+      {
+        type: "paragraph",
+        text: "Sementara itu, Kepala Bidang Kewirausahaan UTY, Adi Wibawa menyampaikan bahwa kini kewirausahaan bukan hanya sekedar memiliki usaha, namun lebih dari itu, yaitu tentang kewirausahaan sosial, kewirausahaan digital, lapangan kerja dan membuat indonesia menjadi negara yang semakin maju, serta melahirkan entrepreneur yang memiliki karakter yang kuat."
+      },
+      {
+        type: "paragraph",
+        text: "\"Saya berharap kegiatan ini mampu memberikan pengalaman nyata bagi mahasiswa untuk belajar. Secara umum, kegiatan ini berlangsung dengan sangat meriah. Para pengunjung sangat antusias untuk melihat dan berbelanja dengan para mahasiswa yang berjualan di semua tenant. Masyarakat juga mendapat keuntungan, karena mereka juga berkesempatan untuk menawarkan produk-produk mereka."
+      }
+    ]
+  },
   faq: {
     title: "Frequently Asked Questions",
     description: "Temukan jawaban untuk pertanyaan yang sering diajukan",
