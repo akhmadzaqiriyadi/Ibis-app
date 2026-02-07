@@ -72,7 +72,7 @@ export default function OurTeamPage() {
         {/* Mentor Kami Section */}
         <section className="py-24 relative overflow-hidden">
           {/* Yellow Blur Background */}
-          <div className="absolute -left-[98%] -top-[35%] lg:-right-[10%] lg:-top-[45%] w-[600px] h-[600px]">
+          <div className="absolute -right-[50%] -top-[12%] md:-right-[40%] md:-top-[40%] lg:-right-[20%] w-[300px] h-[300px] md:w-[500px] md:h-[500px]">
             <Image
               src="/images/assets/yellow-blur.webp"
               alt="Yellow Blur"
@@ -126,7 +126,7 @@ export default function OurTeamPage() {
         {/* Anggota Tim Kami Section */}
         <section className="py-24 relative overflow-x-clip">
           {/* Blue Blur Background */}
-          <div className="hidden md:absolute -left-[30%] -top-[16%] w-[600px] h-[600px]">
+          <div className="absolute -left-[45%] -top-[5%] md:-left-[50%] md:-top-[8%] lg:-left-[25%] lg:-top-[10%] w-[300px] h-[300px] md:w-[500px] md:h-[500px]">
             <Image
               src="/images/assets/blue-blur.webp"
               alt="Blue Blur"

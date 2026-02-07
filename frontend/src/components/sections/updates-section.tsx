@@ -103,13 +103,13 @@ export const UpdatesSection = () => {
                           <span>{event.location}</span>
                         </div>
                       </div>
-                      <a 
-                        href={`/events/${index + 1}`}
+                      <Link 
+                        href="/event-detail"
                         className="group inline-flex items-center gap-2 text-yellow-400 hover:text-yellow-300 font-semibold transition-colors"
                       >
                         <span>Lihat lebih lanjut</span>
                         <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
-                      </a>
+                      </Link>
                     </div>
                   </div>
                 </SwiperSlide>

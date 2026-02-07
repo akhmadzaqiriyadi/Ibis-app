@@ -6,6 +6,7 @@ import { Footer } from "@/components/layout/footer";
 import Image from "next/image";
 import { CONTENT } from "@/constants/content";
 import { Calendar, MapPin } from "lucide-react";
+import Link from "next/link";
 
 export default function EventPage() {
   // For demo, we'll use the existing events and duplicate them
@@ -64,7 +65,7 @@ export default function EventPage() {
         {/* Upcoming Events Section */}
         <section id="upcoming-events" className="py-24 relative overflow-hidden">
           {/* Yellow Blur Background */}
-          <div className="absolute -right-[20%] -top-[30%] w-[500px] h-[500px] opacity-30">
+          <div className="absolute -right-[50%] -top-[12%] md:-right-[45%] md:-top-[30%] lg:-right-[20%] lg:-top-[30%]  w-[300px] h-[300px] md:w-[500px] md:h-[500px]">
             <Image
               src="/images/assets/yellow-blur.webp"
               alt="Yellow Blur"
@@ -127,13 +128,13 @@ export default function EventPage() {
                     </div>
 
                     {/* Link */}
-                    <a
-                      href={`#`}
+                    <Link
+                      href="/event-detail"
                       className="group/link inline-flex items-center gap-2 text-yellow-400 hover:text-yellow-300 font-semibold transition-colors"
                     >
                       <span>Lihat lebih lanjut</span>
                       <span className="inline-block transition-transform group-hover/link:translate-x-1">→</span>
-                    </a>
+                    </Link>
                   </div>
                 </div>
               ))}
@@ -142,9 +143,9 @@ export default function EventPage() {
         </section>
 
         {/* Recent Events Section */}
-        <section className="py-24 relative overflow-hidden bg-gradient-to-b from-light to-slate-50">
+        <section className="py-24 relative overflow-x-clip bg-gradient-to-b from-light to-slate-50">
           {/* Blue Blur Background */}
-          <div className="absolute -left-[20%] top-[20%] w-[500px] h-[500px] opacity-20">
+          <div className="absolute -left-[45%] -top-[2%] md:-left-[45%] md:-top-[8%] lg:-left-[25%] lg:-top-[10%] w-[300px] h-[300px] md:w-[500px] md:h-[500px]">
             <Image
               src="/images/assets/blue-blur.webp"
               alt="Blue Blur"
@@ -198,13 +199,13 @@ export default function EventPage() {
                     </p>
 
                     {/* Link */}
-                    <a
-                      href={`#`}
+                    <Link
+                      href="/event-detail"
                       className="group/link inline-flex items-center gap-2 text-secondary hover:text-secondary/80 font-semibold text-sm transition-colors"
                     >
                       <span>Selengkapnya</span>
                       <span className="inline-block transition-transform group-hover/link:translate-x-1">→</span>
-                    </a>
+                    </Link>
                   </div>
                 </div>
               ))}
