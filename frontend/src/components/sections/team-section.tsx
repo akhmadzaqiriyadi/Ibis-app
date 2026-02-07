@@ -8,6 +8,7 @@ import { Navigation, Pagination } from "swiper/modules";
 import { useRef } from "react";
 import type { Swiper as SwiperType } from "swiper";
 import { CONTENT } from "@/constants/content";
+import Link from "next/link";
 
 // Import Swiper styles
 import "swiper/css";
@@ -128,9 +129,12 @@ export const TeamSection = () => {
 
           {/* Selengkapnya Button */}
           <div className="text-center">
-            <button className="px-8 py-3 rounded-md bg-linear-3 text-light font-medium hover:scale-105 cursor-pointer transition-all">
+            <Link 
+              href="/our-team"
+              className="inline-block px-8 py-3 rounded-md bg-linear-3 text-light font-medium hover:scale-105 cursor-pointer transition-all"
+            >
               {CONTENT.team.cta}
-            </button>
+            </Link>
           </div>
         </Container>
       </div>

@@ -54,6 +54,10 @@
   background: var(--linear-4);
 }
 
+.bg-linear-overlay {
+  background: var(--linear-overlay);
+}
+
 /* Base Styles */
 body {
   color: var(--foreground);
