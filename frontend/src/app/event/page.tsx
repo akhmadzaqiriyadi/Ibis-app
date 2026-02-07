@@ -65,7 +65,7 @@ export default function EventPage() {
         {/* Upcoming Events Section */}
         <section id="upcoming-events" className="py-24 relative overflow-hidden">
           {/* Yellow Blur Background */}
-          <div className="absolute -right-[50%] -top-[12%] md:-right-[45%] md:-top-[30%] lg:-right-[20%] lg:-top-[30%]  w-[300px] h-[300px] md:w-[500px] md:h-[500px]">
+          <div className="absolute -right-[50%] -top-[12%] md:-right-[45%] md:-top-[30%] lg:-right-[20%] lg:-top-[30%] w-[300px] h-[300px] md:w-[500px] md:h-[500px]">
             <Image
               src="/images/assets/yellow-blur.webp"
               alt="Yellow Blur"
