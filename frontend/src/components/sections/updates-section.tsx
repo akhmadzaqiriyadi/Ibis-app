@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Instagram, Calendar, MapPin } from "lucide-react";
+import { ArrowLeft, ArrowRight, Instagram, Calendar, MapPin, Loader2 } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
 import { useRef } from "react";
@@ -13,6 +13,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { CONTENT } from "@/constants/content";
+import { useEvents } from "@/hooks/useEvents";
 
 // Import Swiper styles
 import "swiper/css";
@@ -24,6 +25,15 @@ gsap.registerPlugin(ScrollTrigger);
 export const UpdatesSection = () => {
   const containerRef = useRef(null);
   const swiperRef = useRef<SwiperType | null>(null);
+  
+  // Integration: Fetch real events
+  const { data: eventsResponse, isLoading, error } = useEvents({ 
+    limit: 6, 
+    published: true,
+    status: 'UPCOMING'
+  });
+
+  const events = eventsResponse?.data || [];
 
   useGSAP(() => {
     gsap.from(".event-card", {
@@ -60,61 +70,85 @@ export const UpdatesSection = () => {
 
           {/* Event Cards Swiper */}
           <div className="mb-12 max-w-5xl lg:max-w-4xl mx-auto">
-            <Swiper
-              onSwiper={(swiper) => (swiperRef.current = swiper)}
-              modules={[Navigation, Pagination]}
-              spaceBetween={48}
-              slidesPerView={1}
-              loop={true}
-              breakpoints={{
-                768: {
-                  slidesPerView: 2,
-                },
-              }}
-              className="events-swiper"
-            >
-              {CONTENT.updates.events.map((event, index) => (
-                <SwiperSlide key={index}>
-                  <div className="event-card bg-linear-2 rounded-2xl overflow-hidden shadow-xl">
-                    <div className="p-6">
-                      <div className="text-xs font-semibold text-light/80 mb-3">{event.date}</div>
-                      <div className="relative h-48 mb-4 rounded-xl overflow-hidden group cursor-pointer">
-                        <Image
-                          src={event.image}
-                          alt={event.title}
-                          fill
-                          className="object-cover group-hover:scale-110 transition-transform duration-500"
-                        />
-                      </div>
-                      <h3 className="text-xl font-semibold text-light mb-3">
-                        {event.title}
-                      </h3>
-                      <p className="text-sm font-light text-light/60 mb-4 line-clamp-3" style={{ whiteSpace: 'pre-line' }}>
-                        {event.description}
-                      </p>
-                      {/* Date and Location */}
-                      <div className="flex items-center gap-4 text-xs text-light/60 mb-4">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4" />
-                          <span>{event.date}</span>
+            {isLoading ? (
+                <div className="flex justify-center items-center h-64 text-white">
+                    <Loader2 className="w-8 h-8 animate-spin mr-2" />
+                    <span>Memuat event terbaru...</span>
+                </div>
+            ) : error ? (
+                <div className="text-center text-white/60">
+                    Gagal memuat event. Silakan coba lagi nanti.
+                </div>
+            ) : (
+                <Swiper
+                onSwiper={(swiper) => (swiperRef.current = swiper)}
+                modules={[Navigation, Pagination]}
+                spaceBetween={48}
+                slidesPerView={1}
+                loop={true}
+                breakpoints={{
+                    768: {
+                    slidesPerView: 2,
+                    },
+                }}
+                className="events-swiper"
+                >
+                {events.map((event, index) => (
+                    <SwiperSlide key={event.id || index}>
+                    <div className="event-card bg-linear-2 rounded-2xl overflow-hidden shadow-xl h-full flex flex-col">
+                        <div className="p-6 flex-1 flex flex-col">
+                        <div className="text-xs font-semibold text-light/80 mb-3">
+                            {new Date(event.date).toLocaleDateString('id-ID', { 
+                                day: 'numeric', month: 'long', year: 'numeric' 
+                            })}
                         </div>
-                        <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4" />
-                          <span>{event.location}</span>
+                        <div className="relative h-48 mb-4 rounded-xl overflow-hidden group cursor-pointer shrink-0">
+                            <Image
+                                src={event.image || "/images/logos/brand-raw.webp"}
+                                alt={event.title}
+                                fill
+                                className="object-cover group-hover:scale-110 transition-transform duration-500"
+                            />
                         </div>
-                      </div>
-                      <Link 
-                        href="/event-detail"
-                        className="group inline-flex items-center gap-2 text-yellow-400 hover:text-yellow-300 font-semibold transition-colors"
-                      >
-                        <span>Lihat lebih lanjut</span>
-                        <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
-                      </Link>
+                        <h3 className="text-xl font-semibold text-light mb-3 line-clamp-2">
+                            {event.title}
+                        </h3>
+                        <p className="text-sm font-light text-light/60 mb-4 line-clamp-3 flex-1" style={{ whiteSpace: 'pre-line' }}>
+                            {event.description}
+                        </p>
+                        {/* Date and Location */}
+                        <div className="flex items-center gap-4 text-xs text-light/60 mb-4 mt-auto">
+                            <div className="flex items-center gap-2">
+                            <Calendar className="w-4 h-4" />
+                            <span>
+                                {new Date(event.date).toLocaleDateString('id-ID', { 
+                                    day: 'numeric', month: 'short'
+                                })}
+                            </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                            <MapPin className="w-4 h-4" />
+                            <span>{event.location || 'Online'}</span>
+                            </div>
+                        </div>
+                        <Link 
+                            href={`/events/${event.slug}`} 
+                            className="group inline-flex items-center gap-2 text-yellow-400 hover:text-yellow-300 font-semibold transition-colors mt-auto"
+                        >
+                            <span>Lihat lebih lanjut</span>
+                            <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
+                        </Link>
+                        </div>
                     </div>
-                  </div>
-                </SwiperSlide>
-              ))}
-            </Swiper>
+                    </SwiperSlide>
+                ))}
+                {!isLoading && events.length === 0 && (
+                     <div className="text-center text-white/60 py-12">
+                        Belum ada event terbaru saat ini.
+                    </div>
+                )}
+                </Swiper>
+            )}
           </div>
 
           {/* Navigation Arrows */}
@@ -148,7 +182,7 @@ export const UpdatesSection = () => {
 
           {/* Selengkapnya Button */}
           <div className="text-center">
-            <Link href="/event" className="inline-block px-8 py-3 rounded-md bg-linear-3 text-light font-medium hover:scale-105 cursor-pointer transition-all">
+            <Link href="/events" className="inline-block px-8 py-3 rounded-md bg-linear-3 text-light font-medium hover:scale-105 cursor-pointer transition-all">
               {CONTENT.updates.cta}
             </Link>
           </div>

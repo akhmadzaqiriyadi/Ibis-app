@@ -1,0 +1,206 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ========================================
+// EVENTS - Event Management
+// ========================================
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  description String   @db.Text
+  date        DateTime
+  endDate     DateTime?
+  location    String?
+  image       String?
+  category    String   @default("general") // workshop, seminar, sosialisasi, etc
+  status      EventStatus @default(UPCOMING)
+  maxParticipants Int?
+  registrationUrl String?
+  isPublished Boolean  @default(false)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([slug])
+  @@index([status])
+  @@index([date])
+}
+
+enum EventStatus {
+  UPCOMING
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+// ========================================
+// PROGRAMS - Program Information
+// ========================================
+model Program {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  description String   @db.Text
+  type        ProgramType
+  image       String?
+  ctaText     String   @default("Daftar Sekarang")
+  ctaUrl      String?
+  requiresAuth Boolean @default(true)
+  isActive    Boolean  @default(true)
+  order       Int      @default(0) // untuk sorting
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([slug])
+  @@index([type])
+  @@index([order])
+}
+
+enum ProgramType {
+  INKUBASI
+  KONSULTASI
+  KREDENSIAL
+  EVENT
+}
+
+// ========================================
+// AUTH - User Management
+// ========================================
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(MEMBER)
+  isActive  Boolean  @default(true)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([role])
+}
+
+enum Role {
+  ADMIN
+  STAFF
+  MEMBER
+  USER // Regular user if needed
+}
+
+// ========================================
+// TEAM - Team Members
+// ========================================
+model TeamMember {
+  id          String   @id @default(cuid())
+  name        String
+  title       String?  // Specific job title e.g. "Head of Incubator" or "CEO"
+  type        TeamType @default(MEMBER) // Category: LEADER, STAFF, MENTOR, MEMBER
+  division    String?  // Division name e.g. "Public Relations", "Marketing"
+  
+  image       String?
+  bio         String?  @db.Text
+  
+  // Contact & Social
+  email       String?
+  linkedin    String?
+  instagram   String?
+  
+  // Student Specific
+  batch       Int?
+  prodi       String?
+
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([type])
+  @@index([batch])
+  @@index([order])
+}
+
+enum TeamType {
+  LEADER
+  STAFF
+  MENTOR
+  MEMBER
+}
+
+// ========================================
+// UPDATES - News & Updates
+// ========================================
+model Update {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  summary     String   @db.Text
+  content     String?  @db.Text
+  image       String?
+  date        DateTime @default(now())
+  category    String   @default("news") // news, workshop, achievement, etc
+  isPublished Boolean  @default(false)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([slug])
+  @@index([date])
+  @@index([isPublished])
+}
+
+// ========================================
+// PARTNERS - Partner Organizations
+// ========================================
+model Partner {
+  id          String   @id @default(cuid())
+  name        String
+  type        PartnerType
+  logo        String?
+  website     String?
+  description String?  @db.Text
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([type])
+  @@index([order])
+}
+
+enum PartnerType {
+  INTERNAL
+  STARTUP
+  CORPORATE
+  GOVERNMENT
+}
+
+// ========================================
+// FAQ - Frequently Asked Questions
+// ========================================
+model FAQ {
+  id          String   @id @default(cuid())
+  question    String   @db.Text
+  answer      String   @db.Text
+  category    String   @default("general")
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([category])
+  @@index([order])
+}

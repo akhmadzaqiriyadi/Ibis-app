@@ -10,13 +10,15 @@ export const Container = ({
   className,
   children,
   ...props
+// ... props
 }: ContainerProps) => {
+  const Comp = Component as any;
   return (
-    <Component
+    <Comp
       className={cn("mx-auto max-w-7xl px-3 sm:px-4 lg:px-12", className)}
       {...props}
     >
       {children}
-    </Component>
+    </Comp>
   );
 };
