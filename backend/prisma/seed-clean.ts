@@ -1,4 +1,5 @@
 import { PrismaClient, Role, TeamType, ProgramType, EventStatus, PartnerType } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -8,10 +9,7 @@ async function main() {
   // 0. Seed Users with Roles
   console.log('👤 Membuat users...');
   
-  const password = await Bun.password.hash('password123', {
-    algorithm: 'bcrypt',
-    cost: 10,
-  });
+  const password = await bcrypt.hash('password123', 10);
 
   const users = [
     {
@@ -90,21 +88,74 @@ async function main() {
 
   // 2. Seed Events
   console.log('📅 Membuat events...');
-  await prisma.event.upsert({
-    where: { slug: 'workshop-digital-2026' },
-    update: {},
-    create: {
-      title: 'Workshop Kewirausahaan Digital 2026',
-      slug: 'workshop-digital-2026',
-      description: 'Workshop intensif tentang membangun bisnis digital di era modern',
+  
+  const eventsData = [
+    {
+      slug: 'workshop-digital-marketing-2026',
+      title: 'Workshop Digital Marketing untuk UMKM',
+      description: 'Pelajari strategi digital marketing terkini untuk mengembangkan bisnis UMKM Anda. Workshop ini akan membahas social media marketing, content creation, dan digital advertising dengan praktik langsung.',
       date: new Date('2026-03-15T09:00:00Z'),
+      endDate: new Date('2026-03-15T16:00:00Z'),
       location: 'Gedung UTY Creative Hub',
+      image: 'https://res.cloudinary.com/dsirus0pz/image/upload/v1771053714/news-1_s35mcq.webp',
       category: 'workshop',
       status: EventStatus.UPCOMING,
       maxParticipants: 50,
+      registrationUrl: 'https://forms.gle/example1',
       isPublished: true,
     },
-  });
+    {
+      slug: 'seminar-startup-ecosystem-2026',
+      title: 'Seminar Startup Ecosystem Indonesia',
+      description: 'Bergabunglah dengan para founder sukses dan investor untuk membahas perkembangan ekosistem startup di Indonesia. Dapatkan insights tentang funding, scaling, dan membangun tim yang solid.',
+      date: new Date('2026-04-20T13:00:00Z'),
+      endDate: new Date('2026-04-20T17:00:00Z'),
+      location: 'Auditorium UTY',
+      image: 'https://res.cloudinary.com/dsirus0pz/image/upload/v1771053714/news-2_elkvrb.webp',
+      category: 'seminar',
+      status: EventStatus.UPCOMING,
+      maxParticipants: 200,
+      registrationUrl: 'https://forms.gle/example2',
+      isPublished: true,
+    },
+    {
+      slug: 'bootcamp-web-development-2026',
+      title: 'Bootcamp Web Development Intensif',
+      description: 'Program bootcamp 3 hari untuk belajar web development dari nol hingga mahir. Materi mencakup HTML, CSS, JavaScript, React, dan deployment. Cocok untuk pemula yang ingin menjadi web developer profesional.',
+      date: new Date('2026-05-10T08:00:00Z'),
+      endDate: new Date('2026-05-12T17:00:00Z'),
+      location: 'Lab Komputer UTY',
+      image: 'https://res.cloudinary.com/dsirus0pz/image/upload/v1771053714/news-1_s35mcq.webp',
+      category: 'workshop',
+      status: EventStatus.UPCOMING,
+      maxParticipants: 30,
+      registrationUrl: 'https://forms.gle/example3',
+      isPublished: true,
+    },
+    {
+      slug: 'networking-night-entrepreneurs-2026',
+      title: 'Networking Night for Young Entrepreneurs',
+      description: 'Malam networking eksklusif untuk para entrepreneur muda. Kesempatan emas untuk bertemu dengan sesama entrepreneur, mentor, dan investor. Termasuk sesi pitching dan business matching.',
+      date: new Date('2026-06-05T18:00:00Z'),
+      endDate: new Date('2026-06-05T21:00:00Z'),
+      location: 'UTY Coworking Space',
+      image: 'https://res.cloudinary.com/dsirus0pz/image/upload/v1771053714/news-2_elkvrb.webp',
+      category: 'networking',
+      status: EventStatus.UPCOMING,
+      maxParticipants: 100,
+      registrationUrl: 'https://forms.gle/example4',
+      isPublished: true,
+    },
+  ];
+
+  for (const eventData of eventsData) {
+    await prisma.event.upsert({
+      where: { slug: eventData.slug },
+      update: {},
+      create: eventData,
+    });
+  }
+  
   console.log('✅ Events berhasil dibuat');
 
   // 3. Seed Team Members

@@ -15,5 +15,5 @@ export function DashboardNavbar() {
         {/* User Button (Logout/Profile) - Placeholder or actual */}
       </div>
     </div>
-  );
+  );  
 }

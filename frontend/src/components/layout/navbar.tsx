@@ -83,7 +83,7 @@ export const Navbar = () => {
             ))}
             {/* Sign In - sebagai bagian dari nav links */}
             <Link
-              href="/auth/login"
+              href="/login"
               className="text-lg font-medium text-light/90 transition-colors hover:text-secondary"
             >
               {CONTENT.nav.cta}
