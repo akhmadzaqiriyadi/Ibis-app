@@ -93,9 +93,17 @@ export const UpdatesSection = () => {
                 }}
                 className="events-swiper"
                 >
-                {events.map((event, index) => (
+                {events.map((event, index) => {
+                  // Helper function to truncate description to max 16 words
+                  const truncateDescription = (text: string, maxWords: number = 16) => {
+                    const words = text.split(' ');
+                    if (words.length <= maxWords) return text;
+                    return words.slice(0, maxWords).join(' ') + '...';
+                  };
+
+                  return (
                     <SwiperSlide key={event.id || index}>
-                    <div className="event-card bg-linear-2 rounded-2xl overflow-hidden shadow-xl h-full flex flex-col">
+                    <div className="event-card bg-linear-2 rounded-2xl overflow-hidden shadow-xl h-[520px] flex flex-col">
                         <div className="p-6 flex-1 flex flex-col">
                         <div className="text-xs font-semibold text-light/80 mb-3">
                             {new Date(event.date).toLocaleDateString('id-ID', { 
@@ -113,11 +121,11 @@ export const UpdatesSection = () => {
                         <h3 className="text-xl font-semibold text-light mb-3 line-clamp-2">
                             {event.title}
                         </h3>
-                        <p className="text-sm font-light text-light/60 mb-4 line-clamp-3 flex-1" style={{ whiteSpace: 'pre-line' }}>
-                            {event.description}
+                        <p className="text-sm font-light text-light/60 mb-4 h-[60px] overflow-hidden">
+                            {truncateDescription(event.description)}
                         </p>
                         {/* Date and Location */}
-                        <div className="flex items-center gap-4 text-xs text-light/60 mb-4 mt-auto">
+                        <div className="flex flex-col items-start gap-4 text-xs text-light/60 mb-4 mt-auto">
                             <div className="flex items-center gap-2">
                             <Calendar className="w-4 h-4" />
                             <span>
@@ -141,7 +149,8 @@ export const UpdatesSection = () => {
                         </div>
                     </div>
                     </SwiperSlide>
-                ))}
+                  );
+                })}
                 {!isLoading && events.length === 0 && (
                      <div className="text-center text-white/60 py-12">
                         Belum ada event terbaru saat ini.

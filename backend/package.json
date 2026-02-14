@@ -12,10 +12,10 @@
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
     "db:studio": "prisma studio",
-    "db:seed": "bun prisma/seed.ts"
+    "db:seed": "bun prisma/seed-clean.ts"
   },
   "prisma": {
-    "seed": "bun prisma/seed.ts"
+    "seed": "bun prisma/seed-clean.ts"
   },
   "keywords": [
     "elysia",

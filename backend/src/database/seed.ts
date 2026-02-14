@@ -61,16 +61,16 @@ async function main() {
     data: [
       {
         name: 'Ms. Hendriawan A, Ph.D',
-        role: 'Wakil Rektor IV UTY bidang Kreativitas, Kewirausahaan dan Pengabdian Masyarakat',
-        division: 'LEADER',
+        title: 'Wakil Rektor IV UTY bidang Kreativitas, Kewirausahaan dan Pengabdian Masyarakat',
+        type: 'LEADER',
         image: '/images/team/hendriawan.jpg',
         order: 1,
         isActive: true,
       },
       {
         name: 'Adi Wibawa, M.A.',
-        role: 'Kepala Bidang Kewirausahaan UTY',
-        division: 'LEADER',
+        title: 'Kepala Bidang Kewirausahaan UTY',
+        type: 'LEADER',
         image: '/images/team/adi-wibawa.jpg',
         order: 2,
         isActive: true,

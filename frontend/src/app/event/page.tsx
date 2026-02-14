@@ -5,14 +5,36 @@ import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import Image from "next/image";
 import { CONTENT } from "@/constants/content";
-import { Calendar, MapPin } from "lucide-react";
+import { Calendar, MapPin, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { useEvents } from "@/hooks/useEvents";
 
 export default function EventPage() {
-  // For demo, we'll use the existing events and duplicate them
-  // In real app, you'd have separate upcoming and past events
-  const upcomingEvents = CONTENT.updates.events.slice(0, 2);
-  const recentEvents = [...CONTENT.updates.events, ...CONTENT.updates.events, ...CONTENT.updates.events];
+  // Integration: Fetch upcoming events (top section)
+  const { data: upcomingResponse, isLoading: isLoadingUpcoming, error: errorUpcoming } = useEvents({ 
+    limit: 2,
+    published: true,
+    status: 'UPCOMING'
+  });
+  
+  // Integration: Fetch all published events for Recent Events section
+  const { data: eventsResponse, isLoading, error } = useEvents({ 
+    limit: 9,
+    published: true,
+  });
+
+  const upcomingEvents = upcomingResponse?.data || [];
+  const recentEvents = eventsResponse?.data || [];
+
+  // Helper function to format date
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+  };
 
   return (
     <>
@@ -85,60 +107,88 @@ export default function EventPage() {
             </div>
 
             {/* Upcoming Events Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto relative z-10">
-              {upcomingEvents.map((event, index) => (
-                <div
-                  key={index}
-                  className="group bg-linear-2 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300"
-                >
-                  <div className="p-6">
-                    {/* Date */}
-                    <div className="text-xs font-semibold text-light/80 mb-3">{event.date}</div>
-                    
-                    {/* Event Image */}
-                    <div className="relative h-48 mb-4 rounded-xl overflow-hidden">
-                      <Image
-                        src={event.image}
-                        alt={event.title}
-                        fill
-                        className="object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
-                    </div>
-
-                    {/* Title */}
-                    <h3 className="text-xl font-semibold text-light mb-3">
-                      {event.title}
-                    </h3>
-
-                    {/* Description */}
-                    <p className="text-sm font-light text-light/60 mb-4 line-clamp-3" style={{ whiteSpace: 'pre-line' }}>
-                      {event.description}
-                    </p>
-
-                    {/* Date and Location */}
-                    <div className="flex items-center gap-4 text-xs text-light/60 mb-4">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4" />
-                        <span>{event.date}</span>
+            {isLoadingUpcoming ? (
+              <div className="flex justify-center items-center h-64 text-dark relative z-10">
+                <Loader2 className="w-8 h-8 animate-spin mr-2" />
+                <span>Memuat event yang akan datang...</span>
+              </div>
+            ) : errorUpcoming ? (
+              <div className="text-center text-dark relative z-10">
+                Gagal memuat event. Silakan coba lagi nanti.
+              </div>
+            ) : upcomingEvents.length === 0 ? (
+              <div className="text-center text-dark relative z-10">
+                Belum ada event yang akan datang.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto relative z-10">
+                {upcomingEvents.map((event: any) => (
+                  <div
+                    key={event.id}
+                    className="group bg-linear-2 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300"
+                  >
+                    <div className="p-6">
+                      {/* Date */}
+                      <div className="text-xs font-semibold text-light/80 mb-3">
+                        {formatDate(event.date)}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="w-4 h-4" />
-                        <span>{event.location}</span>
+                      
+                      {/* Event Image */}
+                      <div className="relative h-48 mb-4 rounded-xl overflow-hidden">
+                        {event.image && event.image.trim() !== '' ? (
+                          <Image
+                            src={event.image!}
+                            alt={event.title}
+                            fill
+                            className="object-cover group-hover:scale-110 transition-transform duration-500"
+                          />
+                        ) : (
+                          <Image
+                            src="/images/logos/brand-raw.webp"
+                            alt={event.title}
+                            fill
+                            className="object-cover group-hover:scale-110 transition-transform duration-500"
+                          />
+                        )}
                       </div>
-                    </div>
 
-                    {/* Link */}
-                    <Link
-                      href="/event-detail"
-                      className="group/link inline-flex items-center gap-2 text-yellow-400 hover:text-yellow-300 font-semibold transition-colors"
-                    >
-                      <span>Lihat lebih lanjut</span>
-                      <span className="inline-block transition-transform group-hover/link:translate-x-1">→</span>
-                    </Link>
+                      {/* Title */}
+                      <h3 className="text-xl font-semibold text-light mb-3">
+                        {event.title}
+                      </h3>
+
+                      {/* Description */}
+                      <p className="text-sm font-light text-light/60 mb-4 line-clamp-3">
+                        {event.description}
+                      </p>
+
+                      {/* Date and Location */}
+                      <div className="flex items-center gap-4 text-xs text-light/60 mb-4">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4" />
+                          <span>{formatDate(event.date)}</span>
+                        </div>
+                        {event.location && (
+                          <div className="flex items-center gap-2">
+                            <MapPin className="w-4 h-4" />
+                            <span>{event.location}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Link */}
+                      <Link
+                        href={`/event/${event.slug}`}
+                        className="group/link inline-flex items-center gap-2 text-yellow-400 hover:text-yellow-300 font-semibold transition-colors"
+                      >
+                        <span>Lihat lebih lanjut</span>
+                        <span className="inline-block transition-transform group-hover/link:translate-x-1">→</span>
+                      </Link>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </Container>
         </section>
 
@@ -164,52 +214,77 @@ export default function EventPage() {
               </p>
             </div>
 
-            {/* Recent Events Grid - 3 columns */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
-              {recentEvents.map((event, index) => (
-                <div
-                  key={index}
-                  className="group bg-linear-2 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105"
-                >
-                  {/* Event Image */}
-                  <div className="relative h-48 overflow-hidden">
-                    <Image
-                      src={event.image}
-                      alt={event.title}
-                      fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
+            {/* Loading State */}
+            {isLoading ? (
+              <div className="flex justify-center items-center h-64 text-dark relative z-10">
+                <Loader2 className="w-8 h-8 animate-spin mr-2" />
+                <span>Memuat event terbaru...</span>
+              </div>
+            ) : error ? (
+              <div className="text-center text-slate-600 relative z-10">
+                Gagal memuat event. Silakan coba lagi nanti.
+              </div>
+            ) : recentEvents.length === 0 ? (
+              <div className="text-center text-slate-600 relative z-10">
+                Belum ada event yang tersedia.
+              </div>
+            ) : (
+              /* Recent Events Grid - 3 columns */
+              <div className="flex flex-wrap justify-center gap-8 relative z-10">
+                {recentEvents.map((event: any) => (
+                  <div
+                    key={event.id}
+                    className="group bg-linear-2 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.5rem)]"
+                  >
+                    {/* Event Image */}
+                    <div className="relative h-48 overflow-hidden">
+                      {event.image && event.image.trim() !== '' ? (
+                        <Image
+                          src={event.image!}
+                          alt={event.title}
+                          fill
+                          className="object-cover group-hover:scale-110 transition-transform duration-500"
+                        />
+                      ) : (
+                        <Image
+                          src="/images/logos/brand-raw.webp"
+                          alt={event.title}
+                          fill
+                          className="object-cover group-hover:scale-110 transition-transform duration-500"
+                        />
+                      )}
+                    </div>
+
+                    {/* Event Content */}
+                    <div className="p-5">
+                      {/* Date */}
+                      <p className="text-xs font-semibold text-secondary mb-2">
+                        {formatDate(event.date)}
+                      </p>
+
+                      {/* Title */}
+                      <h3 className="text-lg font-bold text-light mb-2 line-clamp-2">
+                        {event.title}
+                      </h3>
+
+                      {/* Description */}
+                      <p className="text-sm text-light/60 mb-4 line-clamp-2">
+                        {event.description}
+                      </p>
+
+                      {/* Link */}
+                      <Link
+                        href={`/event/${event.slug}`}
+                        className="group/link inline-flex items-center gap-2 text-secondary hover:text-secondary/80 font-semibold text-sm transition-colors"
+                      >
+                        <span>Selengkapnya</span>
+                        <span className="inline-block transition-transform group-hover/link:translate-x-1">→</span>
+                      </Link>
+                    </div>
                   </div>
-
-                  {/* Event Content */}
-                  <div className="p-5">
-                    {/* Date */}
-                    <p className="text-xs font-semibold text-secondary mb-2">
-                      {event.date}
-                    </p>
-
-                    {/* Title */}
-                    <h3 className="text-lg font-bold text-light mb-2 line-clamp-2">
-                      {event.title}
-                    </h3>
-
-                    {/* Description */}
-                    <p className="text-sm text-light/60 mb-4 line-clamp-2" style={{ whiteSpace: 'pre-line' }}>
-                      {event.description}
-                    </p>
-
-                    {/* Link */}
-                    <Link
-                      href="/event-detail"
-                      className="group/link inline-flex items-center gap-2 text-secondary hover:text-secondary/80 font-semibold text-sm transition-colors"
-                    >
-                      <span>Selengkapnya</span>
-                      <span className="inline-block transition-transform group-hover/link:translate-x-1">→</span>
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </Container>
         </section>
       </main>

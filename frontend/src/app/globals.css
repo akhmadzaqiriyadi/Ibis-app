@@ -2,15 +2,15 @@
 
 @theme {
   --font-dm-sans: var(--font-dm-sans);
-  
+
   /* Brand Colors - Tailwind v4 way */
-  --color-primary: #2563EB;
-  --color-primary-foreground: #2050B7;
-  --color-secondary: #FFD600;
-  --color-secondary-foreground: #D0AA12;
-  --color-dark: #0F172A;
-  --color-light: #FFFFFF;
-  
+  --color-primary: #2563eb;
+  --color-primary-foreground: #2050b7;
+  --color-secondary: #ffd600;
+  --color-secondary-foreground: #d0aa12;
+  --color-dark: #0f172a;
+  --color-light: #ffffff;
+
   /* Typography */
   --color-foreground: #0f172a;
   --color-muted: #64748b;
@@ -22,10 +22,19 @@
   scroll-behavior: smooth !important;
 
   /* Linear Gradients */
-  --linear-1: linear-gradient(163deg, #FFD600 0%, #D0AA12 100%);
-  --linear-2: linear-gradient(163deg, #334155 0%, #0F172A 100%);
-  --linear-3: linear-gradient(315deg, #2563EB 0%, rgba(37, 99, 235, 0.65) 50%, #2050B7 100%);
-  --linear-4: linear-gradient(180deg, #2563EB 0%, rgba(255, 255, 255, 0.75) 100%);
+  --linear-1: linear-gradient(163deg, #ffd600 0%, #d0aa12 100%);
+  --linear-2: linear-gradient(163deg, #334155 0%, #0f172a 100%);
+  --linear-3: linear-gradient(
+    315deg,
+    #2563eb 0%,
+    rgba(37, 99, 235, 0.65) 50%,
+    #2050b7 100%
+  );
+  --linear-4: linear-gradient(
+    180deg,
+    #2563eb 0%,
+    rgba(255, 255, 255, 0.75) 100%
+  );
 
   /* Spacing & Radius */
   --radius-sm: 0.25rem;
@@ -35,6 +44,28 @@
 
   /* Font Variables for Tailwind v4 */
   --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+
+  /* Shadcn/UI Variables - Tailwind v4 Format */
+  --color-background: hsl(0 0% 100%);
+  --color-foreground: hsl(222.2 84% 4.9%);
+  --color-card: hsl(0 0% 100%);
+  --color-card-foreground: hsl(222.2 84% 4.9%);
+  --color-popover: hsl(0 0% 100%);
+  --color-popover-foreground: hsl(222.2 84% 4.9%);
+  --color-primary: hsl(221.2 83.2% 53.3%);
+  --color-primary-foreground: hsl(210 40% 98%);
+  --color-secondary: hsl(210 40% 96.1%);
+  --color-secondary-foreground: hsl(222.2 47.4% 11.2%);
+  --color-muted: hsl(210 40% 96.1%);
+  --color-muted-foreground: hsl(215.4 16.3% 46.9%);
+  --color-accent: hsl(210 40% 96.1%);
+  --color-accent-foreground: hsl(222.2 47.4% 11.2%);
+  --color-destructive: hsl(0 84.2% 60.2%);
+  --color-destructive-foreground: hsl(210 40% 98%);
+  --color-border: hsl(214.3 31.8% 91.4%);
+  --color-input: hsl(214.3 31.8% 91.4%);
+  --color-ring: hsl(221.2 83.2% 53.3%);
+  --radius: 0.5rem;
 }
 
 /* Gradient Utilities */
@@ -74,7 +105,8 @@ body {
 
 /* Custom Pulse Animation - 1s pulse, 2s wait = 3s total */
 @keyframes pulse-slow {
-  0%, 33.33% {
+  0%,
+  33.33% {
     transform: scale(1);
     opacity: 1;
   }
@@ -82,7 +114,8 @@ body {
     transform: scale(2);
     opacity: 0;
   }
-  66.67%, 100% {
+  66.67%,
+  100% {
     transform: scale(1);
     opacity: 0;
   }
