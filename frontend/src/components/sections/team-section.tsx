@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Instagram, Linkedin, ArrowLeft, ArrowRight } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import type { Swiper as SwiperType } from "swiper";
 import { CONTENT } from "@/constants/content";
 import Link from "next/link";
@@ -17,6 +17,33 @@ import "swiper/css/pagination";
 
 export const TeamSection = () => {
   const swiperRef = useRef<SwiperType | null>(null);
+  const [members, setMembers] = useState<any[]>([]);
+  
+  useEffect(() => {
+    const fetchMembers = async () => {
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
+        const response = await fetch(`${API_URL}/team?active=true`);
+        const data = await response.json();
+        if (data.success && Array.isArray(data.data)) {
+          // Sort by order if available, or just take them
+          const sortedMembers = data.data.sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+          setMembers(sortedMembers);
+        }
+      } catch (error) {
+        console.error("Failed to fetch team members:", error);
+      }
+    };
+
+    fetchMembers();
+  }, []);
+
+  // Use static content as fallback or skeleton if needed, but for now just use fetched data
+  // If no data yet, maybe show nothing or keep loading state. 
+  // For better UX, let's just render the swiper if we have members, otherwise maybe empty.
+  // Actually, if fetching, we might want to wait? or Swiper handles empty?
+  
+  const displayMembers = members.length > 0 ? members : []; 
 
   return (
     <section id="team" className="relative">
@@ -35,69 +62,77 @@ export const TeamSection = () => {
 
           {/* Team Members Slider */}
           <div className="mb-12">
-            <Swiper
-              onSwiper={(swiper) => (swiperRef.current = swiper)}
-              modules={[Navigation, Pagination]}
-              spaceBetween={32}
-              slidesPerView={1}
-              loop={true}
-              breakpoints={{
-                640: {
-                  slidesPerView: 2,
-                },
-                1024: {
-                  slidesPerView: 4,
-                },
-              }}
-              className="team-swiper"
-            >
-              {CONTENT.team.members.map((member, index) => (
-                <SwiperSlide key={index}>
-                  <div className="flex flex-col items-center text-center">
-                    {/* Photo with Yellow Accent */}
-                    <div className="relative mb-6">
-                      <div className="relative w-48 h-48 rounded-full overflow-hidden shadow-xl bg-linear-2">
-                        <Image
-                          src={member.image}
-                          alt={member.name}
-                          fill
-                          className="object-cover"
-                        />
+            {displayMembers.length > 0 ? (
+              <Swiper
+                onSwiper={(swiper) => (swiperRef.current = swiper)}
+                modules={[Navigation, Pagination]}
+                spaceBetween={32}
+                slidesPerView={1}
+                loop={true}
+                breakpoints={{
+                  640: {
+                    slidesPerView: 2,
+                  },
+                  1024: {
+                    slidesPerView: 4,
+                  },
+                }}
+                className="team-swiper"
+              >
+                {displayMembers.map((member, index) => (
+                  <SwiperSlide key={member.id || index}>
+                    <div className="flex flex-col items-center text-center">
+                      {/* Photo with Yellow Accent */}
+                      <div className="relative mb-6">
+                        <div className="relative w-48 h-48 rounded-full overflow-hidden shadow-xl bg-linear-2">
+                          <Image
+                            src={member.image || "https://placehold.co/400?text=No+Image"}
+                            alt={member.name}
+                            fill
+                            className="object-cover"
+                            unoptimized
+                          />
+                        </div>
+                      </div>
+
+                      {/* Division (in secondary color) */}
+                      <p className="text-sm font-semibold text-[#ffd600] mb-2">
+                        {member.division}
+                      </p>
+
+                      {/* Name */}
+                      <h3 className="text-lg font-semibold text-light mb-1">
+                        {member.name}
+                      </h3>
+
+                      {/* Prodi */}
+                      <p className="text-sm text-light mb-4">{member.prodi}</p>
+
+                      {/* Social Media Icons */}
+                      <div className="flex gap-3 pb-4">
+                        <a
+                          href={member.instagram || "#"}
+                          className="w-8 h-8 rounded-full bg-linear-2 flex items-center justify-center text-light hover:scale-110 transition-all"
+                        >
+                          <Instagram className="w-4 h-4" />
+                        </a>
+                        <a
+                          href={member.linkedin || "#"}
+                          className="w-8 h-8 rounded-full bg-linear-2 flex items-center justify-center text-light hover:scale-110 transition-all"
+                        >
+                          <Linkedin className="w-4 h-4" />
+                        </a>
                       </div>
                     </div>
-
-                    {/* Division (in secondary color) */}
-                    <p className="text-sm font-semibold text-secondary mb-2">
-                      {member.division}
-                    </p>
-
-                    {/* Name */}
-                    <h3 className="text-lg font-semibold text-light mb-1">
-                      {member.name}
-                    </h3>
-
-                    {/* Prodi */}
-                    <p className="text-sm text-light mb-4">{member.prodi}</p>
-
-                    {/* Social Media Icons */}
-                    <div className="flex gap-3 pb-4">
-                      <a
-                        href={member.instagram}
-                        className="w-8 h-8 rounded-full bg-linear-2 flex items-center justify-center text-light hover:scale-110 transition-all"
-                      >
-                        <Instagram className="w-4 h-4" />
-                      </a>
-                      <a
-                        href={member.linkedin}
-                        className="w-8 h-8 rounded-full bg-linear-2 flex items-center justify-center text-light hover:scale-110 transition-all"
-                      >
-                        <Linkedin className="w-4 h-4" />
-                      </a>
-                    </div>
-                  </div>
-                </SwiperSlide>
-              ))}
-            </Swiper>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            ) : (
+                <div className="text-center text-white/60 py-10">
+                   {/* Minimal placeholder to avoid layout shift or just empty */}
+                   Loading...
+                </div>
+            )}
           </div>
 
           {/* Navigation Arrows */}

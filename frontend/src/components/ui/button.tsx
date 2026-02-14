@@ -4,7 +4,7 @@ import { Slot } from "@radix-ui/react-slot";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "outline" | "ghost";
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "icon";
   fullWidth?: boolean;
   asChild?: boolean;
 }
@@ -37,6 +37,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             "h-9 px-4 text-sm": size === "sm",
             "h-11 px-6 text-base": size === "md",
             "h-14 px-8 text-lg": size === "lg",
+            "h-10 w-10": size === "icon",
             "w-full": fullWidth,
           },
           className

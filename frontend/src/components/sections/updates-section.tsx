@@ -111,11 +111,10 @@ export const UpdatesSection = () => {
                             })}
                         </div>
                         <div className="relative h-48 mb-4 rounded-xl overflow-hidden group cursor-pointer shrink-0">
-                            <Image
+                            <img
                                 src={event.image || "/images/logos/brand-raw.webp"}
                                 alt={event.title}
-                                fill
-                                className="object-cover group-hover:scale-110 transition-transform duration-500"
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                             />
                         </div>
                         <h3 className="text-xl font-semibold text-light mb-3 line-clamp-2">

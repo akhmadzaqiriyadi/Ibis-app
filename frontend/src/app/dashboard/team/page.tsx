@@ -12,7 +12,9 @@ import {
   Linkedin,
   Instagram,
   GraduationCap,
-  Building2
+  Building2,
+  Eye,
+  ExternalLink
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -85,6 +87,7 @@ export default function TeamManagementPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
+  const [viewingMember, setViewingMember] = useState<TeamMember | null>(null);
   const [deletingMember, setDeletingMember] = useState<TeamMember | null>(null);
   const [formData, setFormData] = useState<TeamMemberFormData>({
     name: "",
@@ -273,6 +276,11 @@ export default function TeamManagementPage() {
   const handleOpenDeleteDialog = (member: TeamMember) => {
     setDeletingMember(member);
     setIsDeleteDialogOpen(true);
+  };
+
+  // Handle open view dialog
+  const handleOpenViewDialog = (member: TeamMember) => {
+    setViewingMember(member);
   };
 
   // Get badge color based on type
@@ -521,7 +529,15 @@ export default function TeamManagementPage() {
                       </Badge>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end gap-2">
+                        <div className="flex items-center justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleOpenViewDialog(member)}
+                          className="text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -635,13 +651,99 @@ export default function TeamManagementPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="image">Image URL</Label>
-                <Input
-                  id="image"
-                  value={formData.image}
-                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                  placeholder="https://..."
-                />
+                <Label htmlFor="image">Foto Profile</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="image"
+                    value={formData.image}
+                    onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                    placeholder="https://..."
+                    className="flex-1"
+                  />
+                  <div className="relative">
+                    <Input
+                      type="file"
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+
+                        try {
+                          // Upload logic would go here
+                          const formDataUpload = new FormData();
+                          formDataUpload.append('file', file);
+                          formDataUpload.append('folder', 'team');
+
+                          const token = localStorage.getItem("token");
+                          // Show loading state if needed
+                          
+                          const response = await fetch(`${API_URL}/upload`, {
+                            method: "POST",
+                            headers: {
+                              Authorization: `Bearer ${token}`,
+                            },
+                            body: formDataUpload,
+                          });
+
+                          const data = await response.json();
+                          if (data.success) {
+                            setFormData(prev => ({ ...prev, image: data.data.url }));
+                          } else {
+                            alert("Failed to upload image");
+                          }
+                        } catch (error) {
+                          console.error("Upload error:", error);
+                          alert("Error uploading image");
+                        }
+                      }}
+                      accept="image/*"
+                    />
+                    <Button type="button" variant="outline" size="icon">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="w-4 h-4"
+                      >
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" x2="12" y1="3" y2="15" />
+                      </svg>
+                    </Button>
+                  </div>
+                </div>
+                {formData.image && (
+                  <>
+                    <div className="mt-2 relative w-20 h-20 rounded-lg overflow-hidden border bg-gray-50">
+                      <img 
+                        src={formData.image} 
+                        alt="Preview" 
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.parentElement?.classList.add('flex', 'items-center', 'justify-center');
+                          e.currentTarget.parentElement!.innerHTML = '<span class="text-xs text-center text-red-500 p-1">Failed to load</span>';
+                        }}
+                      />
+                    </div>
+                    <div className="mt-1">
+                      <a 
+                        href={formData.image} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-xs text-blue-600 hover:underline flex items-center gap-1"
+                      >
+                        Buka Gambar <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
@@ -724,6 +826,141 @@ export default function TeamManagementPage() {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Detail Dialog */}
+      <Dialog open={!!viewingMember} onOpenChange={(open) => !open && setViewingMember(null)}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Detail Team Member</DialogTitle>
+          </DialogHeader>
+          
+          {viewingMember && (
+            <div className="grid md:grid-cols-3 gap-6">
+              {/* Left Column: Image & Main Info */}
+              <div className="md:col-span-1 space-y-4">
+                <div className="aspect-square rounded-xl overflow-hidden bg-gray-100 border relative group">
+                  {viewingMember.image ? (
+                    <img 
+                      src={viewingMember.image} 
+                      alt={viewingMember.name} 
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = "https://placehold.co/400?text=Error";
+                      }}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-purple-100 text-purple-600">
+                      <Users className="w-16 h-16" />
+                    </div>
+                  )}
+                  {viewingMember.image && (
+                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <a 
+                          href={viewingMember.image} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="px-4 py-2 bg-white rounded-full text-sm font-medium hover:bg-gray-100 flex items-center gap-2"
+                        >
+                          <ExternalLink className="w-4 h-4" /> Buka Full
+                        </a>
+                     </div>
+                  )}
+                </div>
+                
+                <div className="space-y-2 text-center">
+                  <h3 className="font-bold text-xl text-gray-900">{viewingMember.name}</h3>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    <Badge className={getTypeBadgeColor(viewingMember.type)}>
+                      {viewingMember.type}
+                    </Badge>
+                    <Badge variant="outline" className={viewingMember.isActive ? "text-green-600 bg-green-50 border-green-200" : "text-gray-500 bg-gray-50"}>
+                      {viewingMember.isActive ? "Active" : "Inactive"}
+                    </Badge>
+                  </div>
+                </div>
+
+                <div className="flex justify-center gap-3 pt-2">
+                  {viewingMember.linkedin && (
+                    <a href={viewingMember.linkedin} target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors">
+                      <Linkedin className="w-5 h-5" />
+                    </a>
+                  )}
+                  {viewingMember.instagram && (
+                    <a href={viewingMember.instagram} target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-pink-50 text-pink-600 hover:bg-pink-100 transition-colors">
+                      <Instagram className="w-5 h-5" />
+                    </a>
+                  )}
+                  {viewingMember.email && (
+                    <a href={`mailto:${viewingMember.email}`} className="p-2 rounded-full bg-gray-50 text-gray-600 hover:bg-gray-100 transition-colors">
+                      <Mail className="w-5 h-5" />
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              {/* Right Column: Details */}
+              <div className="md:col-span-2 space-y-6">
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500 mb-2">Informasi Jabatan</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <div className="text-xs text-gray-500">Jabatan</div>
+                      <div className="font-medium">{viewingMember.title || "-"}</div>
+                    </div>
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <div className="text-xs text-gray-500">Divisi</div>
+                      <div className="font-medium">{viewingMember.division || "-"}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {viewingMember.bio && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-500 mb-2">Bio</h4>
+                    <p className="text-gray-700 bg-gray-50 p-4 rounded-lg text-sm leading-relaxed">
+                      {viewingMember.bio}
+                    </p>
+                  </div>
+                )}
+
+                {(viewingMember.prodi || viewingMember.batch) && (
+                   <div>
+                    <h4 className="text-sm font-medium text-gray-500 mb-2">Informasi Akademik</h4>
+                    <div className="flex gap-4">
+                      {viewingMember.prodi && (
+                        <div className="p-3 bg-gray-50 rounded-lg flex-1">
+                          <div className="text-xs text-gray-500">Program Studi</div>
+                          <div className="font-medium flex items-center gap-2">
+                            <GraduationCap className="w-4 h-4 text-gray-400" />
+                            {viewingMember.prodi}
+                          </div>
+                        </div>
+                      )}
+                      {viewingMember.batch && (
+                        <div className="p-3 bg-gray-50 rounded-lg flex-1">
+                          <div className="text-xs text-gray-500">Angkatan (Batch)</div>
+                          <div className="font-medium">{viewingMember.batch}</div>
+                        </div>
+                      )}
+                    </div>
+                   </div>
+                )}
+                
+                <div className="grid grid-cols-2 gap-4 text-xs text-gray-400 pt-4 border-t">
+                  <div>Created: {new Date(viewingMember.createdAt).toLocaleDateString()}</div>
+                  <div className="text-right">Last Updated: {new Date(viewingMember.updatedAt).toLocaleDateString()}</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+             <Button onClick={() => setViewingMember(null)}>
+               Tutup
+             </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

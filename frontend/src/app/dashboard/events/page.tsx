@@ -11,7 +11,9 @@ import {
   ChevronsRight,
   MoreHorizontal,
   CircleCheck,
-  Loader2
+  Loader2,
+  Upload,
+  ExternalLink
 } from 'lucide-react';
 import Image from 'next/image';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -112,6 +114,8 @@ export default function EventsPage() {
   const [formCategory, setFormCategory] = useState<string>('workshop');
   const [formStatus, setFormStatus] = useState<EventStatus>('UPCOMING');
   const [formIsPublished, setFormIsPublished] = useState<boolean>(false);
+  const [imageUrl, setImageUrl] = useState<string>('');
+  const [isUploading, setIsUploading] = useState<boolean>(false);
 
   // Fetch events
   const { data: eventsData, isLoading } = useQuery({
@@ -310,6 +314,7 @@ export default function EventsPage() {
             setFormCategory('workshop');
             setFormStatus('UPCOMING');
             setFormIsPublished(false);
+            setImageUrl('');
             setIsDialogOpen(true);
           }}
           className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-linear-3 text-white hover:scale-105 h-9 px-4 py-2 transition-all duration-1200 ease-in-out"
@@ -362,11 +367,10 @@ export default function EventsPage() {
                   <TableCell>
                     <div className="relative h-12 w-12 rounded-md overflow-hidden bg-muted flex-shrink-0">
                       {event.image && event.image.trim() !== '' ? (
-                        <Image
+                        <img
                           src={event.image}
                           alt={event.title}
-                          fill
-                          className="object-cover"
+                          className="absolute inset-0 w-full h-full object-cover"
                         />
                       ) : (
                         <Image
@@ -450,6 +454,7 @@ export default function EventsPage() {
                             setFormCategory(event.category);
                             setFormStatus(event.status);
                             setFormIsPublished(event.isPublished);
+                            setImageUrl(event.image || '');
                             setIsDialogOpen(true);
                           }}
                           className="cursor-pointer hover:bg-slate-100"
@@ -678,13 +683,86 @@ export default function EventsPage() {
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="image">Image URL (Cloudinary)</Label>
-              <Input
-                id="image"
-                name="image"
-                defaultValue={editingEvent?.image || ''}
-                placeholder="https://res.cloudinary.com/..."
-              />
+              <Label htmlFor="image">Image</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="image"
+                  name="image"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  placeholder="https://..."
+                  className="flex-1"
+                />
+                <div className="relative">
+                  <Input
+                    type="file"
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+
+                      try {
+                        setIsUploading(true);
+                        const formDataUpload = new FormData();
+                        formDataUpload.append('file', file);
+                        formDataUpload.append('folder', 'events');
+                        
+                        const response = await fetch(`${API_URL}/upload`, {
+                          method: 'POST',
+                          headers: {
+                            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                          },
+                          body: formDataUpload,
+                        });
+
+                        const data = await response.json();
+                        
+                        if (data.success && data.data) {
+                          setImageUrl(data.data.url);
+                        } else {
+                          alert(data.error || 'Failed to upload image');
+                        }
+                      } catch (error) {
+                        console.error('Upload error:', error);
+                        alert('Error uploading image');
+                      } finally {
+                        setIsUploading(false);
+                      }
+                    }}
+                    accept="image/*"
+                    disabled={isUploading}
+                  />
+                  <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 w-10">
+                     {isUploading ? (
+                       <Loader2 className="h-4 w-4 animate-spin" />
+                     ) : (
+                       <Upload className="h-4 w-4" />
+                     )}
+                  </div>
+                </div>
+              </div>
+              {imageUrl && (
+                <div className="mt-2 relative w-full h-40 rounded-lg overflow-hidden border bg-gray-50 group">
+                   <div className="absolute inset-0 z-0">
+                     <img 
+                        src={imageUrl} 
+                        alt="Preview" 
+                        className="w-full h-full object-cover"
+                     />
+                   </div>
+                   
+                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10">
+                      <a 
+                        href={imageUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-white text-sm font-medium flex items-center gap-2 hover:underline"
+                      >
+                        Buka Gambar <ExternalLink className="h-4 w-4" />
+                      </a>
+                   </div>
+                </div>
+              )}
             </div>
 
             <div className="grid gap-2">
