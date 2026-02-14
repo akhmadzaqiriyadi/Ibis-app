@@ -8,6 +8,7 @@ import { teamRoutes } from './features/team/team.routes';
 import { updateRoutes } from './features/updates/update.routes';
 import { userRoutes } from './features/users/user.routes';
 import { authRoutes } from './features/auth/auth.routes';
+import { uploadRoutes } from './features/upload/upload.routes';
 
 const app = new Elysia()
   .use(
@@ -30,6 +31,7 @@ const app = new Elysia()
           { name: 'Team', description: 'Team member management endpoints' },
           { name: 'Updates', description: 'News and updates endpoints' },
           { name: 'Users', description: 'User management endpoints (Admin only)' },
+          { name: 'Upload', description: 'File upload endpoints' },
         ],
       },
     })
@@ -51,6 +53,7 @@ const app = new Elysia()
       .use(programRoutes)
       .use(teamRoutes)
       .use(updateRoutes)
+      .use(uploadRoutes)
   )
   .onError(({ error, code, set }) => {
     console.error('Error:', error);

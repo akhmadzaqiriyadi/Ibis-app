@@ -1,72 +1,67 @@
-import { Elysia, t } from 'elysia';
+import { Elysia, t, type Context } from 'elysia';
 import { jwt } from '@elysiajs/jwt';
+import { bearer } from '@elysiajs/bearer';
 import { errorResponse } from '@/common/response';
 import { Role } from '@prisma/client';
 
-export const authMiddleware = (app: Elysia) =>
-  app
-    .use(
-      jwt({
-        name: 'jwt',
-        secret: process.env.JWT_SECRET || 'secret',
-        schema: t.Object({
-          id: t.String(),
-          role: t.Enum(Role),
-        }),
-      })
-    )
-    .derive(async ({ jwt, cookie: { auth }, headers, request }) => {
-      // console.log(`[AuthMiddleware] Process: ${request.method} ${request.url}`);
-      
-      const authHeader = headers['authorization'];
-      let token = authHeader?.startsWith('Bearer ')
-        ? authHeader.slice(7)
-        : (auth as any).value;
-      
-      if (!token && typeof auth === 'string') {
-        token = auth;
-      }
+export const authMiddleware = new Elysia({ name: 'auth.middleware' })
+  .use(bearer())
+  .use(
+    jwt({
+      name: 'jwt',
+      secret: process.env.JWT_SECRET || 'secret',
+      schema: t.Object({
+        id: t.String(),
+        role: t.Enum(Role),
+      }),
+    })
+  )
+  .derive({ as: 'global' }, async ({ jwt, bearer, cookie }): Promise<{ user: { id: string; role: Role } | null }> => {
+    let token: string | undefined = bearer;
 
-      if (!token) {
-        return { user: null };
-      }
+    if (!token && cookie && cookie.auth) {
+      token = cookie.auth.value as string;
+    }
 
-      const profile = await jwt.verify(token as string);
+    if (!token) {
+      return { user: null };
+    }
+
+    try {
+      const profile = await jwt.verify(token);
 
       if (!profile) {
-        console.log('[AuthMiddleware] Invalid signature');
         return { user: null };
       }
 
-      const payload = profile as unknown as { id: string; role: Role };
-
       return {
-        user: payload,
+        user: profile as { id: string; role: Role },
       };
-    })
-    .macro(({ onBeforeHandle }) => ({
-      isAuthenticated: (required: boolean = true) => {
-        if (!required) return;
-        onBeforeHandle(({ user, set, request }) => {
-          if (!user) {
-            console.log(`[AuthMiddleware] Auth FAIL: ${request.url}`);
-            set.status = 401;
-            return errorResponse('Unauthorized');
-          }
-        });
-      },
-      hasRole: (roles: Role[]) => {
-        onBeforeHandle(({ user, set, request }) => {
-          if (!user) {
-            console.log(`[AuthMiddleware] Role Check FAIL (No User): ${request.url}`);
-            set.status = 401;
-            return errorResponse('Unauthorized');
-          }
-          if (!roles.includes(user.role)) {
-            console.log(`[AuthMiddleware] Role Check FAIL (User ${user.role} not in [${roles.join(', ')}]): ${request.url}`);
-            set.status = 403;
-            return errorResponse('Forbidden: Insufficient permissions');
-          }
-        });
-      },
-    }));
+    } catch (error) {
+      return { user: null };
+    }
+  })
+  .macro(({ onBeforeHandle }) => ({
+    isAuthenticated: (required: boolean) => {
+      if (!required) return;
+      onBeforeHandle(({ user, set }: { user: { id: string; role: Role } | null; set: Context['set'] }) => {
+        if (!user) {
+          set.status = 401;
+          return errorResponse('Unauthorized');
+        }
+      });
+    },
+    hasRole: (allowedRoles: Role[]) => {
+      if (!allowedRoles || allowedRoles.length === 0) return;
+      onBeforeHandle(({ user, set }: { user: { id: string; role: Role } | null; set: Context['set'] }) => {
+        if (!user) {
+          set.status = 401;
+          return errorResponse('Unauthorized');
+        }
+        if (!allowedRoles.includes(user.role)) {
+          set.status = 403;
+          return errorResponse('Forbidden: Insufficient permissions');
+        }
+      });
+    },
+  }));

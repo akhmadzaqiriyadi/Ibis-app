@@ -51,6 +51,9 @@ export const eventRoutes = new Elysia({ prefix: '/events' })
               id: t.String(),
               title: t.String(),
               slug: t.String(),
+              description: t.String(),
+              image: t.Nullable(t.String()),
+              location: t.Nullable(t.String()),
               date: t.Any(),
               status: t.String(),
             })),
@@ -92,7 +95,12 @@ export const eventRoutes = new Elysia({ prefix: '/events' })
           data: t.Optional(t.Array(t.Object({
               id: t.String(),
               title: t.String(),
-              date: t.String(),
+              slug: t.String(),
+              description: t.String(),
+              image: t.Nullable(t.String()),
+              location: t.Nullable(t.String()),
+              date: t.Any(), // simplified since Date handling can be tricky in schemas
+              status: t.String(),
           }))),
           message: t.Optional(t.String()),
           error: t.Optional(t.String()),
