@@ -1,45 +1,50 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   Plus, 
-  Pencil, 
-  Trash2, 
-  Search,
-  Filter,
+  Search, 
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  MoreHorizontal,
+  Loader2,
+  Upload,
+  ExternalLink,
   Users,
   Mail,
   Linkedin,
   Instagram,
   GraduationCap,
   Building2,
-  Eye,
-  ExternalLink
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+} from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { useAuthStore } from '@/stores/auth-store';
 
 // Types
-type TeamType = "LEADER" | "STAFF" | "MENTOR" | "MEMBER";
+type TeamType = 'LEADER' | 'STAFF' | 'MENTOR' | 'MEMBER';
 
 interface TeamMember {
   id: string;
@@ -62,553 +67,317 @@ interface TeamMember {
 
 interface TeamMemberFormData {
   name: string;
-  title: string;
+  title?: string;
   type: TeamType;
-  division: string;
-  image: string;
-  bio: string;
-  email: string;
-  linkedin: string;
-  instagram: string;
-  batch: string;
-  prodi: string;
-  order: string;
+  division?: string;
+  image?: string;
+  bio?: string;
+  email?: string;
+  linkedin?: string;
+  instagram?: string;
+  batch?: number;
+  prodi?: string;
+  order: number;
   isActive: boolean;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+
+const getTypeBadgeStyle = (type: TeamType) => {
+  const styles = {
+    LEADER: 'bg-purple-100 text-purple-700 border-purple-300',
+    STAFF: 'bg-yellow-100 text-yellow-700 border-yellow-300',
+    MENTOR: 'bg-emerald-100 text-emerald-700 border-emerald-300',
+    MEMBER: 'bg-blue-100 text-blue-700 border-blue-300',
+  };
+  return styles[type] || 'bg-blue-100 text-blue-700 border-blue-300';
+};
+
+const getStatusBadgeStyle = (isActive: boolean) => {
+  return isActive 
+    ? 'bg-green-100 text-green-700 border-green-300'
+    : 'bg-red-100 text-red-700 border-red-300';
+};
 
 export default function TeamManagementPage() {
-  const [members, setMembers] = useState<TeamMember[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filterType, setFilterType] = useState<string>("all");
-  const [filterDivision, setFilterDivision] = useState<string>("all");
+  const queryClient = useQueryClient();
+  const { token } = useAuthStore();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
   const [viewingMember, setViewingMember] = useState<TeamMember | null>(null);
   const [deletingMember, setDeletingMember] = useState<TeamMember | null>(null);
-  const [formData, setFormData] = useState<TeamMemberFormData>({
-    name: "",
-    title: "",
-    type: "MEMBER",
-    division: "",
-    image: "",
-    bio: "",
-    email: "",
-    linkedin: "",
-    instagram: "",
-    batch: "",
-    prodi: "",
-    order: "0",
-    isActive: true,
+  const [searchTerm, setSearchTerm] = useState('');
+  const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [divisionFilter, setDivisionFilter] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [formType, setFormType] = useState<TeamType>('MEMBER');
+  const [formIsActive, setFormIsActive] = useState<boolean>(true);
+  const [imageUrl, setImageUrl] = useState<string>('');
+  const [isUploading, setIsUploading] = useState<boolean>(false);
+
+  const { data: membersData, isLoading } = useQuery({
+    queryKey: ['team'],
+    queryFn: async () => {
+      const headers: HeadersInit = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      const response = await fetch(`${API_URL}/team`, { headers });
+      const result = await response.json();
+      return result.data;
+    },
   });
 
-  // Fetch team members
-  const fetchMembers = async () => {
+  const members: TeamMember[] = membersData || [];
+  const divisions = Array.from(new Set(members.map(m => m.division).filter(Boolean))) as string[];
+
+  const saveMutation = useMutation({
+    mutationFn: async (data: TeamMemberFormData) => {
+      const url = editingMember ? `${API_URL}/team/${editingMember.id}` : `${API_URL}/team`;
+      const method = editingMember ? 'PUT' : 'POST';
+      const headers: HeadersInit = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      const response = await fetch(url, { method, headers, body: JSON.stringify(data) });
+      const responseData = await response.json();
+      return responseData;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['team'] });
+      setIsDialogOpen(false);
+      setEditingMember(null);
+    },
+    onError: (error) => alert(`Error: ${error.message}`),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const headers: HeadersInit = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      const response = await fetch(`${API_URL}/team/${id}`, { method: 'DELETE', headers });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['team'] });
+      setIsDeleteDialogOpen(false);
+      setDeletingMember(null);
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const getStringValue = (key: string) => {
+      const value = formData.get(key) as string;
+      return value && value.trim() !== '' ? value : undefined;
+    };
+    const data: TeamMemberFormData = {
+      name: formData.get('name') as string,
+      title: getStringValue('title'),
+      type: formType,
+      division: getStringValue('division'),
+      image: getStringValue('image'),
+      bio: getStringValue('bio'),
+      email: getStringValue('email'),
+      linkedin: getStringValue('linkedin'),
+      instagram: getStringValue('instagram'),
+      batch: formData.get('batch') ? parseInt(formData.get('batch') as string) : undefined,
+      prodi: getStringValue('prodi'),
+      order: formData.get('order') ? parseInt(formData.get('order') as string) : 0,
+      isActive: formIsActive,
+    };
+    saveMutation.mutate(data);
+  };
+
+  const handleImageUpload = async (file: File) => {
+    setIsUploading(true);
     try {
-      setLoading(true);
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${API_URL}/team`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const formDataUpload = new FormData();
+      formDataUpload.append('file', file);
+      formDataUpload.append('folder', 'team');
+      
+      const headers: HeadersInit = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      
+      const response = await fetch(`${API_URL}/upload`, { 
+        method: 'POST', 
+        headers, 
+        body: formDataUpload 
       });
       const data = await response.json();
-      if (data.success) {
-        setMembers(data.data || []);
+      
+      if (data.success && data.data) {
+        setImageUrl(data.data.url);
+      } else {
+        console.error('Upload response:', data);
+        alert(data.error || data.message || 'Failed to upload image');
       }
     } catch (error) {
-      console.error("Failed to fetch team members:", error);
+      console.error('Upload error:', error);
+      alert('Error uploading image: ' + (error instanceof Error ? error.message : 'Unknown error'));
     } finally {
-      setLoading(false);
+      setIsUploading(false);
     }
   };
 
-  useEffect(() => {
-    fetchMembers();
-  }, []);
-
-  // Filter members
   const filteredMembers = members.filter((member) => {
-    const matchesSearch = member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.division?.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesType = filterType === "all" || member.type === filterType;
-    const matchesDivision = filterDivision === "all" || member.division === filterDivision;
-    
+    const matchesSearch = member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         member.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         member.division?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType = typeFilter === 'all' || member.type === typeFilter;
+    const matchesDivision = divisionFilter === 'all' || member.division === divisionFilter;
     return matchesSearch && matchesType && matchesDivision;
   });
 
-  // Get unique divisions
-  const divisions = Array.from(new Set(members.map(m => m.division).filter(Boolean)));
-
-  // Handle form submit
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    try {
-      const token = localStorage.getItem("token");
-      const payload = {
-        name: formData.name,
-        title: formData.title || undefined,
-        type: formData.type,
-        division: formData.division || undefined,
-        image: formData.image || undefined,
-        bio: formData.bio || undefined,
-        email: formData.email || undefined,
-        linkedin: formData.linkedin || undefined,
-        instagram: formData.instagram || undefined,
-        batch: formData.batch ? parseInt(formData.batch) : undefined,
-        prodi: formData.prodi || undefined,
-        order: parseInt(formData.order) || 0,
-        isActive: formData.isActive,
-      };
-
-      const url = editingMember 
-        ? `${API_URL}/team/${editingMember.id}`
-        : `${API_URL}/team`;
-      
-      const method = editingMember ? "PUT" : "POST";
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-      
-      if (data.success) {
-        await fetchMembers();
-        handleCloseDialog();
-      } else {
-        alert(data.error || "Failed to save team member");
-      }
-    } catch (error) {
-      console.error("Failed to save team member:", error);
-      alert("Failed to save team member");
-    }
-  };
-
-  // Handle delete
-  const handleDelete = async () => {
-    if (!deletingMember) return;
-
-    try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${API_URL}/team/${deletingMember.id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await response.json();
-      
-      if (data.success) {
-        await fetchMembers();
-        setIsDeleteDialogOpen(false);
-        setDeletingMember(null);
-      } else {
-        alert(data.error || "Failed to delete team member");
-      }
-    } catch (error) {
-      console.error("Failed to delete team member:", error);
-      alert("Failed to delete team member");
-    }
-  };
-
-  // Handle open create dialog
-  const handleOpenCreateDialog = () => {
-    setEditingMember(null);
-    setFormData({
-      name: "",
-      title: "",
-      type: "MEMBER",
-      division: "",
-      image: "",
-      bio: "",
-      email: "",
-      linkedin: "",
-      instagram: "",
-      batch: "",
-      prodi: "",
-      order: "0",
-      isActive: true,
-    });
-    setIsDialogOpen(true);
-  };
-
-  // Handle open edit dialog
-  const handleOpenEditDialog = (member: TeamMember) => {
-    setEditingMember(member);
-    setFormData({
-      name: member.name,
-      title: member.title || "",
-      type: member.type,
-      division: member.division || "",
-      image: member.image || "",
-      bio: member.bio || "",
-      email: member.email || "",
-      linkedin: member.linkedin || "",
-      instagram: member.instagram || "",
-      batch: member.batch?.toString() || "",
-      prodi: member.prodi || "",
-      order: member.order.toString(),
-      isActive: member.isActive,
-    });
-    setIsDialogOpen(true);
-  };
-
-  // Handle close dialog
-  const handleCloseDialog = () => {
-    setIsDialogOpen(false);
-    setEditingMember(null);
-  };
-
-  // Handle open delete dialog
-  const handleOpenDeleteDialog = (member: TeamMember) => {
-    setDeletingMember(member);
-    setIsDeleteDialogOpen(true);
-  };
-
-  // Handle open view dialog
-  const handleOpenViewDialog = (member: TeamMember) => {
-    setViewingMember(member);
-  };
-
-  // Get badge color based on type
-  const getTypeBadgeColor = (type: TeamType) => {
-    switch (type) {
-      case "LEADER":
-        return "bg-purple-100 text-purple-700 border-purple-200";
-      case "STAFF":
-        return "bg-blue-100 text-blue-700 border-blue-200";
-      case "MENTOR":
-        return "bg-emerald-100 text-emerald-700 border-emerald-200";
-      case "MEMBER":
-        return "bg-gray-100 text-gray-700 border-gray-200";
-      default:
-        return "bg-gray-100 text-gray-700 border-gray-200";
-    }
-  };
+  const totalPages = Math.ceil(filteredMembers.length / pageSize);
+  const paginatedMembers = filteredMembers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (
-    <div className="space-y-8">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900">
-            Team Management
-          </h2>
-          <p className="text-gray-500 mt-2">
-            Kelola semua anggota tim IBISTEK
-          </p>
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-3xl font-bold tracking-tight text-gray-900">Team Management</h2>
+        <p className="text-muted-foreground mt-2">Kelola semua anggota tim IBISTEK</p>
+      </div>
+      <div className="flex items-center gap-4">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input type="search" placeholder="Cari nama, email, atau divisi..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-8" />
         </div>
-        <Button onClick={handleOpenCreateDialog} className="gap-2">
-          <Plus className="w-4 h-4" />
-          Tambah Member
-        </Button>
+        <Select value={typeFilter} onValueChange={setTypeFilter}>
+          <SelectTrigger className="w-[150px]"><SelectValue placeholder="Tipe" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Semua Tipe</SelectItem>
+            <SelectItem value="LEADER">Leader</SelectItem>
+            <SelectItem value="STAFF">Staff</SelectItem>
+            <SelectItem value="MENTOR">Mentor</SelectItem>
+            <SelectItem value="MEMBER">Member</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={divisionFilter} onValueChange={setDivisionFilter}>
+          <SelectTrigger className="w-[150px]"><SelectValue placeholder="Divisi" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Semua Divisi</SelectItem>
+            {divisions.map((division) => (<SelectItem key={division} value={division}>{division}</SelectItem>))}
+          </SelectContent>
+        </Select>
+        <button onClick={() => { setEditingMember(null); setFormType('MEMBER'); setFormIsActive(true); setImageUrl(''); setIsDialogOpen(true); }} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-linear-3 text-white hover:scale-105 h-9 px-4 py-2 transition-all duration-1200 ease-in-out">
+          <Plus className="h-4 w-4" /><span>Tambah Member</span>
+        </button>
       </div>
 
-      {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <div className="p-6 bg-white rounded-xl shadow-sm border border-gray-100">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-purple-100">
-              <Users className="w-6 h-6 text-purple-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Total Members</p>
-              <p className="text-2xl font-bold text-gray-900">{members.length}</p>
-            </div>
-          </div>
-        </div>
-        <div className="p-6 bg-white rounded-xl shadow-sm border border-gray-100">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-blue-100">
-              <Users className="w-6 h-6 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Leaders</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {members.filter(m => m.type === "LEADER").length}
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="p-6 bg-white rounded-xl shadow-sm border border-gray-100">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-emerald-100">
-              <Users className="w-6 h-6 text-emerald-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Staff</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {members.filter(m => m.type === "STAFF").length}
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="p-6 bg-white rounded-xl shadow-sm border border-gray-100">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-orange-100">
-              <Users className="w-6 h-6 text-orange-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Active</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {members.filter(m => m.isActive).length}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              placeholder="Cari nama, email, atau divisi..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <Select value={filterType} onValueChange={setFilterType}>
-            <SelectTrigger>
-              <SelectValue placeholder="Filter by Type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Semua Tipe</SelectItem>
-              <SelectItem value="LEADER">Leader</SelectItem>
-              <SelectItem value="STAFF">Staff</SelectItem>
-              <SelectItem value="MENTOR">Mentor</SelectItem>
-              <SelectItem value="MEMBER">Member</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={filterDivision} onValueChange={setFilterDivision}>
-            <SelectTrigger>
-              <SelectValue placeholder="Filter by Division" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Semua Divisi</SelectItem>
-              {divisions.map((division) => (
-                <SelectItem key={division} value={division!}>
-                  {division}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {/* Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Member
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Type
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Division
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Contact
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Student Info
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {loading ? (
-                <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
-                    Loading...
-                  </td>
-                </tr>
-              ) : filteredMembers.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
-                    Tidak ada data
-                  </td>
-                </tr>
-              ) : (
-                filteredMembers.map((member) => (
-                  <tr key={member.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
-                          {member.name.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900">{member.name}</div>
-                          <div className="text-sm text-gray-500">{member.title || "-"}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Badge className={cn("border", getTypeBadgeColor(member.type))}>
-                        {member.type}
-                      </Badge>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2 text-sm text-gray-900">
-                        <Building2 className="w-4 h-4 text-gray-400" />
-                        {member.division || "-"}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="space-y-1">
-                        {member.email && (
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <Mail className="w-3 h-3" />
-                            {member.email}
-                          </div>
-                        )}
-                        <div className="flex items-center gap-2">
-                          {member.linkedin && (
-                            <a 
-                              href={member.linkedin} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="text-blue-600 hover:text-blue-700"
-                            >
-                              <Linkedin className="w-4 h-4" />
-                            </a>
-                          )}
-                          {member.instagram && (
-                            <a 
-                              href={member.instagram} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="text-pink-600 hover:text-pink-700"
-                            >
-                              <Instagram className="w-4 h-4" />
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {member.batch || member.prodi ? (
-                        <div className="flex items-center gap-2 text-sm text-gray-900">
-                          <GraduationCap className="w-4 h-4 text-gray-400" />
-                          <div>
-                            {member.prodi && <div>{member.prodi}</div>}
-                            {member.batch && <div className="text-xs text-gray-500">Batch {member.batch}</div>}
-                          </div>
-                        </div>
+      <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-x-auto">
+        <Table>
+          <TableHeader className="bg-linear-2">
+            <TableRow>
+              <TableHead className="w-20 text-light">Image</TableHead>
+              <TableHead className="min-w-[200px] text-light">Member</TableHead>
+              <TableHead className="min-w-[100px] text-light">Type</TableHead>
+              <TableHead className="min-w-[140px] text-light">Division</TableHead>
+              <TableHead className="min-w-[200px] text-light">Contact</TableHead>
+              <TableHead className="min-w-[160px] text-light">Student Info</TableHead>
+              <TableHead className="min-w-[100px] text-light">Status</TableHead>
+              <TableHead className="w-12"><span className="sr-only">Actions</span></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <TableRow><TableCell colSpan={8} className="h-24 text-center"><div className="flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div></TableCell></TableRow>
+            ) : paginatedMembers.length === 0 ? (
+              <TableRow><TableCell colSpan={8} className="h-24 text-center text-muted-foreground">Tidak ada data team member.</TableCell></TableRow>
+            ) : (
+              paginatedMembers.map((member) => (
+                <TableRow key={member.id} className="hover:bg-slate-100">
+                  <TableCell>
+                    <div className="relative h-12 w-12 rounded-full overflow-hidden bg-linear-2 flex-shrink-0">
+                      {member.image && member.image.trim() !== '' ? (
+                        <img src={member.image} alt={member.name} className="absolute inset-0 w-full h-full object-cover" referrerPolicy="no-referrer" />
                       ) : (
-                        <span className="text-gray-400">-</span>
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">{member.name.charAt(0).toUpperCase()}</div>
                       )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Badge className={member.isActive ? "bg-green-100 text-green-700 border-green-200" : "bg-red-100 text-red-700 border-red-200"}>
-                        {member.isActive ? "Active" : "Inactive"}
-                      </Badge>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex items-center justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleOpenViewDialog(member)}
-                          className="text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleOpenEditDialog(member)}
-                          className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleOpenDeleteDialog(member)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                    </div>
+                  </TableCell>
+                  <TableCell className="font-medium min-w-[200px]">
+                    <div><div className="font-medium text-gray-900">{member.name}</div><div className="text-sm text-gray-500">{member.title || '-'}</div></div>
+                  </TableCell>
+                  <TableCell><Badge className={`${getTypeBadgeStyle(member.type)} px-2 py-1 font-medium border`}>{member.type}</Badge></TableCell>
+                  <TableCell><div className="flex items-center gap-2 text-sm text-dark font-medium">{member.division || '-'}</div></TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      {member.linkedin && (<a href={member.linkedin} target="_blank" rel="noopener noreferrer" className="w-7 h-7 rounded-full bg-linear-2 flex items-center justify-center text-light hover:scale-110 transition-all"><Linkedin className="w-3.5 h-3.5" /></a>)}
+                      {member.instagram && (<a href={member.instagram} target="_blank" rel="noopener noreferrer" className="w-7 h-7 rounded-full bg-linear-2 flex items-center justify-center text-light hover:scale-110 transition-all"><Instagram className="w-3.5 h-3.5" /></a>)}
+                      {member.email && (<a href={`mailto:${member.email}`} className="w-7 h-7 rounded-full bg-linear-2 flex items-center justify-center text-light hover:scale-110 transition-all"><Mail className="w-3.5 h-3.5" /></a>)}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {member.batch || member.prodi ? (
+                      <div className="flex items-center gap-2 text-sm font-medium text-dark">
+                      <div>{member.prodi && <div className="text-sm">{member.prodi}</div>}{member.batch && <div className="text-xs text-gray-500">Batch {member.batch}</div>}</div>
                       </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                    ) : (<span className="text-gray-400">-</span>)}
+                  </TableCell>
+                  <TableCell><Badge className={`${getStatusBadgeStyle(member.isActive)} px-2 py-1 font-medium border`}>{member.isActive ? 'Active' : 'Inactive'}</Badge></TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-8 w-8 data-[state=open]:bg-muted text-muted-foreground"><MoreHorizontal className="h-4 w-4" /><span className="sr-only">Open menu</span></button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-32">
+                        <DropdownMenuItem onClick={() => { setViewingMember(member); setIsViewDialogOpen(true); }} className="cursor-pointer hover:bg-slate-100">View</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => { setEditingMember(member); setFormType(member.type); setFormIsActive(member.isActive); setImageUrl(member.image || ''); setIsDialogOpen(true); }} className="cursor-pointer hover:bg-slate-100">Edit</DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive cursor-pointer hover:bg-slate-100" onClick={() => { setDeletingMember(member); setIsDeleteDialogOpen(true); }}>Delete</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      <div className="flex items-center justify-between px-4">
+        <div className="text-sm text-gray-600">Menampilkan {paginatedMembers.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} sampai {Math.min(currentPage * pageSize, filteredMembers.length)} dari {filteredMembers.length} data</div>
+        <div className="flex items-center gap-8">
+          <div className="hidden items-center gap-2 lg:flex">
+            <Label htmlFor="rows-per-page" className="text-sm font-medium">Rows per page</Label>
+            <Select value={`${pageSize}`} onValueChange={(value) => { setPageSize(Number(value)); setCurrentPage(1); }}>
+              <SelectTrigger className="h-8 w-20" id="rows-per-page"><SelectValue placeholder={pageSize} /></SelectTrigger>
+              <SelectContent side="top">{[10, 20, 30, 40, 50].map((size) => (<SelectItem key={size} value={`${size}`}>{size}</SelectItem>))}</SelectContent>
+            </Select>
+          </div>
+          <div className="flex w-fit items-center justify-center text-sm font-medium">Page {currentPage} of {totalPages || 1}</div>
+          <div className="ml-auto flex items-center gap-2 lg:ml-0">
+            <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className="hidden h-8 w-8 p-0 lg:flex inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground"><span className="sr-only">Go to first page</span><ChevronsLeft className="h-4 w-4" /></button>
+            <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 w-8"><span className="sr-only">Go to previous page</span><ChevronLeft className="h-4 w-4" /></button>
+            <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages || totalPages === 0} className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 w-8"><span className="sr-only">Go to next page</span><ChevronRight className="h-4 w-4" /></button>
+            <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages || totalPages === 0} className="hidden h-8 w-8 lg:flex inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground"><span className="sr-only">Go to last page</span><ChevronsRight className="h-4 w-4" /></button>
+          </div>
         </div>
       </div>
 
-      {/* Create/Edit Dialog */}
+      {/* Add/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
-              {editingMember ? "Edit Team Member" : "Tambah Team Member"}
-            </DialogTitle>
-            <DialogDescription>
-              {editingMember 
-                ? "Update informasi team member" 
-                : "Tambahkan team member baru ke dalam sistem"}
-            </DialogDescription>
+            <DialogTitle>{editingMember ? 'Edit Team Member' : 'Tambah Team Member'}</DialogTitle>
+            <DialogDescription>{editingMember ? 'Update informasi team member' : 'Tambahkan team member baru ke dalam sistem'}</DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
+          <form onSubmit={handleSubmit} className="grid gap-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
                 <Label htmlFor="name">Nama *</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
-                />
+                <Input id="name" name="name" defaultValue={editingMember?.name} required placeholder="Nama lengkap" />
               </div>
-              <div className="space-y-2">
+              <div className="grid gap-2">
                 <Label htmlFor="title">Jabatan</Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="e.g., CEO, Head of Marketing"
-                />
+                <Input id="title" name="title" defaultValue={editingMember?.title || ''} placeholder="e.g., CEO, Head of Marketing" />
               </div>
             </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
                 <Label htmlFor="type">Tipe *</Label>
-                <Select 
-                  value={formData.type} 
-                  onValueChange={(value) => setFormData({ ...formData, type: value as TeamType })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
+                <Select value={formType} onValueChange={(v) => setFormType(v as TeamType)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="LEADER">Leader</SelectItem>
                     <SelectItem value="STAFF">Staff</SelectItem>
@@ -617,198 +386,82 @@ export default function TeamManagementPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
+              <div className="grid gap-2">
                 <Label htmlFor="division">Divisi</Label>
-                <Input
-                  id="division"
-                  value={formData.division}
-                  onChange={(e) => setFormData({ ...formData, division: e.target.value })}
-                  placeholder="e.g., Marketing, Development"
-                />
+                <Input id="division" name="division" defaultValue={editingMember?.division || ''} placeholder="e.g., Marketing, Development" />
               </div>
             </div>
-
-            <div className="space-y-2">
+            <div className="grid gap-2">
               <Label htmlFor="bio">Bio</Label>
-              <Textarea
-                id="bio"
-                value={formData.bio}
-                onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                placeholder="Deskripsi singkat tentang member..."
-                rows={3}
-              />
+              <Textarea id="bio" name="bio" defaultValue={editingMember?.bio || ''} rows={3} placeholder="Deskripsi singkat tentang member..." />
             </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="email@example.com"
-                />
+                <Input id="email" name="email" type="email" defaultValue={editingMember?.email || ''} placeholder="email@example.com" />
               </div>
-              <div className="space-y-2">
+              <div className="grid gap-2">
                 <Label htmlFor="image">Foto Profile</Label>
                 <div className="flex gap-2">
-                  <Input
-                    id="image"
-                    value={formData.image}
-                    onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                    placeholder="https://..."
-                    className="flex-1"
-                  />
+                  <Input id="image" name="image" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..." className="flex-1" />
                   <div className="relative">
-                    <Input
-                      type="file"
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (!file) return;
-
-                        try {
-                          // Upload logic would go here
-                          const formDataUpload = new FormData();
-                          formDataUpload.append('file', file);
-                          formDataUpload.append('folder', 'team');
-
-                          const token = localStorage.getItem("token");
-                          // Show loading state if needed
-                          
-                          const response = await fetch(`${API_URL}/upload`, {
-                            method: "POST",
-                            headers: {
-                              Authorization: `Bearer ${token}`,
-                            },
-                            body: formDataUpload,
-                          });
-
-                          const data = await response.json();
-                          if (data.success) {
-                            setFormData(prev => ({ ...prev, image: data.data.url }));
-                          } else {
-                            alert("Failed to upload image");
-                          }
-                        } catch (error) {
-                          console.error("Upload error:", error);
-                          alert("Error uploading image");
-                        }
-                      }}
-                      accept="image/*"
-                    />
-                    <Button type="button" variant="outline" size="icon">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="w-4 h-4"
-                      >
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                        <polyline points="17 8 12 3 7 8" />
-                        <line x1="12" x2="12" y1="3" y2="15" />
-                      </svg>
+                    <Input type="file" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onChange={(e) => { const file = e.target.files?.[0]; if (file) handleImageUpload(file); }} accept="image/*" />
+                    <Button type="button" variant="outline" size="icon" disabled={isUploading}>
+                      {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                     </Button>
                   </div>
                 </div>
-                {formData.image && (
-                  <>
-                    <div className="mt-2 relative w-20 h-20 rounded-lg overflow-hidden border bg-gray-50">
+                {imageUrl && (
+                  <div className="mt-2 flex items-center gap-3">
+                    <div className="relative w-16 h-16 rounded-lg overflow-hidden border bg-gray-50 flex items-center justify-center">
                       <img 
-                        src={formData.image} 
+                        src={imageUrl} 
                         alt="Preview" 
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          e.currentTarget.parentElement?.classList.add('flex', 'items-center', 'justify-center');
-                          e.currentTarget.parentElement!.innerHTML = '<span class="text-xs text-center text-red-500 p-1">Failed to load</span>';
+                        className="w-full h-full object-cover" 
+                        referrerPolicy="no-referrer"
+                        onLoad={(e) => { e.currentTarget.style.opacity = '1'; }}
+                        onError={(e) => { 
+                          console.error('Image failed to load:', imageUrl);
+                          e.currentTarget.style.display = 'none'; 
                         }}
+                        style={{ opacity: 0, transition: 'opacity 0.2s' }}
                       />
+                      <span className="absolute text-xs text-gray-400 pointer-events-none">Loading...</span>
                     </div>
-                    <div className="mt-1">
-                      <a 
-                        href={formData.image} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="text-xs text-blue-600 hover:underline flex items-center gap-1"
-                      >
-                        Buka Gambar <ExternalLink className="w-3 h-3" />
-                      </a>
-                    </div>
-                  </>
+                    <a href={imageUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline flex items-center gap-1">Buka Gambar <ExternalLink className="w-3 h-3" /></a>
+                  </div>
                 )}
               </div>
             </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
                 <Label htmlFor="linkedin">LinkedIn URL</Label>
-                <Input
-                  id="linkedin"
-                  value={formData.linkedin}
-                  onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })}
-                  placeholder="https://linkedin.com/in/..."
-                />
+                <Input id="linkedin" name="linkedin" defaultValue={editingMember?.linkedin || ''} placeholder="https://linkedin.com/in/..." />
               </div>
-              <div className="space-y-2">
+              <div className="grid gap-2">
                 <Label htmlFor="instagram">Instagram URL</Label>
-                <Input
-                  id="instagram"
-                  value={formData.instagram}
-                  onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
-                  placeholder="https://instagram.com/..."
-                />
+                <Input id="instagram" name="instagram" defaultValue={editingMember?.instagram || ''} placeholder="https://instagram.com/..." />
               </div>
             </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
                 <Label htmlFor="batch">Batch (Angkatan)</Label>
-                <Input
-                  id="batch"
-                  type="number"
-                  value={formData.batch}
-                  onChange={(e) => setFormData({ ...formData, batch: e.target.value })}
-                  placeholder="2024"
-                />
+                <Input id="batch" name="batch" type="number" defaultValue={editingMember?.batch || ''} placeholder="2024" />
               </div>
-              <div className="space-y-2">
+              <div className="grid gap-2">
                 <Label htmlFor="prodi">Program Studi</Label>
-                <Input
-                  id="prodi"
-                  value={formData.prodi}
-                  onChange={(e) => setFormData({ ...formData, prodi: e.target.value })}
-                  placeholder="e.g., Teknik Informatika"
-                />
+                <Input id="prodi" name="prodi" defaultValue={editingMember?.prodi || ''} placeholder="e.g., Teknik Informatika" />
               </div>
             </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
                 <Label htmlFor="order">Order (Urutan)</Label>
-                <Input
-                  id="order"
-                  type="number"
-                  value={formData.order}
-                  onChange={(e) => setFormData({ ...formData, order: e.target.value })}
-                />
+                <Input id="order" name="order" type="number" defaultValue={editingMember?.order || 0} />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="isActive">Status</Label>
-                <Select 
-                  value={formData.isActive ? "true" : "false"} 
-                  onValueChange={(value) => setFormData({ ...formData, isActive: value === "true" })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
+              <div className="grid gap-2">
+                <Label htmlFor="status">Status</Label>
+                <Select value={formIsActive ? 'true' : 'false'} onValueChange={(v) => setFormIsActive(v === 'true')}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="true">Active</SelectItem>
                     <SelectItem value="false">Inactive</SelectItem>
@@ -816,13 +469,11 @@ export default function TeamManagementPage() {
                 </Select>
               </div>
             </div>
-
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={handleCloseDialog}>
-                Batal
-              </Button>
-              <Button type="submit">
-                {editingMember ? "Update" : "Tambah"}
+            <DialogFooter className="mt-4">
+              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Batal</Button>
+              <Button type="submit" disabled={saveMutation.isPending}>
+                {saveMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {editingMember ? 'Update' : 'Tambah'}
               </Button>
             </DialogFooter>
           </form>
@@ -830,124 +481,66 @@ export default function TeamManagementPage() {
       </Dialog>
 
       {/* View Detail Dialog */}
-      <Dialog open={!!viewingMember} onOpenChange={(open) => !open && setViewingMember(null)}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto left-[55%] md:left-[60%]">
           <DialogHeader>
             <DialogTitle>Detail Team Member</DialogTitle>
           </DialogHeader>
-          
           {viewingMember && (
             <div className="grid md:grid-cols-3 gap-6">
-              {/* Left Column: Image & Main Info */}
               <div className="md:col-span-1 space-y-4">
-                <div className="aspect-square rounded-xl overflow-hidden bg-gray-100 border relative group">
+                <div className="aspect-square rounded-xl overflow-hidden bg-linear-2 border relative group">
                   {viewingMember.image ? (
-                    <img 
-                      src={viewingMember.image} 
-                      alt={viewingMember.name} 
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.src = "https://placehold.co/400?text=Error";
-                      }}
-                    />
+                    <img src={viewingMember.image} alt={viewingMember.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-purple-100 text-purple-600">
                       <Users className="w-16 h-16" />
                     </div>
                   )}
                   {viewingMember.image && (
-                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <a 
-                          href={viewingMember.image} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="px-4 py-2 bg-white rounded-full text-sm font-medium hover:bg-gray-100 flex items-center gap-2"
-                        >
-                          <ExternalLink className="w-4 h-4" /> Buka Full
-                        </a>
-                     </div>
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <a href={viewingMember.image} target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-white rounded-full text-sm font-medium hover:bg-gray-100 flex items-center gap-2">
+                        <ExternalLink className="w-4 h-4" /> Buka Full
+                      </a>
+                    </div>
                   )}
                 </div>
-                
                 <div className="space-y-2 text-center">
                   <h3 className="font-bold text-xl text-gray-900">{viewingMember.name}</h3>
                   <div className="flex flex-wrap gap-2 justify-center">
-                    <Badge className={getTypeBadgeColor(viewingMember.type)}>
-                      {viewingMember.type}
-                    </Badge>
-                    <Badge variant="outline" className={viewingMember.isActive ? "text-green-600 bg-green-50 border-green-200" : "text-gray-500 bg-gray-50"}>
-                      {viewingMember.isActive ? "Active" : "Inactive"}
-                    </Badge>
+                    <Badge className={getTypeBadgeStyle(viewingMember.type)}>{viewingMember.type}</Badge>
+                    <Badge className={getStatusBadgeStyle(viewingMember.isActive)}>{viewingMember.isActive ? 'Active' : 'Inactive'}</Badge>
                   </div>
                 </div>
-
                 <div className="flex justify-center gap-3 pt-2">
-                  {viewingMember.linkedin && (
-                    <a href={viewingMember.linkedin} target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors">
-                      <Linkedin className="w-5 h-5" />
-                    </a>
-                  )}
-                  {viewingMember.instagram && (
-                    <a href={viewingMember.instagram} target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-pink-50 text-pink-600 hover:bg-pink-100 transition-colors">
-                      <Instagram className="w-5 h-5" />
-                    </a>
-                  )}
-                  {viewingMember.email && (
-                    <a href={`mailto:${viewingMember.email}`} className="p-2 rounded-full bg-gray-50 text-gray-600 hover:bg-gray-100 transition-colors">
-                      <Mail className="w-5 h-5" />
-                    </a>
-                  )}
+                  {viewingMember.linkedin && (<a href={viewingMember.linkedin} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-linear-2 flex items-center justify-center text-light hover:scale-110 transition-all"><Linkedin className="w-4 h-4" /></a>)}
+                  {viewingMember.instagram && (<a href={viewingMember.instagram} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-linear-2 flex items-center justify-center text-light hover:scale-110 transition-all"><Instagram className="w-4 h-4" /></a>)}
+                  {viewingMember.email && (<a href={`mailto:${viewingMember.email}`} className="w-9 h-9 rounded-full bg-linear-2 flex items-center justify-center text-light hover:scale-110 transition-all"><Mail className="w-4 h-4" /></a>)}
                 </div>
               </div>
-
-              {/* Right Column: Details */}
               <div className="md:col-span-2 space-y-6">
                 <div>
-                  <h4 className="text-sm font-medium text-gray-500 mb-2">Informasi Jabatan</h4>
+                  <h4 className="text-sm font-medium text-gray-500 mb-2">Detail Biodata Member</h4>
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <div className="text-xs text-gray-500">Jabatan</div>
-                      <div className="font-medium">{viewingMember.title || "-"}</div>
-                    </div>
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <div className="text-xs text-gray-500">Divisi</div>
-                      <div className="font-medium">{viewingMember.division || "-"}</div>
-                    </div>
+                    <div className="p-3 bg-gray-50 rounded-lg"><div className="text-xs text-gray-500">Jabatan</div><div className="font-medium text-sm">{viewingMember.title || '-'}</div></div>
+                    <div className="p-3 bg-gray-50 rounded-lg"><div className="text-xs text-gray-500">Divisi</div><div className="font-medium text-sm">{viewingMember.division || '-'}</div></div>
                   </div>
                 </div>
-
                 {viewingMember.bio && (
                   <div>
                     <h4 className="text-sm font-medium text-gray-500 mb-2">Bio</h4>
-                    <p className="text-gray-700 bg-gray-50 p-4 rounded-lg text-sm leading-relaxed">
-                      {viewingMember.bio}
-                    </p>
+                    <p className="text-gray-700 bg-gray-50 p-4 rounded-lg text-sm leading-relaxed">{viewingMember.bio}</p>
                   </div>
                 )}
-
                 {(viewingMember.prodi || viewingMember.batch) && (
-                   <div>
+                  <div>
                     <h4 className="text-sm font-medium text-gray-500 mb-2">Informasi Akademik</h4>
                     <div className="flex gap-4">
-                      {viewingMember.prodi && (
-                        <div className="p-3 bg-gray-50 rounded-lg flex-1">
-                          <div className="text-xs text-gray-500">Program Studi</div>
-                          <div className="font-medium flex items-center gap-2">
-                            <GraduationCap className="w-4 h-4 text-gray-400" />
-                            {viewingMember.prodi}
-                          </div>
-                        </div>
-                      )}
-                      {viewingMember.batch && (
-                        <div className="p-3 bg-gray-50 rounded-lg flex-1">
-                          <div className="text-xs text-gray-500">Angkatan (Batch)</div>
-                          <div className="font-medium">{viewingMember.batch}</div>
-                        </div>
-                      )}
+                      {viewingMember.prodi && (<div className="p-3 bg-gray-50 rounded-lg flex-1"><div className="text-xs text-gray-500">Program Studi</div><div className="font-medium text-sm flex items-center gap-2">{viewingMember.prodi}</div></div>)}
+                      {viewingMember.batch && (<div className="p-3 bg-gray-50 rounded-lg flex-1"><div className="text-xs text-gray-500">Angkatan (Batch)</div><div className="font-medium text-sm">{viewingMember.batch}</div></div>)}
                     </div>
-                   </div>
+                  </div>
                 )}
-                
                 <div className="grid grid-cols-2 gap-4 text-xs text-gray-400 pt-4 border-t">
                   <div>Created: {new Date(viewingMember.createdAt).toLocaleDateString()}</div>
                   <div className="text-right">Last Updated: {new Date(viewingMember.updatedAt).toLocaleDateString()}</div>
@@ -955,11 +548,8 @@ export default function TeamManagementPage() {
               </div>
             </div>
           )}
-
           <DialogFooter>
-             <Button onClick={() => setViewingMember(null)}>
-               Tutup
-             </Button>
+            <Button onClick={() => setIsViewDialogOpen(false)}>Tutup</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -969,26 +559,12 @@ export default function TeamManagementPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Hapus Team Member</DialogTitle>
-            <DialogDescription>
-              Apakah Anda yakin ingin menghapus <strong>{deletingMember?.name}</strong>? 
-              Tindakan ini tidak dapat dibatalkan.
-            </DialogDescription>
+            <DialogDescription>Apakah Anda yakin ingin menghapus <strong>{deletingMember?.name}</strong>? Tindakan ini tidak dapat dibatalkan.</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                setIsDeleteDialogOpen(false);
-                setDeletingMember(null);
-              }}
-            >
-              Batal
-            </Button>
-            <Button 
-              variant="primary" 
-              onClick={handleDelete}
-              className="bg-red-600 hover:bg-red-700"
-            >
+            <Button variant="outline" onClick={() => { setIsDeleteDialogOpen(false); setDeletingMember(null); }}>Batal</Button>
+            <Button variant="primary" onClick={() => deletingMember && deleteMutation.mutate(deletingMember.id)} disabled={deleteMutation.isPending} className="bg-red-600 hover:bg-red-700 focus:ring-red-500">
+              {deleteMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Hapus
             </Button>
           </DialogFooter>

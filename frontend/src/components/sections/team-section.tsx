@@ -23,7 +23,7 @@ export const TeamSection = () => {
     const fetchMembers = async () => {
       try {
         const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
-        const response = await fetch(`${API_URL}/team?active=true`);
+        const response = await fetch(`${API_URL}/team?active=true&batch=3`);
         const data = await response.json();
         if (data.success && Array.isArray(data.data)) {
           // Sort by order if available, or just take them

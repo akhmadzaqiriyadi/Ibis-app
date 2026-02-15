@@ -7,21 +7,80 @@ import { Instagram, Linkedin } from "lucide-react";
 import { CONTENT } from "@/constants/content";
 import Link from "next/link";
 import { Footer } from "@/components/layout/footer";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
+
+interface TeamMember {
+  id: string;
+  name: string;
+  title?: string;
+  type: string;
+  division?: string;
+  image?: string;
+  bio?: string;
+  email?: string;
+  linkedin?: string;
+  instagram?: string;
+  batch?: number;
+  prodi?: string;
+  order: number;
+  isActive: boolean;
+}
 
 export default function OurTeamPage() {
-  // Get unique batches from members
-  const batches = Array.from(
-    new Set(CONTENT.team.allMembers.map((member) => member.batch))
-  ).sort((a, b) => a - b);
+  const [mentors, setMentors] = useState<TeamMember[]>([]);
+  const [members, setMembers] = useState<TeamMember[]>([]);
+  const [batches, setBatches] = useState<number[]>([]);
+  const [selectedBatch, setSelectedBatch] = useState<number>(3);
 
-  // Set default to first batch
-  const [selectedBatch, setSelectedBatch] = useState<number>(batches[2] || 3);
+  // Fetch mentors (division = Pembina)
+  useEffect(() => {
+    const fetchMentors = async () => {
+      try {
+        const response = await fetch(`${API_URL}/team?active=true&division=Pembina`);
+        const data = await response.json();
+        if (data.success && Array.isArray(data.data)) {
+          const sortedMentors = data.data.sort((a: TeamMember, b: TeamMember) => (a.order || 0) - (b.order || 0));
+          setMentors(sortedMentors);
+        }
+      } catch (error) {
+        console.error("Failed to fetch mentors:", error);
+      }
+    };
+    fetchMentors();
+  }, []);
+
+  // Fetch all members to get batches
+  useEffect(() => {
+    const fetchMembers = async () => {
+      try {
+        const response = await fetch(`${API_URL}/team?active=true`);
+        const data = await response.json();
+        if (data.success && Array.isArray(data.data)) {
+          // Filter out Pembina division for member list
+          const memberData = data.data.filter((m: TeamMember) => m.division !== 'Pembina');
+          setMembers(memberData);
+          
+          // Get unique batches
+          const uniqueBatches = Array.from(new Set(memberData.map((m: TeamMember) => m.batch).filter(Boolean))) as number[];
+          uniqueBatches.sort((a, b) => a - b);
+          setBatches(uniqueBatches);
+          
+          // Set default batch to latest
+          if (uniqueBatches.length > 0) {
+            setSelectedBatch(uniqueBatches[uniqueBatches.length - 1]);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch members:", error);
+      }
+    };
+    fetchMembers();
+  }, []);
 
   // Filter members based on selected batch
-  const filteredMembers = CONTENT.team.allMembers.filter(
-    (member) => member.batch === selectedBatch
-  );
+  const filteredMembers = members.filter((member) => member.batch === selectedBatch);
 
   return (
     <>
@@ -90,26 +149,27 @@ export default function OurTeamPage() {
 
             {/* Mentors Grid - 2 columns */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-4xl mx-auto relative z-10">
-              {CONTENT.team.mentors.map((mentor, index) => (
+              {mentors.length > 0 ? mentors.map((mentor) => (
                 <div
-                  key={index}
+                  key={mentor.id}
                   className="flex flex-col items-center text-center"
                 >
                   {/* Photo with Yellow Accent */}
                   <div className="relative mb-6">
                     <div className="relative w-56 h-56 rounded-full overflow-hidden bg-linear-2 shadow-2xl hover:scale-105 transition-all">
                       <Image
-                        src={mentor.image}
+                        src={mentor.image || "https://placehold.co/400?text=No+Image"}
                         alt={mentor.name}
                         fill
                         className="object-cover"
+                        unoptimized
                       />
                     </div>
                   </div>
 
                   {/* Title */}
                   <p className="text-lg font-semibold text-secondary mb-1 text-center">
-                    {mentor.title}
+                    {mentor.title || '-'}
                   </p>
 
                   {/* Name */}
@@ -118,7 +178,9 @@ export default function OurTeamPage() {
                   </h3>
 
                 </div>
-              ))}
+              )) : (
+                <div className="col-span-2 text-center text-slate-500 py-8">Loading mentors...</div>
+              )}
             </div>
           </Container>
         </section>
@@ -167,26 +229,27 @@ export default function OurTeamPage() {
             {/* Team Members Grid */}
             <div className="relative z-10">
               <div className="flex flex-wrap justify-center gap-8">
-                {filteredMembers.map((member, index) => (
+                {filteredMembers.length > 0 ? filteredMembers.map((member) => (
                   <div
-                    key={index}
+                    key={member.id}
                     className="group bg-light rounded-2xl p-6 hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 border-slate-100 w-full sm:w-[calc(50%-1rem)] lg:w-[calc(25%-1.5rem)]"
                   >
                   {/* Photo with Yellow Accent */}
                   <div className="relative mb-6">
                     <div className="relative w-full aspect-square rounded-full overflow-hidden bg-linear-2">
                       <Image
-                        src={member.image}
+                        src={member.image || "https://placehold.co/400?text=No+Image"}
                         alt={member.name}
                         fill
                         className="object-cover"
+                        unoptimized
                       />
                     </div>
                   </div>
 
                    {/* Division */}
                   <p className="text-sm font-semibold text-secondary mb-1 text-center">
-                    {member.division}
+                    {member.division || '-'}
                   </p>
 
                   {/* Name */}
@@ -198,11 +261,12 @@ export default function OurTeamPage() {
 
                   {/* Prodi */}
                   <p className="text-sm text-slate-600 mb-4 text-center">
-                    {member.prodi}
+                    {member.prodi || '-'}
                   </p>
 
                   {/* Social Media Icons */}
                   <div className="flex gap-2 justify-center">
+                    {member.instagram && (
                     <a
                       href={member.instagram}
                       target="_blank"
@@ -211,6 +275,8 @@ export default function OurTeamPage() {
                     >
                       <Instagram className="w-4 h-4" />
                     </a>
+                    )}
+                    {member.linkedin && (
                     <a
                       href={member.linkedin}
                       target="_blank"
@@ -219,9 +285,14 @@ export default function OurTeamPage() {
                     >
                       <Linkedin className="w-4 h-4" />
                     </a>
+                    )}
                   </div>
                 </div>
-              ))}
+              )) : (
+                <div className="text-center text-slate-500 py-8 w-full">
+                  {members.length === 0 ? 'Loading members...' : 'Tidak ada member untuk batch ini.'}
+                </div>
+              )}
               </div>
             </div>
           </Container>

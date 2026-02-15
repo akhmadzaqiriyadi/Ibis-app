@@ -37,10 +37,12 @@ export const uploadRoutes = new Elysia({ prefix: '/upload' })
       } catch (error) {
         console.error('Upload error:', error);
         set.status = 500;
-        return errorResponse('Failed to upload file');
+        const errorMessage = error instanceof Error ? error.message : 'Failed to upload file';
+        return errorResponse(`Upload failed: ${errorMessage}`);
       }
     },
     {
+      isAuthenticated: true,
       detail: {
         tags: ['Upload'],
         summary: 'Upload a file',

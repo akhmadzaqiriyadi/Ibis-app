@@ -38,7 +38,7 @@ export class StorageService {
       Key: fileName,
       Body: Buffer.from(buffer),
       ContentType: file.type,
-      ACL: 'public-read', // Ensure file is publicly readable if bucket policy allows
+      ACL: 'public-read',
     }));
 
     return `${this.publicUrl}/${this.bucket}/${fileName}`;
@@ -47,7 +47,6 @@ export class StorageService {
   async deleteFile(fileUrl: string): Promise<void> {
     try {
       // Extract key from URL
-      // Expected URL format: https://.../bucket/folder/filename.ext
       const urlParts = fileUrl.split(`${this.bucket}/`);
       if (urlParts.length !== 2) return;
       

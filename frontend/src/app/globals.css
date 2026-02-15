@@ -54,8 +54,7 @@
   --color-popover-foreground: hsl(222.2 84% 4.9%);
   --color-primary: hsl(221.2 83.2% 53.3%);
   --color-primary-foreground: hsl(210 40% 98%);
-  --color-secondary: hsl(210 40% 96.1%);
-  --color-secondary-foreground: hsl(222.2 47.4% 11.2%);
+  /* secondary is defined in @theme for brand color #ffd600 */
   --color-muted: hsl(210 40% 96.1%);
   --color-muted-foreground: hsl(215.4 16.3% 46.9%);
   --color-accent: hsl(210 40% 96.1%);

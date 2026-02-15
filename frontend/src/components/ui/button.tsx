@@ -26,11 +26,11 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <Comp
         ref={ref}
         className={cn(
-          "inline-flex items-center justify-center rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none",
+          "inline-flex items-center justify-center rounded-lg font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none",
           {
-            "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500":
+            "bg-linear-3 text-white cursor-pointer":
               variant === "primary",
-            "border border-slate-200 bg-transparent hover:bg-slate-100 text-slate-900 focus:ring-slate-500":
+            "bg-white text-dark border border-dark hover:bg-dark hover:text-light transition-all duration-200 h-10 px-4 py-2 cursor-pointer":
               variant === "outline",
             "bg-transparent hover:bg-slate-100 text-slate-700 focus:ring-slate-500":
               variant === "ghost",
