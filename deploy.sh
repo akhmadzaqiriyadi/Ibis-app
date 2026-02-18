@@ -4,53 +4,54 @@
 VPS_USER="uch"
 VPS_HOST="10.10.10.200"
 APP_DIR="/home/uch/kewirausahaan-app"
-REPO_URL="https://github.com/akhmadzaqiriyadi/Ibis-app.git"
 SSH_KEY="~/uch"
 
 echo "🚀 Deploying to $VPS_USER@$VPS_HOST..."
 
 ssh -i $SSH_KEY $VPS_USER@$VPS_HOST << EOF
-    # 1. Setup Directory
-    if [ ! -d "$APP_DIR" ]; then
-        echo "Creating directory..."
-        git clone $REPO_URL $APP_DIR
-    fi
-
+    # 1. Update Core Code
     cd $APP_DIR
+    echo "⬇️ Pulling latest code..."
     git pull origin main
 
-    # 2. Config Files
-    # NOTE: You must manually create .env files in backend/ and frontend/ if not committed
-    # cp .env.example .env (if applicable for first time)
-
-    # 3. Backend Setup
-    echo "📦 Installing Backend Dependencies..."
+    # 2. Backend Update
+    echo "📦 Updating Backend..."
     cd backend
     bun install
     bun prisma generate
-    # bun prisma migrate deploy 
+    bun prisma migrate deploy
     cd ..
 
-    # 4. Frontend Setup
-    echo "📦 Installing Frontend Dependencies..."
+    # 3. Frontend Update
+    echo "📦 Updating Frontend..."
     cd frontend
+    # Ensure correct API URL for production build
+    # NOTE: .env.production should be set manually on server with:
+    # NEXT_PUBLIC_API_URL=https://kewirausahaan.uty.ac.id/api/v1
     npm install
     echo "🏗️ Building Frontend..."
     npm run build
     cd ..
 
-    # 5. PM2 Restart
+    # 4. Restart Services
     echo "🔄 Restarting Apps..."
-    pm2 startOrRestart ecosystem.config.cjs --env production
+    pm2 restart kewirausahaan-backend
+    pm2 restart kewirausahaan-frontend
 
-    echo "✅ Apps Deployed!"
+    echo "✅ Deployment Complete!"
 EOF
 
 echo "
-⚠️  IMPORTANT: First Time Setup on Server
-1. Create Database env vars in $APP_DIR/backend/.env
-2. Setup Nginx:
-   sudo ln -s $APP_DIR/nginx_kewirausahaan.conf /etc/nginx/sites-enabled/
-   sudo nginx -t
-   sudo systemctl reload nginx
+⚠️  SERVER SETUP REMINDER (One-time only):
+1. Backend .env:
+   - PORT=2202
+   - DATABASE_URL=postgresql://user:pass@10.10.10.100:2100/db_name
+   - CORS_ORIGIN=https://kewirausahaan.uty.ac.id
+
+2. Frontend .env.production:
+   - NEXT_PUBLIC_API_URL=https://kewirausahaan.uty.ac.id/api/v1
+
+3. Nginx:
+   - Ensure config points to localhost:3001
+   - Ensure SSL is configured for https://kewirausahaan.uty.ac.id
 "
