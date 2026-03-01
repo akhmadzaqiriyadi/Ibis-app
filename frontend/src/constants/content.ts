@@ -259,8 +259,15 @@ export const CONTENT = {
   partners: {
     title: "Kerjasama IBISTEK",
     description: "IBISTEK memiliki program kerjasama dengan beberapa komunitas dan startup",
-    logo: "/images/assets/partners-1.webp",
-    count: 15,
+    logos: [
+      { src: "/images/assets/partners-2.webp", alt: "Partner 1" },
+      { src: "/images/assets/partners-1.webp", alt: "Partner 2" },
+      { src: "/images/assets/partners-3.webp", alt: "Partner 3" },
+      { src: "/images/assets/partners-5-light.webp", alt: "Partner 4" },
+      { src: "/images/assets/partners-4-light.webp", alt: "Partner 5" },
+      { src: "/images/assets/partners-6.webp", alt: "Partner 6" },
+      { src: "/images/assets/partners-7.webp", alt: "Partner 7" },
+    ],
   },
   updates: {
     title: "Event Terbaru",
