@@ -33,7 +33,7 @@ export default function Home() {
         </div>
         <div className="relative bg-light overflow-hidden">
           {/* Yellow Blur Effect - positioned between Team and Partner*/}
-          <div className="absolute top-1/2 -translate-y-1/2 -right-70 lg:-right-50 w-96 h-96 pointer-events-none z-10">
+          <div className="absolute top-[1/2] -translate-y-1/2 -right-70 lg:-right-50 w-96 h-96 pointer-events-none z-10">
             <Image
               src="/images/assets/yellow-blur.webp"
               alt="Blue Blur Effect"
@@ -46,7 +46,7 @@ export default function Home() {
         </div>
         <div className="relative bg-light overflow-hidden">
           {/* Yellow Blur Effect - positioned between Team and Partner*/}
-          <div className="absolute top-[48%] -translate-y-1/2 -left-60 lg:-right-50 w-96 h-96 pointer-events-none z-10">
+          <div className="absolute top-[40%] md:top-[38%] -translate-y-1/2 -left-60 lg:-right-50 w-96 h-96 pointer-events-none z-10">
             <Image
               src="/images/assets/yellow-blur.webp"
               alt="Yellow Blur Effect"
@@ -57,7 +57,7 @@ export default function Home() {
           </div>
           <UpdatesSection />
           <FAQSection />
-          <div className="absolute bottom-[8%] -translate-y-1/2 -right-70 lg:-right-50 w-96 h-96 pointer-events-none z-10">
+          <div className="absolute bottom-[16%] -translate-y-1/2 -right-70 lg:-right-50 w-96 h-96 pointer-events-none z-10">
             <Image
               src="/images/assets/blue-blur.webp"
               alt="Yellow Blur Effect"
