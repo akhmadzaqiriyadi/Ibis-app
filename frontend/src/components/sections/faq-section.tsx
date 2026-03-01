@@ -1,12 +1,68 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { ChevronDown } from "lucide-react";
 import { CONTENT } from "@/constants/content";
 
+// ── Types ──────────────────────────────────────────────────────────────────────
+interface FAQItem {
+  id: string;
+  question: string;
+  answer: string;
+  category: string;
+  order: number;
+  isActive: boolean;
+}
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
+
 export default function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const [faqs, setFaqs] = useState<FAQItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // ── Fetch active FAQs from API ─────────────────────────────────────────────
+  useEffect(() => {
+    const fetchFaqs = async () => {
+      try {
+        const response = await fetch(`${API_URL}/faq?active=true`);
+        const data = await response.json();
+        if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+          // API already returns sorted by order asc (from service)
+          setFaqs(data.data);
+        } else {
+          // Fallback: use static content if API returns empty
+          setFaqs(
+            CONTENT.faq.items.map((item, i) => ({
+              id: String(i),
+              question: item.question,
+              answer: item.answer,
+              category: "general",
+              order: i,
+              isActive: true,
+            }))
+          );
+        }
+      } catch {
+        // Fallback on error
+        setFaqs(
+          CONTENT.faq.items.map((item, i) => ({
+            id: String(i),
+            question: item.question,
+            answer: item.answer,
+            category: "general",
+            order: i,
+            isActive: true,
+          }))
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchFaqs();
+  }, []);
 
   const toggleFAQ = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
@@ -25,64 +81,76 @@ export default function FAQSection() {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left Side - FAQ Questions */}
           <div className="space-y-8">
-
             {/* FAQ Accordion */}
             <div className="space-y-4">
-              {CONTENT.faq.items.map((faq, index) => (
-                <div
-                  key={index}
-                  className={`rounded-2xl overflow-hidden transition-all duration-300 ${
-                    openIndex === index
-                      ? "bg-linear-3 shadow-lg"
-                      : "bg-linear-2"
-                  }`}
-                >
-                  {/* Question Button */}
-                  <button
-                    onClick={() => toggleFAQ(index)}
-                    className="w-full px-6 py-4 flex items-center justify-between text-left transition-all duration-300 text-white hover:bg-opacity-90"
-                  >
-                    <div className="flex items-center gap-4">
-                      {/* Icon */}
-                      <div
-                        className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 bg-white bg-opacity-20 text-dark"
-                      >
-                        <ChevronDown
-                          className={`w-5 h-5 transition-transform duration-300 ${
-                            openIndex === index ? "rotate-180" : ""
-                          }`}
-                        />
-                      </div>
-                      {/* Question Text */}
-                      <span className="font-semibold text-base md:text-lg">
-                        {faq.question}
-                      </span>
-                    </div>
-                  </button>
-
-                  {/* Answer */}
+              {isLoading ? (
+                // ── Loading skeleton ──────────────────────────────────────────
+                Array.from({ length: 3 }).map((_, i) => (
                   <div
-                    className={`overflow-hidden transition-all duration-300 ${
-                      openIndex === index
-                        ? "max-h-96 opacity-100"
-                        : "max-h-0 opacity-0"
-                    }`}
+                    key={i}
+                    className="rounded-2xl overflow-hidden bg-linear-2 animate-pulse"
                   >
-                    <div className="px-6 pb-6 pl-20">
-                      <p className="text-white leading-relaxed">
-                        {faq.answer}
-                      </p>
+                    <div className="px-6 py-4 flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-full bg-white/20 shrink-0" />
+                      <div className="flex-1 h-5 bg-white/20 rounded-lg" />
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                // ── Dynamic FAQ items ─────────────────────────────────────────
+                faqs.map((faq, index) => (
+                  <div
+                    key={faq.id}
+                    className={`rounded-2xl overflow-hidden transition-all duration-300 ${
+                      openIndex === index
+                        ? "bg-linear-3 shadow-lg"
+                        : "bg-linear-2"
+                    }`}
+                  >
+                    {/* Question Button */}
+                    <button
+                      onClick={() => toggleFAQ(index)}
+                      className="w-full px-6 py-4 flex items-center justify-between text-left transition-all duration-300 text-white hover:bg-opacity-90"
+                    >
+                      <div className="flex items-center gap-4">
+                        {/* Icon */}
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 bg-white bg-opacity-20 text-dark">
+                          <ChevronDown
+                            className={`w-5 h-5 transition-transform duration-300 ${
+                              openIndex === index ? "rotate-180" : ""
+                            }`}
+                          />
+                        </div>
+                        {/* Question Text */}
+                        <span className="font-semibold text-base md:text-lg">
+                          {faq.question}
+                        </span>
+                      </div>
+                    </button>
+
+                    {/* Answer */}
+                    <div
+                      className={`overflow-hidden transition-all duration-300 ${
+                        openIndex === index
+                          ? "max-h-96 opacity-100"
+                          : "max-h-0 opacity-0"
+                      }`}
+                    >
+                      <div className="px-6 pb-6 pl-20">
+                        <p className="text-white leading-relaxed">
+                          {faq.answer}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
           {/* Right Side - Image */}
           <div className="relative lg:sticky lg:top-1/3">
             <div className="relative w-full aspect-square max-w-md mx-auto">
-              {/* Image */}
               <div className="relative w-full h-full">
                 <Image
                   src={CONTENT.faq.image}
@@ -98,8 +166,9 @@ export default function FAQSection() {
       </div>
 
       {/* Background decoration */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl -z-10"></div>
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-secondary/5 rounded-full blur-3xl -z-10"></div>
+      <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl -z-10" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-secondary/5 rounded-full blur-3xl -z-10" />
     </section>
   );
 }
+

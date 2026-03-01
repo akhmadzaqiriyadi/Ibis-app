@@ -7,7 +7,8 @@ import {
   Settings,
   LogOut,
   Newspaper,
-  GraduationCap
+  GraduationCap,
+  FileQuestionMark
 } from "lucide-react";
 
 export interface NavItem {
@@ -36,12 +37,12 @@ export const adminNavItems: NavItem[] = [
     icon: GraduationCap,
     color: "text-pink-700",
   },
-  {
-    title: "Updates / News",
-    href: "/dashboard/updates",
-    icon: Newspaper,
-    color: "text-orange-700",
-  },
+  // {
+  //   title: "Updates / News",
+  //   href: "/dashboard/updates",
+  //   icon: Newspaper,
+  //   color: "text-orange-700",
+  // },
   {
     title: "Team Management",
     href: "/dashboard/team",
@@ -49,9 +50,9 @@ export const adminNavItems: NavItem[] = [
     color: "text-emerald-500",
   },
   {
-    title: "CMS Content",
-    href: "/dashboard/content",
-    icon: FileText,
+    title: "FAQ",
+    href: "/dashboard/faq",
+    icon: FileQuestionMark,
     color: "text-blue-500",
   },
   {
