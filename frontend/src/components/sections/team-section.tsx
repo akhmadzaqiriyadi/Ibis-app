@@ -191,14 +191,14 @@ export const TeamSection = () => {
 
           {/* Partners Grid */}
           <div className="flex flex-wrap justify-center gap-6">
-            {Array.from({ length: CONTENT.partners.count }).map((_, index) => (
+            {CONTENT.partners.logos.map((partner, index) => (
               <div
                 key={index}
                 className="bg-white rounded-2xl p-6 flex items-center justify-center shadow-sm hover:shadow-md transition-all border border-slate-100 w-[calc(50%-0.75rem)] sm:w-[calc(33.333%-1rem)] md:w-[calc(25%-1.125rem)] lg:w-[calc(20%-1.2rem)] max-w-[200px]"
               >
                 <Image
-                  src={CONTENT.partners.logo}
-                  alt="UTY Software House"
+                  src={partner.src}
+                  alt={partner.alt}
                   width={120}
                   height={60}
                   className="w-full h-auto object-contain"

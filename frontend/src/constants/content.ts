@@ -259,8 +259,15 @@ export const CONTENT = {
   partners: {
     title: "Kerjasama IBISTEK",
     description: "IBISTEK memiliki program kerjasama dengan beberapa komunitas dan startup",
-    logo: "/images/assets/partners-1.webp",
-    count: 15,
+    logos: [
+      { src: "/images/assets/partner-1.webp", alt: "UTY Creative Hub" },
+      { src: "/images/assets/partner-2.webp", alt: "UTY Software House" },
+      { src: "/images/assets/partner-3.webp", alt: "Fast Lab UTY" },
+      { src: "/images/assets/partner-4-light.webp", alt: "CHAMP Talents" },
+      { src: "/images/assets/partner-5-light.webp", alt: "Unteyo Journey" },
+      { src: "/images/assets/partner-6.webp", alt: "Perspektif UTY" },
+      { src: "/images/assets/partner-7.webp", alt: "Hubungins" },
+    ],
   },
   updates: {
     title: "Event Terbaru",
