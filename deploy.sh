@@ -32,9 +32,9 @@ ssh -i $SSH_KEY $VPS_USER@$VPS_HOST << EOF
     # NOTE: .env.production should be set manually on server with:
     # NEXT_PUBLIC_API_URL=https://kewirausahaan.uty.ac.id/api/v1
     rm -rf .next
-    npm install
+    bun install
     echo "🏗️ Building Frontend..."
-    npm run build
+    bun run build
     cd ..
 
     # 4. Restart Services
