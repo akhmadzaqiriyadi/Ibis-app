@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
-import { adminNavItems } from "@/config/dashboard-nav";
+import { getNavItems } from "@/config/dashboard-nav";
 import { useAuthStore } from "@/stores/auth-store";
 import { LogOut } from "lucide-react";
 import Cookies from "js-cookie";
@@ -14,6 +14,8 @@ export function DashboardSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { logout, user } = useAuthStore();
+  
+  const navItems = getNavItems(user?.role);
 
   const handleLogout = () => {
     logout();
@@ -38,7 +40,7 @@ export function DashboardSidebar() {
           </h1>
         </Link>
         <div className="space-y-1">
-          {adminNavItems.map((route) => (
+          {navItems.map((route) => (
             <Link
               key={route.href}
               href={route.href}

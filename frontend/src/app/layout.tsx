@@ -14,6 +14,7 @@ export const metadata: Metadata = {
 };
 
 import QueryProvider from "@/providers/QueryProvider";
+import { Toaster } from "sonner";
 
 export default function RootLayout({
   children,
@@ -25,6 +26,7 @@ export default function RootLayout({
       <body className={`${dmSans.variable} antialiased`}>
         <QueryProvider>
           {children}
+          <Toaster position="bottom-right" richColors closeButton />
         </QueryProvider>
       </body>
     </html>

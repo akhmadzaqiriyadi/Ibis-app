@@ -35,11 +35,15 @@
     "@prisma/client": "^6.1.0",
     "@types/bcryptjs": "^3.0.0",
     "bcryptjs": "^3.0.3",
-    "elysia": "^1.1.27"
+    "elysia": "^1.1.27",
+    "nodemailer": "^8.0.1",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
     "@types/bun": "latest",
+    "@types/nodemailer": "^7.0.11",
+    "@types/uuid": "^11.0.0",
     "prisma": "^6.1.0"
   }
 }

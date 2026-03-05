@@ -15,9 +15,20 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 
+interface TeamMember {
+  id?: string;
+  name: string;
+  division: string;
+  prodi: string;
+  image?: string;
+  instagram?: string;
+  linkedin?: string;
+  order?: number;
+}
+
 export const TeamSection = () => {
   const swiperRef = useRef<SwiperType | null>(null);
-  const [members, setMembers] = useState<any[]>([]);
+  const [members, setMembers] = useState<TeamMember[]>([]);
   
   useEffect(() => {
     const fetchMembers = async () => {
@@ -27,7 +38,7 @@ export const TeamSection = () => {
         const data = await response.json();
         if (data.success && Array.isArray(data.data)) {
           // Sort by order if available, or just take them
-          const sortedMembers = data.data.sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+          const sortedMembers = data.data.sort((a: TeamMember, b: TeamMember) => (Number(a.order || 0)) - (Number(b.order || 0)));
           setMembers(sortedMembers);
         }
       } catch (error) {

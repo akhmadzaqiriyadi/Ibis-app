@@ -12,6 +12,7 @@ export const Container = ({
   ...props
 // ... props
 }: ContainerProps) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
   const Comp = Component as any;
   return (
     <Comp

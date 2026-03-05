@@ -4,9 +4,9 @@ import { Container } from "@/components/ui/container";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import Image from "next/image";
-import { CONTENT } from "@/constants/content";
 import { Calendar, MapPin, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { Event } from "@/types/event";
 import { useEvents } from "@/hooks/useEvents";
 
 export default function EventPage() {
@@ -122,7 +122,7 @@ export default function EventPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto relative z-10">
-                {upcomingEvents.map((event: any) => (
+                {upcomingEvents.map((event: Event) => (
                   <div
                     key={event.id}
                     className="group bg-linear-2 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300"
@@ -231,7 +231,7 @@ export default function EventPage() {
             ) : (
               /* Recent Events Grid - 3 columns */
               <div className="flex flex-wrap justify-center gap-8 relative z-10">
-                {recentEvents.map((event: any) => (
+                {recentEvents.map((event: Event) => (
                   <div
                     key={event.id}
                     className="group bg-linear-2 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.5rem)]"

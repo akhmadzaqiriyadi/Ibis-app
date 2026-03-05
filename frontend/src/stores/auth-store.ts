@@ -2,18 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { apiClient } from '@/lib/api';
 
-export type Role = 'ADMIN' | 'STAFF' | 'MEMBER';
-
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: Role;
-  isActive: boolean;
-  image?: string;
-  createdAt: string;
-  updatedAt: string;
-}
+import { User, Role } from '@/types';
 
 interface AuthState {
   token: string | null;

@@ -5,12 +5,14 @@ import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
-// Import UI components (assuming you have them or I will create simplified versions inline)
-import { apiClient } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth-store";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Cookies from "js-cookie";
+import { AxiosError } from "axios";
+import Link from "next/link";
+
+import { useLogin } from "@/features/auth/hooks";
 
 // Login Schema
 const loginSchema = z.object({
@@ -23,13 +25,15 @@ type LoginValues = z.infer<typeof loginSchema>;
 export default function LoginForm() {
   const router = useRouter();
   const formRef = useRef(null);
-  const { login } = useAuthStore();
+  const { login: setAuthStore } = useAuthStore();
+  
+  const loginMutation = useLogin();
   
   const {
     register,
     handleSubmit,
     setError,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
   });
@@ -44,27 +48,30 @@ export default function LoginForm() {
     });
   }, { scope: formRef });
 
-  const onSubmit = async (data: LoginValues) => {
-    try {
-      const response = await apiClient.post("/auth/login", {
-        email: data.email,
-        password: data.password,
-      });
-
-        const { token, user } = response.data.data;
+  const onSubmit = (data: LoginValues) => {
+    loginMutation.mutate(data, {
+      onSuccess: (res) => {
+        // Validation handled by Server based on response.data.data -> AuthResponse
+        const { token, user } = res.data;
         
         // Integration: Update store and set Cookie for middleware
-        login(token, user);
+        setAuthStore(token, user);
         Cookies.set("token", token, { expires: 7, sameSite: 'Strict' }); // 7 days expiration
         
         router.push("/dashboard"); // Redirect to dashboard
-    } catch (err: any) {
-      if (err.response?.status === 401) {
-        setError("root", { message: "Email atau password salah" });
-      } else {
-        setError("root", { message: "Terjadi kesalahan. Silakan coba lagi." });
+      },
+      onError: (err: unknown) => {
+        const axErr = err as AxiosError<{ message?: string; error?: string }>;
+        const errorMsg = axErr.response?.data?.message || axErr.response?.data?.error;
+        if (axErr.response?.status === 401) {
+          setError("root", { message: errorMsg || "Email atau password salah" });
+        } else if (axErr.response?.status === 403) {
+          setError("root", { message: errorMsg || "Akun anda belum aktif / belum diverifikasi admin." });
+        } else {
+          setError("root", { message: errorMsg || "Terjadi kesalahan. Silakan coba lagi." });
+        }
       }
-    }
+    });
   };
 
   return (
@@ -120,10 +127,10 @@ export default function LoginForm() {
         {/* Submit Button */}
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={loginMutation.isPending}
           className="w-full py-3 px-4 bg-linear-3 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2"
         >
-          {isSubmitting ? (
+          {loginMutation.isPending ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" />
               <span>Memproses...</span>
@@ -135,7 +142,8 @@ export default function LoginForm() {
       </form>
       
       <div className="mt-6 text-center text-xs text-gray-400 login-form-content">
-        &copy; {new Date().getFullYear()} IBISTEK UTY. All rights reserved.
+        &copy; {new Date().getFullYear()} IBISTEK UTY. All rights reserved.<br />
+        <Link href="/register" className="text-blue-500 hover:underline mt-2 inline-block">Belum memiliki akun? Daftar di sini</Link>
       </div>
     </div>
   );

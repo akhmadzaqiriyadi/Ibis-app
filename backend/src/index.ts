@@ -10,6 +10,10 @@ import { userRoutes } from './features/users/user.routes';
 import { authRoutes } from './features/auth/auth.routes';
 import { uploadRoutes } from './features/upload/upload.routes';
 import { faqRoutes } from './features/faq/faq.routes';
+import { masterDataRoutes } from './features/master-data/master-data.routes';
+import { inkubasiRoutes } from './features/inkubasi/inkubasi.routes';
+import { konsultasiRoutes } from './features/konsultasi/konsultasi.routes';
+import { mikroKredensialRoutes } from './features/mikro-kredensial/mikro-kredensial.routes';
 
 const app = new Elysia()
   .use(
@@ -34,6 +38,10 @@ const app = new Elysia()
           { name: 'FAQ', description: 'FAQ management endpoints' },
           { name: 'Users', description: 'User management endpoints (Admin only)' },
           { name: 'Upload', description: 'File upload endpoints' },
+          { name: 'Master Data', description: 'Kategori usaha & program studi' },
+          { name: 'Inkubasi', description: 'Program inkubasi bisnis — periode & pengajuan' },
+          { name: 'Konsultasi', description: 'Program konsultasi bisnis — pengajuan & mentor flow' },
+          { name: 'Mikro Kredensial', description: 'Program sertifikasi digital, kursus & evaluasi' },
         ],
       },
     })
@@ -57,6 +65,10 @@ const app = new Elysia()
       .use(updateRoutes)
       .use(faqRoutes)
       .use(uploadRoutes)
+      .use(masterDataRoutes)
+      .use(inkubasiRoutes)
+      .use(konsultasiRoutes)
+      .use(mikroKredensialRoutes)
   )
   .onError(({ error, code, set }) => {
     console.error('Error:', error);

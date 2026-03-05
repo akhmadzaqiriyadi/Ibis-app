@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 
 // Define the Base Response structure
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data: T;
   message?: string;

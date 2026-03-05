@@ -3,7 +3,7 @@ import { jwt } from '@elysiajs/jwt';
 import { authService } from './auth.service';
 import { successResponse, errorResponse } from '@/common/response';
 import { AppError } from '@/common/errors';
-import { Role } from '@prisma/client';
+import { Role, UserType } from '@prisma/client';
 
 export const authRoutes = new Elysia({ prefix: '/auth' })
   .use(
@@ -20,11 +20,20 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
     '/register',
     async ({ body, jwt, set }) => {
       try {
+        const profileData = body.userType ? {
+            userType: body.userType as UserType,
+            noWhatsApp: body.noWhatsApp,
+            npm: body.npm,
+            programStudiId: body.programStudiId,
+            alamatUsaha: body.alamatUsaha,
+        } : undefined;
+
         const user = await authService.register({
           email: body.email,
           password: body.password,
           name: body.name,
           role: (body.role as Role) || Role.MEMBER,
+          profile: profileData,
         });
 
         const token = await jwt.sign({
@@ -61,6 +70,11 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
         password: t.String({ minLength: 6, example: 'password123' }),
         name: t.String({ example: 'John Doe' }),
         role: t.Optional(t.Enum(Role, { example: 'MEMBER' })),
+        userType: t.Optional(t.Enum(UserType)),
+        noWhatsApp: t.Optional(t.String()),
+        npm: t.Optional(t.String()),
+        programStudiId: t.Optional(t.String()),
+        alamatUsaha: t.Optional(t.String()),
       }),
       response: {
         201: t.Object({
@@ -224,4 +238,170 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
         }),
       },
     }
-  );
+  )
+  .get('/pending-users', async ({ query, set }) => {
+    try {
+      const page = query.page ? parseInt(query.page as string) : 1;
+      const limit = query.limit ? parseInt(query.limit as string) : 10;
+      const search = query.search && query.search !== 'undefined' ? (query.search as string) : undefined;
+      const userType = query.userType && query.userType !== 'undefined' ? (query.userType as string) : undefined;
+      const result = await authService.getPendingUsers(page, limit, search, userType);
+      return successResponse({
+          data: result.items,
+          pagination: {
+              page: result.page,
+              limit: result.limit,
+              total: result.total,
+              totalPages: result.totalPages
+          }
+      });
+    } catch (err) {
+      if (err instanceof AppError) {
+        set.status = err.statusCode;
+        return errorResponse(err.message);
+      }
+      set.status = 500;
+      return errorResponse('Failed to fetch pending users');
+    }
+  })
+  .get('/users', async ({ query, set, jwt, cookie: { auth }, headers }) => {
+    try {
+      // Must be admin check
+      const authHeader = headers['authorization'];
+      let token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : (auth as any).value;
+      if (!token && typeof auth === 'string') token = auth;
+      if (!token) {
+        set.status = 401;
+        return errorResponse('Unauthorized');
+      }
+      const profile = await jwt.verify(token as string);
+      
+      const payload = profile as unknown as { id: string; role: Role };
+      if (!profile || payload.role !== Role.ADMIN) {
+        set.status = 403;
+        return errorResponse('Forbidden: Only admin can access user list');
+      }
+
+      const page = query.page ? parseInt(query.page as string) : 1;
+      const limit = query.limit ? parseInt(query.limit as string) : 10;
+      const search = query.search && query.search !== 'undefined' ? (query.search as string) : undefined;
+      const roleFilter = query.roleFilter && query.roleFilter !== 'undefined' ? (query.roleFilter as string) : undefined;
+      const statusFilter = query.statusFilter && query.statusFilter !== 'undefined' ? (query.statusFilter as string) : undefined;
+      
+      const result = await authService.getUsers(page, limit, search, roleFilter, statusFilter);
+      return successResponse({
+          data: result.items,
+          pagination: {
+              page: result.page,
+              limit: result.limit,
+              total: result.total,
+              totalPages: result.totalPages
+          }
+      });
+    } catch (err) {
+      if (err instanceof AppError) {
+        set.status = err.statusCode;
+        return errorResponse(err.message);
+      }
+      set.status = 500;
+      return errorResponse('Failed to fetch users');
+    }
+  })
+  .put('/users/:id', async ({ params, body, set, jwt, cookie: { auth }, headers }) => {
+    try {
+      const authHeader = headers['authorization'];
+      let token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : (auth as any).value;
+      if (!token && typeof auth === 'string') token = auth;
+      if (!token) {
+        set.status = 401;
+        return errorResponse('Unauthorized');
+      }
+      const profile = await jwt.verify(token as string);
+      const payload = profile as unknown as { id: string; role: Role };
+      if (!profile || payload.role !== Role.ADMIN) {
+        set.status = 403;
+        return errorResponse('Forbidden');
+      }
+
+      const userId = params.id;
+      const updatedUser = await authService.updateUser(userId, body as { name?: string; role?: Role; isActive?: boolean });
+      return successResponse(updatedUser, 'User updated successfully');
+    } catch (err) {
+      if (err instanceof AppError) {
+        set.status = err.statusCode;
+        return errorResponse(err.message);
+      }
+      set.status = 500;
+      return errorResponse('Failed to update user');
+    }
+  }, {
+    body: t.Object({
+      name: t.Optional(t.String()),
+      role: t.Optional(t.Enum(Role)),
+      isActive: t.Optional(t.Boolean())
+    })
+  })
+  .delete('/users/:id', async ({ params, set, jwt, cookie: { auth }, headers }) => {
+    try {
+      const authHeader = headers['authorization'];
+      let token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : (auth as any).value;
+      if (!token && typeof auth === 'string') token = auth;
+      if (!token) {
+        set.status = 401;
+        return errorResponse('Unauthorized');
+      }
+      const profile = await jwt.verify(token as string);
+      const payload = profile as unknown as { id: string; role: Role };
+      if (!profile || payload.role !== Role.ADMIN) {
+        set.status = 403;
+        return errorResponse('Forbidden');
+      }
+
+      await authService.deleteUser(params.id);
+      return successResponse(null, 'User deleted successfully');
+    } catch (err) {
+      if (err instanceof AppError) {
+        set.status = err.statusCode;
+        return errorResponse(err.message);
+      }
+      set.status = 500;
+      return errorResponse('Failed to delete user');
+    }
+  })
+  .post('/verify/:id', async ({ params, body, set, jwt, cookie: { auth }, headers }) => {
+    try {
+        const authHeader = headers['authorization'];
+        let token = authHeader?.startsWith('Bearer ') 
+          ? authHeader.slice(7) 
+          : (auth as any).value;
+        if (!token && typeof auth === 'string') {
+          token = auth;
+        }
+        if (!token) {
+          set.status = 401;
+          return errorResponse('Unauthorized');
+        }
+        const profile = await jwt.verify(token as string);
+        if (!profile) {
+            set.status = 401;
+            return errorResponse('Invalid token');
+        }
+
+        const payload = profile as unknown as { id: string; role: Role };
+
+        const result = await authService.verifyUser(params.id, payload.id, body as { status: 'APPROVED' | 'REJECTED'; rejectionReason?: string });
+        return successResponse(result, 'User verification processed');
+    } catch (err) {
+      if (err instanceof AppError) {
+        set.status = err.statusCode;
+        return errorResponse(err.message);
+      }
+      set.status = 500;
+      return errorResponse('Failed to verify user');
+    }
+  }, {
+      body: t.Object({
+          status: t.Union([t.Literal('APPROVED'), t.Literal('REJECTED')]),
+          rejectionReason: t.Optional(t.String())
+      })
+  });

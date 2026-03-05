@@ -11,29 +11,62 @@ datasource db {
 }
 
 // ========================================
-// EVENTS - Event Management
+// ENUMS
 // ========================================
-model Event {
-  id          String   @id @default(cuid())
-  title       String
-  slug        String   @unique
-  description String   @db.Text
-  date        DateTime
-  endDate     DateTime?
-  location    String?
-  image       String?
-  category    String   @default("general") // workshop, seminar, sosialisasi, etc
-  status      EventStatus @default(UPCOMING)
-  maxParticipants Int?
-  registrationUrl String?
-  isPublished Boolean  @default(false)
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  @@index([slug])
-  @@index([status])
-  @@index([date])
+
+enum Role {
+  ADMIN
+  STAFF
+  MEMBER   // Role lama CMS, dipertahankan agar tidak breaking
+  USER     // Role lama CMS, dipertahankan agar tidak breaking
+  MENTOR
+  MAHASISWA
+  UMKM
+}
+
+enum UserType {
+  MAHASISWA
+  UMKM
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum PlatformPenjualan {
+  ONLINE
+  OFFLINE
+  KEDUANYA
+}
+
+enum MetodeKonsultasi {
+  ONLINE
+  OFFLINE
+}
+
+enum InkubasiStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum KonsultasiStatus {
+  PENDING           // Baru masuk dari user
+  ASSIGNED          // Sudah di-assign mentor oleh admin
+  MENTOR_CONFIRMED  // Mentor menyatakan bersedia
+  MENTOR_DECLINED   // Mentor tidak bisa / menolak
+  MENTOR_TIMEOUT    // Mentor tidak merespon dalam batas waktu
+  CONFIRMED         // Final dikonfirmasi ke user
+  CANCELLED         // Dibatalkan (oleh admin/user)
+  COMPLETED         // Sesi konsultasi sudah selesai
+}
+
+enum MikroKredensialStatus {
+  IN_PROGRESS
+  COMPLETED
+  FAILED
 }
 
 enum EventStatus {
@@ -43,30 +76,6 @@ enum EventStatus {
   CANCELLED
 }
 
-// ========================================
-// PROGRAMS - Program Information
-// ========================================
-model Program {
-  id          String   @id @default(cuid())
-  title       String
-  slug        String   @unique
-  description String   @db.Text
-  type        ProgramType
-  image       String?
-  ctaText     String   @default("Daftar Sekarang")
-  ctaUrl      String?
-  requiresAuth Boolean @default(true)
-  isActive    Boolean  @default(true)
-  order       Int      @default(0) // untuk sorting
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  @@index([slug])
-  @@index([type])
-  @@index([order])
-}
-
 enum ProgramType {
   INKUBASI
   KONSULTASI
@@ -74,110 +83,11 @@ enum ProgramType {
   EVENT
 }
 
-// ========================================
-// AUTH - User Management
-// ========================================
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  name      String
-  role      Role     @default(MEMBER)
-  isActive  Boolean  @default(true)
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  @@index([role])
-}
-
-enum Role {
-  ADMIN
-  STAFF
-  MEMBER
-  USER // Regular user if needed
-}
-
-// ========================================
-// TEAM - Team Members
-// ========================================
-model TeamMember {
-  id          String   @id @default(cuid())
-  name        String
-  title       String?  // Specific job title e.g. "Head of Incubator" or "CEO"
-  type        TeamType @default(MEMBER) // Category: LEADER, STAFF, MENTOR, MEMBER
-  division    String?  // Division name e.g. "Public Relations", "Marketing"
-  
-  image       String?
-  bio         String?  @db.Text
-  
-  // Contact & Social
-  email       String?
-  linkedin    String?
-  instagram   String?
-  
-  // Student Specific
-  batch       Int?
-  prodi       String?
-
-  order       Int      @default(0)
-  isActive    Boolean  @default(true)
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  @@index([type])
-  @@index([batch])
-  @@index([order])
-}
-
 enum TeamType {
   LEADER
   STAFF
   MENTOR
   MEMBER
-}
-
-// ========================================
-// UPDATES - News & Updates
-// ========================================
-model Update {
-  id          String   @id @default(cuid())
-  title       String
-  slug        String   @unique
-  summary     String   @db.Text
-  content     String?  @db.Text
-  image       String?
-  date        DateTime @default(now())
-  category    String   @default("news") // news, workshop, achievement, etc
-  isPublished Boolean  @default(false)
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  @@index([slug])
-  @@index([date])
-  @@index([isPublished])
-}
-
-// ========================================
-// PARTNERS - Partner Organizations
-// ========================================
-model Partner {
-  id          String   @id @default(cuid())
-  name        String
-  type        PartnerType
-  logo        String?
-  website     String?
-  description String?  @db.Text
-  order       Int      @default(0)
-  isActive    Boolean  @default(true)
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  @@index([type])
-  @@index([order])
 }
 
 enum PartnerType {
@@ -188,19 +98,439 @@ enum PartnerType {
 }
 
 // ========================================
+// AUTH - User Management
+// ========================================
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(MAHASISWA)
+  isActive  Boolean  @default(true) // Admin set false untuk user baru yang butuh verifikasi
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  profile             UserProfile?          @relation("UserProfile")
+  verifiedProfiles    UserProfile[]         @relation("VerifiedBy")
+
+  inkubasiApplications   InkubasiApplication[]   @relation("InkubasiApplicant")
+  reviewedInkubasi       InkubasiApplication[]   @relation("InkubasiReviewer")
+  createdPeriods         InkubasiPeriod[]        @relation("PeriodCreatedBy")
+
+  konsultasiApplications KonsultasiApplication[] @relation("KonsultasiApplicant")
+  assignedKonsultasi     KonsultasiApplication[] @relation("KonsultasiMentor")
+  adminAssignedKonsultasi KonsultasiApplication[] @relation("KonsultasiAssignedBy")
+  confirmedKonsultasi    KonsultasiApplication[] @relation("KonsultasiConfirmedBy")
+
+  mikrEnrollments        MikroKredensialEnrollment[]
+  certificates           Certificate[]
+
+  @@index([role])
+  @@index([isActive])
+}
+
+// ========================================
+// USER PROFILE - Extended User Data
+// ========================================
+model UserProfile {
+  id     String   @id @default(cuid())
+  userId String   @unique
+  user   User     @relation("UserProfile", fields: [userId], references: [id], onDelete: Cascade)
+
+  userType   UserType
+  noWhatsApp String?
+
+  // Mahasiswa only
+  npm            String?
+  programStudiId String?
+  programStudi   ProgramStudi? @relation(fields: [programStudiId], references: [id])
+
+  // UMKM only
+  alamatUsaha String?
+
+  // Verification
+  verificationStatus VerificationStatus @default(PENDING)
+  verifiedAt         DateTime?
+  verifiedById       String?
+  verifiedBy         User?              @relation("VerifiedBy", fields: [verifiedById], references: [id])
+  rejectionReason    String?            @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userType])
+  @@index([verificationStatus])
+}
+
+// ========================================
+// MASTER DATA - Program Studi
+// ========================================
+model ProgramStudi {
+  id       String  @id @default(cuid())
+  name     String
+  code     String? @unique
+  fakultas String?
+  isActive Boolean @default(true)
+  order    Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  profiles UserProfile[]
+
+  @@index([isActive])
+}
+
+// ========================================
+// MASTER DATA - Kategori Usaha
+// ========================================
+model KategoriUsaha {
+  id       String  @id @default(cuid())
+  name     String  @unique
+  isActive Boolean @default(true)
+  order    Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  inkubasiApplications   InkubasiApplication[]
+  konsultasiApplications KonsultasiApplication[]
+
+  @@index([isActive])
+}
+
+// ========================================
+// INKUBASI - Periode
+// ========================================
+model InkubasiPeriod {
+  id          String   @id @default(cuid())
+  name        String   // e.g. "Periode 1 Tahun 2025"
+  startDate   DateTime
+  endDate     DateTime
+  isActive    Boolean  @default(true)
+  description String?  @db.Text
+
+  createdById String?
+  createdBy   User?   @relation("PeriodCreatedBy", fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  applications InkubasiApplication[]
+
+  @@index([isActive])
+  @@index([startDate, endDate])
+}
+
+// ========================================
+// INKUBASI - Pengajuan / Aplikasi
+// ========================================
+model InkubasiApplication {
+  id String @id @default(cuid())
+
+  // Applicant
+  userId String
+  user   User   @relation("InkubasiApplicant", fields: [userId], references: [id])
+
+  // Period
+  periodId String
+  period   InkubasiPeriod @relation(fields: [periodId], references: [id])
+
+  // Business Profile
+  namaPemilik       String
+  tahunBerdiri      Int
+  kategoriUsahaId   String
+  kategoriUsaha     KategoriUsaha     @relation(fields: [kategoriUsahaId], references: [id])
+  rataOmsetPerBulan String            // teks bebas: "1-5 juta", "5-10 juta", dll
+  platformPenjualan PlatformPenjualan
+  uraianProduk      String            @db.Text
+  kendala           String            @db.Text
+  harapan           String            @db.Text
+
+  // Status & Review
+  status         InkubasiStatus @default(PENDING)
+  reviewNote     String?        @db.Text
+  reviewedAt     DateTime?
+  reviewedById   String?
+  reviewedBy     User?          @relation("InkubasiReviewer", fields: [reviewedById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([periodId])
+  @@index([status])
+}
+
+// ========================================
+// KONSULTASI - Pengajuan / Aplikasi
+// ========================================
+model KonsultasiApplication {
+  id String @id @default(cuid())
+
+  // Applicant
+  userId String
+  user   User   @relation("KonsultasiApplicant", fields: [userId], references: [id])
+
+  // Business Profile
+  namaPemilik       String
+  tahunBerdiri      Int
+  kategoriUsahaId   String
+  kategoriUsaha     KategoriUsaha     @relation(fields: [kategoriUsahaId], references: [id])
+  rataOmsetPerBulan String
+  platformPenjualan PlatformPenjualan
+  uraianProduk      String            @db.Text
+  topikKonsultasi   String            @db.Text
+
+  // Schedule & Method by User
+  preferredDate DateTime
+  metode        MetodeKonsultasi
+
+  // Assignment by Admin
+  status           KonsultasiStatus @default(PENDING)
+  assignedMentorId String?
+  assignedMentor   User?            @relation("KonsultasiMentor", fields: [assignedMentorId], references: [id])
+  assignedAt       DateTime?
+  assignedById     String?
+  assignedBy       User?            @relation("KonsultasiAssignedBy", fields: [assignedById], references: [id])
+
+  // Mentor Response (batas waktu konfirmasi)
+  mentorResponseDeadline DateTime?
+  mentorConfirmedAt      DateTime?
+  mentorDeclineReason    String?   @db.Text
+
+  // Final Confirmation to User
+  confirmedAt       DateTime?
+  confirmedById     String?
+  confirmedBy       User?     @relation("KonsultasiConfirmedBy", fields: [confirmedById], references: [id])
+  confirmedDate     DateTime? // jadwal final yang disepakati
+  meetingLink       String?   // untuk online (Zoom, GMeet, dll)
+  meetingLocation   String?   // untuk offline
+
+  // Cancellation
+  cancelledAt  DateTime?
+  cancelReason String?   @db.Text
+
+  // Completion
+  completedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([assignedMentorId])
+  @@index([status])
+  @@index([preferredDate])
+}
+
+// ========================================
+// MIKRO KREDENSIAL - Kursus
+// ========================================
+model MikroKredensialKursus {
+  id          String  @id @default(cuid())
+  title       String
+  slug        String  @unique
+  description String  @db.Text
+  thumbnail   String?
+  duration    Int?    // durasi total dalam menit
+  isActive    Boolean @default(true)
+  order       Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  enrollments MikroKredensialEnrollment[]
+
+  @@index([slug])
+  @@index([isActive])
+}
+
+// ========================================
+// MIKRO KREDENSIAL - Enrollment
+// ========================================
+model MikroKredensialEnrollment {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  kursusId String
+  kursus   MikroKredensialKursus @relation(fields: [kursusId], references: [id])
+
+  status      MikroKredensialStatus @default(IN_PROGRESS)
+  completedAt DateTime?
+  score       Float?
+
+  certificate Certificate?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, kursusId])
+  @@index([status])
+}
+
+// ========================================
+// SERTIFIKAT DIGITAL
+// ========================================
+model Certificate {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  enrollmentId String                    @unique
+  enrollment   MikroKredensialEnrollment @relation(fields: [enrollmentId], references: [id])
+
+  certificateNumber String   @unique // e.g. IBIS/CERT/2025/001
+  issuedAt          DateTime @default(now())
+  fileUrl           String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([issuedAt])
+}
+
+// ========================================
+// EVENTS - Event Management
+// ========================================
+model Event {
+  id              String      @id @default(cuid())
+  title           String
+  slug            String      @unique
+  description     String      @db.Text
+  date            DateTime
+  endDate         DateTime?
+  location        String?
+  image           String?
+  category        String      @default("general")
+  status          EventStatus @default(UPCOMING)
+  maxParticipants Int?
+  registrationUrl String?
+  isPublished     Boolean     @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+  @@index([status])
+  @@index([date])
+}
+
+// ========================================
+// PROGRAMS - Program Information (Landing Page)
+// ========================================
+model Program {
+  id          String      @id @default(cuid())
+  title       String
+  slug        String      @unique
+  description String      @db.Text
+  type        ProgramType
+  image       String?
+  ctaText     String      @default("Daftar Sekarang")
+  ctaUrl      String?
+  requiresAuth Boolean    @default(true)
+  isActive    Boolean     @default(true)
+  order       Int         @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+  @@index([type])
+  @@index([order])
+}
+
+// ========================================
+// TEAM - Team Members
+// ========================================
+model TeamMember {
+  id       String   @id @default(cuid())
+  name     String
+  title    String?
+  type     TeamType @default(MEMBER)
+  division String?
+
+  image String?
+  bio   String? @db.Text
+
+  email     String?
+  linkedin  String?
+  instagram String?
+
+  batch    Int?
+  prodi    String?
+  order    Int     @default(0)
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type])
+  @@index([batch])
+  @@index([order])
+}
+
+// ========================================
+// UPDATES - News & Updates
+// ========================================
+model Update {
+  id          String  @id @default(cuid())
+  title       String
+  slug        String  @unique
+  summary     String  @db.Text
+  content     String? @db.Text
+  image       String?
+  date        DateTime @default(now())
+  category    String   @default("news")
+  isPublished Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+  @@index([date])
+  @@index([isPublished])
+}
+
+// ========================================
+// PARTNERS - Partner Organizations
+// ========================================
+model Partner {
+  id          String      @id @default(cuid())
+  name        String
+  type        PartnerType
+  logo        String?
+  website     String?
+  description String?     @db.Text
+  order       Int         @default(0)
+  isActive    Boolean     @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type])
+  @@index([order])
+}
+
+// ========================================
 // FAQ - Frequently Asked Questions
 // ========================================
 model FAQ {
-  id          String   @id @default(cuid())
-  question    String   @db.Text
-  answer      String   @db.Text
-  category    String   @default("general")
-  order       Int      @default(0)
-  isActive    Boolean  @default(true)
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  id       String  @id @default(cuid())
+  question String  @db.Text
+  answer   String  @db.Text
+  category String  @default("general")
+  order    Int     @default(0)
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([category])
   @@index([order])
 }
