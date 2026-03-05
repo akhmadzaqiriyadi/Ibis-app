@@ -16,6 +16,10 @@ ssh -i $SSH_KEY $VPS_USER@$VPS_HOST << EOF
     git reset --hard origin/main
     git pull origin main
 
+    # Pastikan BUN dapat diakses oleh SSH script
+    source ~/.bashrc
+    export PATH="~/.bun/bin:$PATH"
+
     # 2. Backend Update
     echo "📦 Updating Backend..."
     cd backend
