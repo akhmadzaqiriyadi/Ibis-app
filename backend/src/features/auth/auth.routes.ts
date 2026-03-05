@@ -28,11 +28,18 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
             alamatUsaha: body.alamatUsaha,
         } : undefined;
 
+        let roleToAssign = (body.role as Role) || Role.MEMBER;
+        if (body.userType === 'MAHASISWA') {
+          roleToAssign = Role.MAHASISWA;
+        } else if (body.userType === 'UMKM') {
+          roleToAssign = Role.UMKM;
+        }
+
         const user = await authService.register({
           email: body.email,
           password: body.password,
           name: body.name,
-          role: (body.role as Role) || Role.MEMBER,
+          role: roleToAssign,
           profile: profileData,
         });
 
