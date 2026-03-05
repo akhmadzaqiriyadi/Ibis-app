@@ -12,6 +12,16 @@ import {
   DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetFooter,
+} from "@/components/ui/sheet";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useProgramStudiList } from "@/features/master-data/hooks";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
@@ -57,28 +67,69 @@ export default function ManageUsersPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
+  const { data: prodiData } = useProgramStudiList();
+  const prodis = Array.isArray(prodiData) ? prodiData : (prodiData as any)?.data || [];
+
   // Edit Form States
   const [editName, setEditName] = useState("");
   const [editRole, setEditRole] = useState("");
   const [editIsActive, setEditIsActive] = useState(false);
+  const [editPassword, setEditPassword] = useState("");
+  
+  // Profile Form States
+  const [editUserType, setEditUserType] = useState<"MAHASISWA"|"UMKM"|"">("");
+  const [editNoWhatsApp, setEditNoWhatsApp] = useState("");
+  const [editNpm, setEditNpm] = useState("");
+  const [editProdiId, setEditProdiId] = useState("");
+  const [editAlamatUsaha, setEditAlamatUsaha] = useState("");
 
   const openEditDialog = (user: User) => {
     setSelectedUser(user);
     setEditName(user.name);
     setEditRole(user.role);
     setEditIsActive(user.isActive);
+    setEditPassword(""); // always reset password field
+    
+    if (user.profile) {
+       setEditUserType(user.profile.userType as any || "");
+       setEditNoWhatsApp(user.profile.noWhatsApp || "");
+       setEditNpm(user.profile.npm || "");
+       setEditProdiId(user.profile.programStudiId || "");
+       setEditAlamatUsaha(user.profile.alamatUsaha || "");
+    } else {
+       setEditUserType("");
+       setEditNoWhatsApp("");
+       setEditNpm("");
+       setEditProdiId("");
+       setEditAlamatUsaha("");
+    }
+    
     setIsEditDialogOpen(true);
   };
 
   const handleConfirmEdit = () => {
     if (!selectedUser) return;
+    
+    let profileData: any = undefined;
+    if (editUserType) {
+       profileData = {
+          userType: editUserType,
+          noWhatsApp: editNoWhatsApp,
+          npm: editUserType === "MAHASISWA" ? editNpm : undefined,
+          programStudiId: editUserType === "MAHASISWA" ? editProdiId : undefined,
+          alamatUsaha: editUserType === "UMKM" ? editAlamatUsaha : undefined,
+       };
+    }
+
     updateMutation.mutate({
         id: selectedUser.id,
         data: {
             name: editName,
             role: editRole as Role,
-            isActive: editIsActive
-        }
+            isActive: editIsActive,
+            ...(editPassword ? { password: editPassword } : {}),
+            ...(profileData ? { profile: profileData } : {})
+        } as any
     }, {
         onSuccess: () => {
             setIsEditDialogOpen(false);
@@ -322,26 +373,37 @@ export default function ManageUsersPage() {
         </div>
       )}
 
-      {/* Edit Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Edit Pengguna</DialogTitle>
-            <DialogDescription>
+      {/* Edit Sheet */}
+      <Sheet open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <SheetContent className="sm:max-w-md md:max-w-xl overflow-y-auto bg-white w-full">
+          <SheetHeader>
+            <SheetTitle>Detail & Edit Pengguna</SheetTitle>
+            <SheetDescription>
               Ubah rincian profil <strong>{selectedUser?.email}</strong>.
-            </DialogDescription>
-          </DialogHeader>
+            </SheetDescription>
+          </SheetHeader>
           
-          <div className="grid gap-4 py-4">
+          <Tabs defaultValue="account" className="w-full mt-6">
+            <TabsList className="grid w-full grid-cols-2 bg-slate-100">
+              <TabsTrigger value="account">Akun Utama</TabsTrigger>
+              <TabsTrigger value="profile">Profil Tambahan</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="account" className="space-y-4 py-4">
               <div className="grid gap-2">
                   <Label>Nama Pengguna</Label>
                   <Input value={editName} onChange={(e) => setEditName(e.target.value)} />
               </div>
 
               <div className="grid gap-2">
-                  <Label>Hak Akses (Role)</Label>
+                  <Label>Email</Label>
+                  <Input value={selectedUser?.email || ""} disabled className="bg-slate-100 placeholder:text-slate-500" />
+              </div>
+
+              <div className="grid gap-2">
+                  <Label>Role</Label>
                   <Select value={editRole} onValueChange={setEditRole}>
-                      <SelectTrigger>
+                      <SelectTrigger className="bg-white">
                           <SelectValue placeholder="Pilih Role" />
                       </SelectTrigger>
                       <SelectContent>
@@ -358,18 +420,105 @@ export default function ManageUsersPage() {
               <div className="grid gap-2">
                   <Label>Status Akun</Label>
                   <Select value={editIsActive ? "active" : "inactive"} onValueChange={(val) => setEditIsActive(val === "active")}>
-                      <SelectTrigger>
+                      <SelectTrigger className="bg-white">
                           <SelectValue placeholder="Status Aktif" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="active">Aktif (Dapat Login)</SelectItem>
-                        <SelectItem value="inactive">Non-Aktif / Banned</SelectItem>
+                        <SelectItem value="inactive">Non-aktif / Banned</SelectItem>
                       </SelectContent>
                   </Select>
               </div>
-          </div>
 
-          <DialogFooter className="mt-2">
+              <div className="grid gap-2 pt-4 mt-6 border-t border-slate-200">
+                  <Label className="text-red-500">Ganti Password (Opsional)</Label>
+                  <Input 
+                    type="password" 
+                    placeholder="Ketik password baru jika ingin mereset"
+                    value={editPassword} 
+                    onChange={(e) => setEditPassword(e.target.value)} 
+                    className="bg-white"
+                  />
+                  <p className="text-xs text-muted-foreground">Biarkan kosong jika tidak ingin mengubah password akun ini.</p>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="profile" className="space-y-4 py-4">
+              <div className="grid gap-2">
+                  <Label>Tipe Akun Profil</Label>
+                  <Select value={editUserType} onValueChange={(val: any) => setEditUserType(val)}>
+                      <SelectTrigger className="bg-white">
+                          <SelectValue placeholder="Pilih Tipe User..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="MAHASISWA">Mahasiswa UTY</SelectItem>
+                        <SelectItem value="UMKM">UMKM</SelectItem>
+                      </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">Tipe profil untuk pendaftaran program</p>
+              </div>
+
+              {editUserType && (
+                 <div className="grid gap-2 mt-4">
+                     <Label>Nomor WhatsApp</Label>
+                     <Input 
+                        value={editNoWhatsApp} 
+                        onChange={(e) => setEditNoWhatsApp(e.target.value)} 
+                        placeholder="Contoh: 081234567890"
+                        className="bg-white"
+                     />
+                 </div>
+              )}
+
+              {editUserType === "MAHASISWA" && (
+                <>
+                  <div className="grid gap-2">
+                      <Label>NPM</Label>
+                      <Input 
+                         value={editNpm} 
+                         onChange={(e) => setEditNpm(e.target.value)} 
+                         placeholder="Nomor Pokok Mahasiswa"
+                         className="bg-white"
+                      />
+                  </div>
+                  <div className="grid gap-2">
+                      <Label>Program Studi</Label>
+                      <Select value={editProdiId || "unselected"} onValueChange={(v) => setEditProdiId(v === "unselected" ? "" : v)}>
+                          <SelectTrigger className="bg-white">
+                              <SelectValue placeholder="Pilih Program Studi" />
+                          </SelectTrigger>
+                          <SelectContent>
+                              <SelectItem value="unselected">Pilih Program Studi...</SelectItem>
+                              {prodis.map((p: any) => (
+                                  <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                              ))}
+                          </SelectContent>
+                      </Select>
+                  </div>
+                </>
+              )}
+
+              {editUserType === "UMKM" && (
+                 <div className="grid gap-2">
+                    <Label>Alamat Usaha</Label>
+                    <Input 
+                       value={editAlamatUsaha} 
+                       onChange={(e) => setEditAlamatUsaha(e.target.value)} 
+                       placeholder="Alamat lengkap usaha"
+                       className="bg-white"
+                    />
+                 </div>
+              )}
+              
+              {!editUserType && (
+                  <div className="py-8 mt-4 text-center text-sm text-muted-foreground bg-slate-50 border border-dashed rounded-md">
+                      Pilih tipe profil untuk melihat rincian tambahan.
+                  </div>
+              )}
+            </TabsContent>
+          </Tabs>
+
+          <SheetFooter className="mt-8 pt-4 flex sm:justify-end gap-2 border-t">
             <button
                onClick={() => setIsEditDialogOpen(false)}
                className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-10 px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -384,9 +533,9 @@ export default function ManageUsersPage() {
                {updateMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
                Simpan Perubahan
             </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
 
       {/* Delete Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

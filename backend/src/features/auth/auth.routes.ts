@@ -331,7 +331,7 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
       }
 
       const userId = params.id;
-      const updatedUser = await authService.updateUser(userId, body as { name?: string; role?: Role; isActive?: boolean });
+      const updatedUser = await authService.updateUser(userId, body as any);
       return successResponse(updatedUser, 'User updated successfully');
     } catch (err) {
       if (err instanceof AppError) {
@@ -345,7 +345,15 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
     body: t.Object({
       name: t.Optional(t.String()),
       role: t.Optional(t.Enum(Role)),
-      isActive: t.Optional(t.Boolean())
+      isActive: t.Optional(t.Boolean()),
+      password: t.Optional(t.String()),
+      profile: t.Optional(t.Object({
+        userType: t.Optional(t.Enum(UserType)),
+        noWhatsApp: t.Optional(t.String()),
+        npm: t.Optional(t.String()),
+        programStudiId: t.Optional(t.String()),
+        alamatUsaha: t.Optional(t.String()),
+      }))
     })
   })
   .delete('/users/:id', async ({ params, set, jwt, cookie: { auth }, headers }) => {

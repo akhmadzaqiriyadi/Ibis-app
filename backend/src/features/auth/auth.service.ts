@@ -147,14 +147,42 @@ export class AuthService {
     return { items: sanitizedUsers, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
-  async updateUser(id: string, data: { name?: string; role?: Role; isActive?: boolean }) {
+  async updateUser(id: string, data: { name?: string; role?: Role; isActive?: boolean; password?: string; profile?: Partial<RegisterProfile> }) {
+    let updateData: any = {
+      name: data.name,
+      role: data.role,
+      isActive: data.isActive,
+    };
+
+    if (data.password) {
+      updateData.password = await Bun.password.hash(data.password, { algorithm: 'bcrypt', cost: 10 });
+    }
+
+    if (data.profile) {
+      updateData.profile = {
+        upsert: {
+          create: {
+            userType: data.profile.userType as UserType || UserType.MAHASISWA,
+            noWhatsApp: data.profile.noWhatsApp,
+            npm: data.profile.npm,
+            programStudiId: data.profile.programStudiId,
+            alamatUsaha: data.profile.alamatUsaha,
+            verificationStatus: VerificationStatus.PENDING,
+          },
+          update: {
+            userType: data.profile.userType,
+            noWhatsApp: data.profile.noWhatsApp,
+            npm: data.profile.npm,
+            programStudiId: data.profile.programStudiId,
+            alamatUsaha: data.profile.alamatUsaha,
+          }
+        }
+      };
+    }
+
     const user = await prisma.user.update({
       where: { id },
-      data: {
-        name: data.name,
-        role: data.role,
-        isActive: data.isActive,
-      },
+      data: updateData,
     });
     
     const { password, ...userWithoutPassword } = user;
