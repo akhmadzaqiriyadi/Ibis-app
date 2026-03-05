@@ -35,7 +35,7 @@ ssh -i $SSH_KEY $VPS_USER@$VPS_HOST << EOF
     # Ensure correct API URL for production build
     # NOTE: .env.production should be set manually on server with:
     # NEXT_PUBLIC_API_URL=https://kewirausahaan.uty.ac.id/api/v1
-    rm -rf .next
+    rm -rf node_modules .next bun.lockb
     bun install
     echo "🏗️ Building Frontend..."
     bun run build
