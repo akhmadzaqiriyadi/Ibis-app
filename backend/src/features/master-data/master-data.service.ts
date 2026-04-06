@@ -6,7 +6,6 @@ export class MasterDataService {
 
   async getAllKategori() {
     return prisma.kategoriUsaha.findMany({
-      where: { isActive: true },
       orderBy: { order: 'asc' },
     });
   }
@@ -37,7 +36,6 @@ export class MasterDataService {
 
   async getAllProdi() {
     return prisma.programStudi.findMany({
-      where: { isActive: true },
       orderBy: { order: 'asc' },
     });
   }
