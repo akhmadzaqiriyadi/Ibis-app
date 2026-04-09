@@ -27,6 +27,7 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  FileText,
 } from "lucide-react";
 import {
   Dialog,
@@ -110,6 +111,8 @@ export default function InkubasiAdminPage() {
   const [selectedApp, setSelectedApp] = useState<InkubasiApplication | null>(null);
   const [reviewStatus, setReviewStatus] = useState<"APPROVED" | "REJECTED">("APPROVED");
   const [reviewNote, setReviewNote] = useState("");
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [detailApp, setDetailApp] = useState<InkubasiApplication | null>(null);
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
@@ -248,6 +251,11 @@ export default function InkubasiAdminPage() {
     setReviewStatus(status);
     setReviewNote("");
     setReviewDialogOpen(true);
+  };
+
+  const openDetailDialog = (app: InkubasiApplication) => {
+    setDetailApp(app);
+    setDetailDialogOpen(true);
   };
 
   const handleSubmitReview = () => {
@@ -426,13 +434,14 @@ export default function InkubasiAdminPage() {
                     <TableHead>Periode</TableHead>
                     <TableHead>Bisnis</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Keputusan</TableHead>
                     <TableHead className="text-right">Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {applications.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
+                      <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
                         Tidak ada pengajuan pada filter ini.
                       </TableCell>
                     </TableRow>
@@ -466,27 +475,45 @@ export default function InkubasiAdminPage() {
                             <div className="text-xs text-muted-foreground mt-2 max-w-62.5 line-clamp-3">Catatan: {app.reviewNote}</div>
                           )}
                         </TableCell>
-                        <TableCell className="text-right align-top">
+                        <TableCell className="align-top">
                           {app.status === "PENDING" ? (
-                            <div className="flex items-center justify-end gap-2">
-                              <button
-                                onClick={() => openReviewDialog(app, "APPROVED")}
-                                className="inline-flex items-center justify-center p-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition"
-                                title="Approve"
-                              >
-                                <Check className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => openReviewDialog(app, "REJECTED")}
-                                className="inline-flex items-center justify-center p-2 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition"
-                                title="Reject"
-                              >
-                                <X className="w-4 h-4" />
-                              </button>
-                            </div>
+                            <span className="text-xs text-muted-foreground">Belum ada keputusan</span>
                           ) : (
-                            <span className="text-xs text-muted-foreground">Sudah direview</span>
+                            <div className="text-xs text-slate-600 space-y-1">
+                              <div className="font-medium text-slate-800">{app.status === "APPROVED" ? "DITERIMA" : "DITOLAK"}</div>
+                              {app.reviewedAt && <div>{new Date(app.reviewedAt).toLocaleString("id-ID")}</div>}
+                              {app.reviewedBy?.name && <div>oleh {app.reviewedBy.name}</div>}
+                            </div>
                           )}
+                        </TableCell>
+                        <TableCell className="text-right align-top">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => openDetailDialog(app)}
+                              className="inline-flex items-center justify-center p-2 rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 transition"
+                              title="Detail"
+                            >
+                              <FileText className="w-4 h-4" />
+                            </button>
+                            {app.status === "PENDING" ? (
+                              <>
+                                <button
+                                  onClick={() => openReviewDialog(app, "APPROVED")}
+                                  className="inline-flex items-center justify-center p-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition"
+                                  title="Approve"
+                                >
+                                  <Check className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => openReviewDialog(app, "REJECTED")}
+                                  className="inline-flex items-center justify-center p-2 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition"
+                                  title="Reject"
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              </>
+                            ) : null}
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))
@@ -719,6 +746,82 @@ export default function InkubasiAdminPage() {
               {reviewMut.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
               {reviewStatus === "APPROVED" ? "Ya, Setujui" : "Ya, Tolak"}
             </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
+        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Detail Pengajuan Inkubasi</DialogTitle>
+            <DialogDescription>
+              Lihat data pengajuan lengkap untuk validasi dan pengambilan keputusan.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-5 text-sm">
+            <div className="rounded-md border bg-slate-50 p-4 grid gap-2 md:grid-cols-2">
+              <div><strong>Nama Pemohon:</strong> {detailApp?.user?.name || "-"}</div>
+              <div><strong>Email:</strong> {detailApp?.user?.email || "-"}</div>
+              <div><strong>Periode:</strong> {detailApp?.period?.name || "-"}</div>
+              <div><strong>Tanggal Submit:</strong> {detailApp?.createdAt ? new Date(detailApp.createdAt).toLocaleString("id-ID") : "-"}</div>
+            </div>
+
+            <div className="rounded-md border p-4 space-y-3">
+              <h4 className="font-semibold text-slate-900">Data Usaha</h4>
+              <div><strong>Nama Pemilik:</strong> {detailApp?.namaPemilik || "-"}</div>
+              <div><strong>Tahun Berdiri:</strong> {detailApp?.tahunBerdiri || "-"}</div>
+              <div><strong>Kategori Usaha:</strong> {detailApp?.kategoriUsaha?.name || "-"}</div>
+              <div><strong>Rata Omset/Bulan:</strong> {detailApp?.rataOmsetPerBulan || "-"}</div>
+              <div><strong>Platform Penjualan:</strong> {detailApp?.platformPenjualan || "-"}</div>
+              <div><strong>Uraian Produk:</strong> {detailApp?.uraianProduk || "-"}</div>
+              <div><strong>Kendala:</strong> {detailApp?.kendala || "-"}</div>
+              <div><strong>Harapan:</strong> {detailApp?.harapan || "-"}</div>
+            </div>
+
+            <div className="rounded-md border p-4 space-y-2">
+              <h4 className="font-semibold text-slate-900">Hasil Keputusan</h4>
+              <div>
+                <strong>Status:</strong>{" "}
+                {detailApp?.status === "PENDING" ? "Belum diputuskan" : detailApp?.status === "APPROVED" ? "DITERIMA" : "DITOLAK"}
+              </div>
+              {detailApp?.reviewedAt && <div><strong>Waktu Review:</strong> {new Date(detailApp.reviewedAt).toLocaleString("id-ID")}</div>}
+              {detailApp?.reviewedBy?.name && <div><strong>Reviewer:</strong> {detailApp.reviewedBy.name}</div>}
+              {detailApp?.reviewNote && <div><strong>Catatan Review:</strong> {detailApp.reviewNote}</div>}
+            </div>
+          </div>
+
+          <DialogFooter>
+            <button
+              onClick={() => setDetailDialogOpen(false)}
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-10 px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200"
+            >
+              Tutup
+            </button>
+            {detailApp?.status === "PENDING" && (
+              <>
+                <button
+                  onClick={() => {
+                    if (!detailApp) return;
+                    setDetailDialogOpen(false);
+                    openReviewDialog(detailApp, "REJECTED");
+                  }}
+                  className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-10 px-4 py-2 bg-red-100 text-red-700 hover:bg-red-200"
+                >
+                  Tolak
+                </button>
+                <button
+                  onClick={() => {
+                    if (!detailApp) return;
+                    setDetailDialogOpen(false);
+                    openReviewDialog(detailApp, "APPROVED");
+                  }}
+                  className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-10 px-4 py-2 bg-green-600 text-white hover:bg-green-700"
+                >
+                  Setujui
+                </button>
+              </>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

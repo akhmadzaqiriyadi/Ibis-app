@@ -12,6 +12,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 type ApplicationFormState = {
   periodId: string;
@@ -20,6 +28,18 @@ type ApplicationFormState = {
   kategoriUsahaId: string;
   rataOmsetPerBulan: string;
   platformPenjualan: PlatformPenjualan | "";
+  uraianProduk: string;
+  kendala: string;
+  harapan: string;
+};
+
+type SubmitApplicationPayload = {
+  periodId: string;
+  namaPemilik: string;
+  tahunBerdiri: number;
+  kategoriUsahaId: string;
+  rataOmsetPerBulan: string;
+  platformPenjualan: PlatformPenjualan;
   uraianProduk: string;
   kendala: string;
   harapan: string;
@@ -93,6 +113,8 @@ export default function InkubasiMahasiswaView() {
     kendala: "",
     harapan: "",
   });
+  const [submitConfirmOpen, setSubmitConfirmOpen] = useState(false);
+  const [pendingSubmitPayload, setPendingSubmitPayload] = useState<SubmitApplicationPayload | null>(null);
 
   useEffect(() => {
     if (activePeriod?.id) {
@@ -108,35 +130,75 @@ export default function InkubasiMahasiswaView() {
 
   const fieldHintClass = "text-xs text-slate-500 leading-5";
 
-  const handleSubmit = () => {
+  const buildSubmitPayload = (): SubmitApplicationPayload | null => {
     if (!activePeriod?.id) {
       toast.error("Belum ada periode inkubasi yang aktif saat ini");
-      return;
+      return null;
     }
 
-    if (!form.namaPemilik.trim()) return toast.error("Nama pemilik usaha wajib diisi");
-    if (!form.tahunBerdiri.trim()) return toast.error("Tahun berdiri wajib diisi");
-    if (!form.kategoriUsahaId) return toast.error("Kategori usaha wajib dipilih");
-    if (!form.rataOmsetPerBulan.trim()) return toast.error("Omset per bulan wajib diisi");
-    if (!form.platformPenjualan) return toast.error("Platform penjualan wajib dipilih");
-    if (form.uraianProduk.trim().length < 20) return toast.error("Uraian produk minimal 20 karakter");
-    if (form.kendala.trim().length < 20) return toast.error("Kendala minimal 20 karakter");
-    if (form.harapan.trim().length < 20) return toast.error("Harapan minimal 20 karakter");
+    if (!form.namaPemilik.trim()) {
+      toast.error("Nama pemilik usaha wajib diisi");
+      return null;
+    }
+    if (!form.tahunBerdiri.trim()) {
+      toast.error("Tahun berdiri wajib diisi");
+      return null;
+    }
+    if (!form.kategoriUsahaId) {
+      toast.error("Kategori usaha wajib dipilih");
+      return null;
+    }
+    if (!form.rataOmsetPerBulan.trim()) {
+      toast.error("Omset per bulan wajib diisi");
+      return null;
+    }
+    if (!form.platformPenjualan) {
+      toast.error("Platform penjualan wajib dipilih");
+      return null;
+    }
+    if (form.uraianProduk.trim().length < 20) {
+      toast.error("Uraian produk minimal 20 karakter");
+      return null;
+    }
+    if (form.kendala.trim().length < 20) {
+      toast.error("Kendala minimal 20 karakter");
+      return null;
+    }
+    if (form.harapan.trim().length < 20) {
+      toast.error("Harapan minimal 20 karakter");
+      return null;
+    }
+
+    return {
+      periodId: activePeriod.id,
+      namaPemilik: form.namaPemilik.trim(),
+      tahunBerdiri: Number(form.tahunBerdiri),
+      kategoriUsahaId: form.kategoriUsahaId,
+      rataOmsetPerBulan: form.rataOmsetPerBulan.trim(),
+      platformPenjualan: form.platformPenjualan,
+      uraianProduk: form.uraianProduk.trim(),
+      kendala: form.kendala.trim(),
+      harapan: form.harapan.trim(),
+    };
+  };
+
+  const handleSubmit = () => {
+    const payload = buildSubmitPayload();
+    if (!payload) return;
+
+    setPendingSubmitPayload(payload);
+    setSubmitConfirmOpen(true);
+  };
+
+  const confirmSubmitApplication = () => {
+    if (!pendingSubmitPayload) return;
 
     submitMutation.mutate(
-      {
-        periodId: activePeriod.id,
-        namaPemilik: form.namaPemilik.trim(),
-        tahunBerdiri: Number(form.tahunBerdiri),
-        kategoriUsahaId: form.kategoriUsahaId,
-        rataOmsetPerBulan: form.rataOmsetPerBulan.trim(),
-        platformPenjualan: form.platformPenjualan,
-        uraianProduk: form.uraianProduk.trim(),
-        kendala: form.kendala.trim(),
-        harapan: form.harapan.trim(),
-      },
+      pendingSubmitPayload,
       {
         onSuccess: () => {
+          setSubmitConfirmOpen(false);
+          setPendingSubmitPayload(null);
           toast.success("Pengajuan inkubasi berhasil dikirim");
           setForm((current) => ({
             ...current,
@@ -151,6 +213,7 @@ export default function InkubasiMahasiswaView() {
           }));
         },
         onError: (err: any) => {
+          setSubmitConfirmOpen(false);
           toast.error(err?.response?.data?.error || err?.message || "Gagal mengirim pengajuan");
         },
       }
@@ -219,6 +282,9 @@ export default function InkubasiMahasiswaView() {
                   : latestApplication.status === "APPROVED"
                     ? "Pengajuan kamu disetujui. Cek catatan dan info lanjutan di bawah ini."
                     : "Pengajuan kamu belum disetujui pada periode ini."}
+              </p>
+              <p className="text-sm font-medium text-slate-700">
+                Hasil keputusan: {latestApplication.status === "PENDING" ? "Belum ada hasil" : latestApplication.status === "APPROVED" ? "DITERIMA" : "DITOLAK"}
               </p>
             </div>
 
@@ -495,6 +561,12 @@ export default function InkubasiMahasiswaView() {
                       <div><span className="font-medium text-slate-900">Platform:</span> {app.platformPenjualan}</div>
                       <div><span className="font-medium text-slate-900">Omset:</span> {app.rataOmsetPerBulan}</div>
                       <div><span className="font-medium text-slate-900">Uraian Produk:</span> {app.uraianProduk}</div>
+                      <div><span className="font-medium text-slate-900">Kendala:</span> {app.kendala}</div>
+                      <div><span className="font-medium text-slate-900">Harapan:</span> {app.harapan}</div>
+                      <div>
+                        <span className="font-medium text-slate-900">Hasil Keputusan:</span>{" "}
+                        {app.status === "PENDING" ? "Belum ada hasil" : app.status === "APPROVED" ? "DITERIMA" : "DITOLAK"}
+                      </div>
                       {app.reviewNote && (
                         <div className="rounded-lg border border-slate-200 bg-white p-3 text-slate-600">
                           <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Catatan Review</div>
@@ -522,6 +594,43 @@ export default function InkubasiMahasiswaView() {
           Data periode sedang bermasalah. Kamu tetap bisa cek status pengajuan sebelumnya.
         </div>
       )}
+
+      <Dialog open={submitConfirmOpen} onOpenChange={setSubmitConfirmOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Konfirmasi Kirim Pengajuan</DialogTitle>
+            <DialogDescription>
+              Pastikan seluruh data sudah benar. Setelah dikirim, data pengajuan tidak dapat diedit oleh mahasiswa.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="rounded-md border bg-slate-50 p-3 text-sm text-slate-700">
+            <div><strong>Nama Pemilik:</strong> {pendingSubmitPayload?.namaPemilik || "-"}</div>
+            <div><strong>Tahun Berdiri:</strong> {pendingSubmitPayload?.tahunBerdiri || "-"}</div>
+            <div><strong>Platform:</strong> {pendingSubmitPayload?.platformPenjualan || "-"}</div>
+          </div>
+
+          <DialogFooter>
+            <button
+              onClick={() => {
+                setSubmitConfirmOpen(false);
+                setPendingSubmitPayload(null);
+              }}
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-10 px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200"
+            >
+              Cek Lagi
+            </button>
+            <button
+              onClick={confirmSubmitApplication}
+              disabled={isSubmitting}
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-10 px-4 py-2 bg-orange-600 text-white hover:bg-orange-700 disabled:opacity-50 gap-2"
+            >
+              {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+              Ya, Kirim Pengajuan
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
