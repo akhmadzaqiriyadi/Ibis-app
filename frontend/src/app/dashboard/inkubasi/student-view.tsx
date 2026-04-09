@@ -128,7 +128,8 @@ export default function InkubasiMahasiswaView() {
   const hasActivePeriod = !!activePeriod && !loadingPeriod && !periodError;
   const formDisabled = !hasActivePeriod || isSubmitting;
 
-  const fieldHintClass = "text-xs text-slate-500 leading-5";
+  const fieldHintClass = "text-xs leading-5";
+  const fieldHintSlotClass = "min-h-10";
 
   const buildSubmitPayload = (): SubmitApplicationPayload | null => {
     if (!activePeriod?.id) {
@@ -383,8 +384,8 @@ export default function InkubasiMahasiswaView() {
 
             <div className="grid gap-2">
               <Label>Periode Pendaftaran</Label>
-              <Input value={activePeriod?.name || "Belum ada periode aktif"} disabled className="bg-slate-50" />
-              <p className={fieldHintClass}>Periode ini otomatis diisi dari pengumuman admin. Kamu tidak perlu memilih manual.</p>
+              <Input value={activePeriod?.name || "Belum ada periode aktif"} disabled className="h-12 bg-slate-50" />
+              <p className={`${fieldHintClass} ${fieldHintSlotClass} text-slate-500`}>Periode ini otomatis diisi dari pengumuman admin. Kamu tidak perlu memilih manual.</p>
             </div>
 
             <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
@@ -402,9 +403,10 @@ export default function InkubasiMahasiswaView() {
                 value={form.namaPemilik}
                 onChange={(e) => setForm((current) => ({ ...current, namaPemilik: e.target.value }))}
                 placeholder="Contoh: Ahmad Fauzi"
+                className="h-12"
                 disabled={formDisabled}
               />
-              <p className={fieldHintClass}>Gunakan nama sesuai pemilik yang benar-benar menjalankan bisnis.</p>
+              <p className={`${fieldHintClass} ${fieldHintSlotClass} text-slate-500`}>Gunakan nama sesuai pemilik yang benar-benar menjalankan bisnis.</p>
             </div>
 
             <div className="grid gap-2 md:grid-cols-2">
@@ -415,9 +417,10 @@ export default function InkubasiMahasiswaView() {
                   value={form.tahunBerdiri}
                   onChange={(e) => setForm((current) => ({ ...current, tahunBerdiri: e.target.value }))}
                   placeholder="Contoh: 2023"
+                  className="h-12"
                   disabled={formDisabled}
                 />
-                <p className={fieldHintClass}>Tulis tahun bisnis mulai berjalan, bukan tahun ide pertama muncul.</p>
+                <p className={`${fieldHintClass} ${fieldHintSlotClass} text-slate-500`}>Tulis tahun bisnis mulai berjalan, bukan tahun ide pertama muncul.</p>
               </div>
               <div className="grid gap-2">
                 <Label>Kategori Usaha</Label>
@@ -426,7 +429,7 @@ export default function InkubasiMahasiswaView() {
                   onValueChange={(value) => setForm((current) => ({ ...current, kategoriUsahaId: value }))}
                   disabled={formDisabled || loadingKategori}
                 >
-                  <SelectTrigger className="bg-white">
+                  <SelectTrigger className="h-12 bg-white">
                     <SelectValue placeholder={loadingKategori ? "Memuat kategori..." : "Pilih kategori usaha"} />
                   </SelectTrigger>
                   <SelectContent>
@@ -437,7 +440,9 @@ export default function InkubasiMahasiswaView() {
                     ))}
                   </SelectContent>
                 </Select>
-                {kategoriError && <p className="text-xs text-red-600">Gagal memuat kategori usaha.</p>}
+                <p className={`${fieldHintClass} ${fieldHintSlotClass} ${kategoriError ? "text-red-600" : "text-slate-500"}`}>
+                  {kategoriError ? "Gagal memuat kategori usaha." : "Pilih kategori yang paling dekat dengan jenis usaha kamu."}
+                </p>
               </div>
             </div>
 
@@ -449,7 +454,7 @@ export default function InkubasiMahasiswaView() {
                   onValueChange={(value) => setForm((current) => ({ ...current, rataOmsetPerBulan: value }))}
                   disabled={formDisabled}
                 >
-                  <SelectTrigger className="bg-white">
+                  <SelectTrigger className="h-12 bg-white">
                     <SelectValue placeholder="Pilih kisaran omset" />
                   </SelectTrigger>
                   <SelectContent>
@@ -458,7 +463,7 @@ export default function InkubasiMahasiswaView() {
                     ))}
                   </SelectContent>
                 </Select>
-                <p className={fieldHintClass}>Isi dengan kisaran omset rata-rata bulanan, cukup pakai range yang paling sesuai.</p>
+                <p className={`${fieldHintClass} ${fieldHintSlotClass} text-slate-500`}>Isi dengan kisaran omset rata-rata bulanan, cukup pakai range yang paling sesuai.</p>
               </div>
               <div className="grid gap-2">
                 <Label>Platform Penjualan</Label>
@@ -467,7 +472,7 @@ export default function InkubasiMahasiswaView() {
                   onValueChange={(value) => setForm((current) => ({ ...current, platformPenjualan: value as PlatformPenjualan }))}
                   disabled={formDisabled}
                 >
-                  <SelectTrigger className="bg-white">
+                  <SelectTrigger className="h-12 bg-white">
                     <SelectValue placeholder="Pilih platform" />
                   </SelectTrigger>
                   <SelectContent>
@@ -476,7 +481,7 @@ export default function InkubasiMahasiswaView() {
                     <SelectItem value="KEDUANYA">Keduanya</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className={fieldHintClass}>Pilih channel utama bisnis kamu, misalnya marketplace, toko fisik, atau keduanya.</p>
+                <p className={`${fieldHintClass} ${fieldHintSlotClass} text-slate-500`}>Pilih channel utama bisnis kamu, misalnya marketplace, toko fisik, atau keduanya.</p>
               </div>
             </div>
 
@@ -489,7 +494,7 @@ export default function InkubasiMahasiswaView() {
                 placeholder="Contoh: kami menjual minuman sehat berbasis buah lokal..."
                 disabled={formDisabled}
               />
-              <p className={fieldHintClass}>Minimal 20 karakter. Jelaskan apa yang dijual, siapa targetnya, dan apa pembeda utamanya.</p>
+              <p className={`${fieldHintClass} ${fieldHintSlotClass} text-slate-500`}>Minimal 20 karakter. Jelaskan apa yang dijual, siapa targetnya, dan apa pembeda utamanya.</p>
             </div>
 
             <div className="grid gap-2">
@@ -501,7 +506,7 @@ export default function InkubasiMahasiswaView() {
                 placeholder="Contoh: kami kesulitan menjaga konsistensi penjualan dan branding..."
                 disabled={formDisabled}
               />
-              <p className={fieldHintClass}>Minimal 20 karakter. Tulis masalah paling penting yang ingin diselesaikan lewat inkubasi.</p>
+              <p className={`${fieldHintClass} ${fieldHintSlotClass} text-slate-500`}>Minimal 20 karakter. Tulis masalah paling penting yang ingin diselesaikan lewat inkubasi.</p>
             </div>
 
             <div className="grid gap-2">
@@ -513,7 +518,7 @@ export default function InkubasiMahasiswaView() {
                 placeholder="Contoh: ingin memperbaiki SOP, branding, dan strategi pemasaran..."
                 disabled={formDisabled}
               />
-              <p className={fieldHintClass}>Minimal 20 karakter. Jelaskan hasil yang kamu harapkan setelah ikut program.</p>
+              <p className={`${fieldHintClass} ${fieldHintSlotClass} text-slate-500`}>Minimal 20 karakter. Jelaskan hasil yang kamu harapkan setelah ikut program.</p>
             </div>
 
             <div className="flex flex-col gap-3 border-t border-slate-200 pt-4 sm:flex-row sm:items-center sm:justify-between">
