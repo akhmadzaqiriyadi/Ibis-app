@@ -12,6 +12,7 @@ DEPLOY_RUN_SEED="${DEPLOY_RUN_SEED:-false}"
 echo "🚀 Deploying to $VPS_USER@$VPS_HOST..."
 
 ssh -i "$SSH_KEY" "$VPS_USER@$VPS_HOST" \
+   APP_DIR="$APP_DIR" \
    DEPLOY_ACCEPT_DATA_LOSS="$DEPLOY_ACCEPT_DATA_LOSS" \
    DEPLOY_RUN_SEED="$DEPLOY_RUN_SEED" \
    'bash -se' << 'EOF'
