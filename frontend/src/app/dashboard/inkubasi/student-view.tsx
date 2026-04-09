@@ -70,8 +70,8 @@ const formatDate = (value?: string | null) => {
 };
 
 const getTimelineStep = (status: InkubasiApplication["status"]) => {
-  if (status === "PENDING") return 1;
-  if (status === "APPROVED") return 2;
+  if (status === "PENDING") return 2;
+  if (status === "APPROVED") return 3;
   return 3;
 };
 
@@ -318,7 +318,7 @@ export default function InkubasiMahasiswaView() {
                   <div className="mt-3 text-xs text-slate-500">
                     {isCurrent
                       ? latestApplication.status === "PENDING"
-                        ? "Sedang diproses"
+                        ? "Sedang direview admin"
                         : latestApplication.status === "APPROVED"
                           ? "Hasil: diterima"
                           : "Hasil: ditolak"
@@ -337,6 +337,20 @@ export default function InkubasiMahasiswaView() {
               {latestApplication.reviewNote}
             </div>
           )}
+
+          <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
+            <div className="font-semibold">Finalisasi Admin</div>
+            <div className="mt-1">
+              {latestApplication.status === "PENDING"
+                ? "Belum ada finalisasi. Pengajuan masih dalam proses review admin."
+                : latestApplication.status === "APPROVED"
+                  ? "Pengajuan sudah difinalisasi admin dengan hasil DITERIMA."
+                  : "Pengajuan sudah difinalisasi admin dengan hasil DITOLAK."}
+            </div>
+            {latestApplication.reviewedAt && (
+              <div className="mt-1 text-xs text-blue-700">Waktu finalisasi: {formatDate(latestApplication.reviewedAt)}</div>
+            )}
+          </div>
 
           {latestApplication.reviewedBy && (
             <div className="mt-3 text-xs text-slate-500">
@@ -371,6 +385,15 @@ export default function InkubasiMahasiswaView() {
               <Label>Periode Pendaftaran</Label>
               <Input value={activePeriod?.name || "Belum ada periode aktif"} disabled className="bg-slate-50" />
               <p className={fieldHintClass}>Periode ini otomatis diisi dari pengumuman admin. Kamu tidak perlu memilih manual.</p>
+            </div>
+
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              <div className="font-semibold">Aturan Submit Pengajuan</div>
+              <ul className="mt-1 list-disc pl-5 space-y-1">
+                <li>Mahasiswa hanya bisa submit 1 kali untuk 1 periode inkubasi.</li>
+                <li>Jika pengajuan ditolak, tidak bisa submit ulang di periode yang sama.</li>
+                <li>Submit ulang hanya bisa dilakukan pada periode berikutnya.</li>
+              </ul>
             </div>
 
             <div className="grid gap-2">

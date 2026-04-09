@@ -142,11 +142,18 @@ export class InkubasiService {
     data: { status: 'APPROVED' | 'REJECTED'; reviewNote?: string }
   ) {
     const app = await this.getApplicationById(id);
-    if (app.status !== 'PENDING') throw new AppError(400, 'Hanya pengajuan berstatus PENDING yang dapat di-review');
+
+    const normalizedIncomingNote = (data.reviewNote ?? '').trim();
+    const normalizedExistingNote = (app.reviewNote ?? '').trim();
+    const isSameStatus = app.status === data.status;
+    const isSameNote = normalizedIncomingNote === normalizedExistingNote;
+    if (isSameStatus && isSameNote) {
+      throw new AppError(400, 'Tidak ada perubahan keputusan untuk disimpan');
+    }
 
     const updated = await prisma.inkubasiApplication.update({
       where: { id },
-      data: { status: data.status, reviewNote: data.reviewNote, reviewedAt: new Date(), reviewedById: reviewerId },
+      data: { status: data.status, reviewNote: normalizedIncomingNote || null, reviewedAt: new Date(), reviewedById: reviewerId },
     });
 
     // Kirim email notifikasi

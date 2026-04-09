@@ -111,6 +111,7 @@ export default function InkubasiAdminPage() {
   const [selectedApp, setSelectedApp] = useState<InkubasiApplication | null>(null);
   const [reviewStatus, setReviewStatus] = useState<"APPROVED" | "REJECTED">("APPROVED");
   const [reviewNote, setReviewNote] = useState("");
+  const [isReviewEditMode, setIsReviewEditMode] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [detailApp, setDetailApp] = useState<InkubasiApplication | null>(null);
 
@@ -246,10 +247,11 @@ export default function InkubasiAdminPage() {
     });
   };
 
-  const openReviewDialog = (app: InkubasiApplication, status: "APPROVED" | "REJECTED") => {
+  const openReviewDialog = (app: InkubasiApplication, status: "APPROVED" | "REJECTED", editMode = false) => {
     setSelectedApp(app);
     setReviewStatus(status);
-    setReviewNote("");
+    setReviewNote(app.reviewNote || "");
+    setIsReviewEditMode(editMode);
     setReviewDialogOpen(true);
   };
 
@@ -498,21 +500,29 @@ export default function InkubasiAdminPage() {
                             {app.status === "PENDING" ? (
                               <>
                                 <button
-                                  onClick={() => openReviewDialog(app, "APPROVED")}
+                                  onClick={() => openReviewDialog(app, "APPROVED", false)}
                                   className="inline-flex items-center justify-center p-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition"
                                   title="Approve"
                                 >
                                   <Check className="w-4 h-4" />
                                 </button>
                                 <button
-                                  onClick={() => openReviewDialog(app, "REJECTED")}
+                                  onClick={() => openReviewDialog(app, "REJECTED", false)}
                                   className="inline-flex items-center justify-center p-2 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition"
                                   title="Reject"
                                 >
                                   <X className="w-4 h-4" />
                                 </button>
                               </>
-                            ) : null}
+                            ) : (
+                              <button
+                                onClick={() => openReviewDialog(app, app.status as "APPROVED" | "REJECTED", true)}
+                                className="inline-flex items-center justify-center p-2 rounded-lg bg-amber-100 text-amber-700 hover:bg-amber-200 transition"
+                                title="Edit keputusan"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </button>
+                            )}
                           </div>
                         </TableCell>
                       </TableRow>
@@ -702,9 +712,11 @@ export default function InkubasiAdminPage() {
       <Dialog open={reviewDialogOpen} onOpenChange={setReviewDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>{reviewStatus === "APPROVED" ? "Setujui Pengajuan" : "Tolak Pengajuan"}</DialogTitle>
+            <DialogTitle>{isReviewEditMode ? "Edit Keputusan Pengajuan" : reviewStatus === "APPROVED" ? "Setujui Pengajuan" : "Tolak Pengajuan"}</DialogTitle>
             <DialogDescription>
-              {reviewStatus === "APPROVED"
+              {isReviewEditMode
+                ? "Ubah keputusan akhir admin dan simpan catatan terbaru jika diperlukan."
+                : reviewStatus === "APPROVED"
                 ? "Konfirmasi persetujuan pengajuan inkubasi."
                 : "Berikan catatan penolakan agar peserta mendapatkan feedback yang jelas."}
             </DialogDescription>
@@ -715,6 +727,19 @@ export default function InkubasiAdminPage() {
               <div><strong>Pemohon:</strong> {selectedApp?.user?.name || "-"}</div>
               <div><strong>Email:</strong> {selectedApp?.user?.email || "-"}</div>
               <div><strong>Periode:</strong> {selectedApp?.period?.name || "-"}</div>
+            </div>
+
+            <div className="grid gap-2">
+              <Label>Keputusan</Label>
+              <Select value={reviewStatus} onValueChange={(v) => setReviewStatus(v as "APPROVED" | "REJECTED")}> 
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="APPROVED">Setujui (APPROVED)</SelectItem>
+                  <SelectItem value="REJECTED">Tolak (REJECTED)</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="grid gap-2">
@@ -744,7 +769,7 @@ export default function InkubasiAdminPage() {
               }`}
             >
               {reviewMut.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-              {reviewStatus === "APPROVED" ? "Ya, Setujui" : "Ya, Tolak"}
+              {isReviewEditMode ? "Simpan Perubahan Keputusan" : reviewStatus === "APPROVED" ? "Ya, Setujui" : "Ya, Tolak"}
             </button>
           </DialogFooter>
         </DialogContent>
@@ -804,7 +829,7 @@ export default function InkubasiAdminPage() {
                   onClick={() => {
                     if (!detailApp) return;
                     setDetailDialogOpen(false);
-                    openReviewDialog(detailApp, "REJECTED");
+                    openReviewDialog(detailApp, "REJECTED", detailApp.status !== "PENDING");
                   }}
                   className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-10 px-4 py-2 bg-red-100 text-red-700 hover:bg-red-200"
                 >
@@ -814,7 +839,7 @@ export default function InkubasiAdminPage() {
                   onClick={() => {
                     if (!detailApp) return;
                     setDetailDialogOpen(false);
-                    openReviewDialog(detailApp, "APPROVED");
+                    openReviewDialog(detailApp, "APPROVED", detailApp.status !== "PENDING");
                   }}
                   className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-10 px-4 py-2 bg-green-600 text-white hover:bg-green-700"
                 >
