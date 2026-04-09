@@ -1,5 +1,5 @@
-import { fetcher, apiClient, PaginatedResponse } from '@/lib/api';
-import { InkubasiPeriod, InkubasiApplication, InkubasiStatus } from '@/types';
+import { fetcher, apiClient } from '@/lib/api';
+import { InkubasiPeriod, InkubasiApplication, InkubasiApplicationListResponse, InkubasiStatus } from '@/types';
 
 // ─── PERIOD ──────────────────────────────────────────────
 
@@ -27,8 +27,11 @@ export const deletePeriod = async (id: string) => {
 export const getMyApplications = () => fetcher<InkubasiApplication[]>('/inkubasi/applications/my');
 
 export const getAllApplications = (params?: { page?: number; limit?: number; status?: InkubasiStatus; periodId?: string }) => {
-  const query = new URLSearchParams(params as Record<string, string>).toString();
-  return fetcher<PaginatedResponse<InkubasiApplication>>(`/inkubasi/applications?${query}`);
+  const cleanParams = Object.fromEntries(
+    Object.entries(params || {}).filter(([_, v]) => v != null && v !== '')
+  );
+  const query = new URLSearchParams(cleanParams as Record<string, string>).toString();
+  return fetcher<InkubasiApplicationListResponse>(`/inkubasi/applications${query ? `?${query}` : ''}`);
 };
 
 export const getApplicationById = (id: string) => fetcher<InkubasiApplication>(`/inkubasi/applications/${id}`);

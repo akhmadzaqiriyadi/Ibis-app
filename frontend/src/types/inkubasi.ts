@@ -41,3 +41,11 @@ export interface InkubasiApplication {
   kategoriUsaha?: Partial<KategoriUsaha>;
   reviewedBy?: Partial<User>;
 }
+
+export interface InkubasiApplicationListResponse {
+  items: InkubasiApplication[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}

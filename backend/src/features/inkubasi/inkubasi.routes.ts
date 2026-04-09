@@ -3,7 +3,7 @@ import { inkubasiService } from './inkubasi.service';
 import { successResponse, errorResponse } from '@/common/response';
 import { AppError } from '@/common/errors';
 import { authMiddleware } from '../auth/auth.middleware';
-import { Role, InkubasiStatus, PlatformPenjualan } from '@prisma/client';
+import { Prisma, Role, InkubasiStatus, PlatformPenjualan } from '@prisma/client';
 
 const requireAuth = ({ user, set }: any) => {
   if (!user) { set.status = 401; return errorResponse('Unauthorized'); }
@@ -21,6 +21,12 @@ const requireMahasiswa = ({ user, set }: any) => {
   if (user.role !== Role.MAHASISWA) {
     set.status = 403; return errorResponse('Forbidden: Hanya Mahasiswa yang dapat mengakses fitur ini');
   }
+};
+
+const parsePositiveInt = (value: unknown, fallback: number) => {
+  const n = Number.parseInt(String(value ?? ''), 10);
+  if (!Number.isFinite(n) || Number.isNaN(n) || n <= 0) return fallback;
+  return n;
 };
 
 export const inkubasiRoutes = new Elysia({ prefix: '/inkubasi' })
@@ -127,8 +133,8 @@ export const inkubasiRoutes = new Elysia({ prefix: '/inkubasi' })
       const data = await inkubasiService.getAllApplications({
         status: query.status as InkubasiStatus | undefined,
         periodId: query.periodId,
-        page: query.page ? parseInt(query.page) : 1,
-        limit: query.limit ? parseInt(query.limit) : 10,
+        page: parsePositiveInt(query.page, 1),
+        limit: Math.min(parsePositiveInt(query.limit, 10), 100),
       });
       return successResponse(data, 'Daftar pengajuan inkubasi');
     } catch (err) {
@@ -166,6 +172,16 @@ export const inkubasiRoutes = new Elysia({ prefix: '/inkubasi' })
       return successResponse(data, 'Pengajuan inkubasi berhasil dikirim');
     } catch (err) {
       if (err instanceof AppError) { set.status = err.statusCode; return errorResponse(err.message); }
+      if (err instanceof Prisma.PrismaClientKnownRequestError) {
+        if (err.code === 'P2002') {
+          set.status = 409;
+          return errorResponse('Anda sudah pernah mengajukan pada periode ini');
+        }
+        if (err.code === 'P2003') {
+          set.status = 400;
+          return errorResponse('Data relasi tidak valid');
+        }
+      }
       set.status = 500; return errorResponse('Gagal mengirim pengajuan');
     }
   }, {

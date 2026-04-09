@@ -82,7 +82,7 @@ class EmailService {
         <p>Terima kasih telah mendaftar program inkubasi bisnis IBISTEK UTY untuk <strong>${periodName}</strong>.</p>
         <p>Setelah melalui proses seleksi, pengajuan Anda <strong>belum dapat kami terima</strong> pada periode ini.</p>
         ${note ? `<p><strong>Catatan:</strong> ${note}</p>` : ''}
-        <p>Anda masih dapat mendaftar kembali pada periode yang sama atau periode berikutnya.</p>
+        <p>Anda masih dapat mendaftar kembali pada periode berikutnya.</p>
         <small>IBISTEK UTY — Inkubator Bisnis dan Teknologi Universitas Teknologi Yogyakarta</small>
       `,
     });

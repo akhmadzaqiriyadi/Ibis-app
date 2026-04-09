@@ -262,6 +262,7 @@ model InkubasiApplication {
   @@index([userId])
   @@index([periodId])
   @@index([status])
+  @@unique([userId, periodId])
 }
 
 // ========================================

@@ -5,6 +5,7 @@ VPS_USER="uch"
 VPS_HOST="10.10.10.200"
 APP_DIR="/home/uch/kewirausahaan-app"
 SSH_KEY="~/uch"
+DEPLOY_ACCEPT_DATA_LOSS="${DEPLOY_ACCEPT_DATA_LOSS:-false}"
 
 echo "🚀 Deploying to $VPS_USER@$VPS_HOST..."
 
@@ -25,7 +26,13 @@ ssh -i $SSH_KEY $VPS_USER@$VPS_HOST << EOF
     cd backend
     bun install
     bun prisma generate
-    bun prisma db push --accept-data-loss
+   if [ "$DEPLOY_ACCEPT_DATA_LOSS" = "true" ]; then
+      echo "⚠️  Applying Prisma db push with --accept-data-loss"
+      bun prisma db push --accept-data-loss
+   else
+      echo "ℹ️  Applying Prisma db push without --accept-data-loss"
+      bun prisma db push
+   fi
     bun run prisma/seed-clean.ts
     cd ..
 
@@ -55,6 +62,9 @@ echo "
    - PORT=2202
    - DATABASE_URL=postgresql://user:pass@10.10.10.100:2100/db_name
    - CORS_ORIGIN=https://kewirausahaan.uty.ac.id
+
+Deployment toggle:
+   - Set DEPLOY_ACCEPT_DATA_LOSS=true only when you intentionally want Prisma to apply destructive schema changes.
 
 2. Frontend .env.production:
    - NEXT_PUBLIC_API_URL=https://kewirausahaan.uty.ac.id/api/v1

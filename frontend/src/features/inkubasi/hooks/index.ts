@@ -1,10 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as api from '../api';
+import { InkubasiStatus } from '@/types';
 
 export const INKUBASI_KEYS = {
   allPeriods: ['inkubasi', 'periods'] as const,
   activePeriod: ['inkubasi', 'periods', 'active'] as const,
   myApps: ['inkubasi', 'applications', 'my'] as const,
+  allAppsRoot: ['inkubasi', 'applications', 'all'] as const,
   allApps: (params?: Record<string, unknown>) => ['inkubasi', 'applications', 'all', params] as const,
   appDetail: (id: string) => ['inkubasi', 'applications', 'detail', id] as const,
 };
@@ -48,7 +50,7 @@ export const useDeletePeriod = () => {
 
 export const useGetMyApplications = () => useQuery({ queryKey: INKUBASI_KEYS.myApps, queryFn: api.getMyApplications });
 
-export const useGetAllApplications = (params?: Record<string, unknown>) => useQuery({
+export const useGetAllApplications = (params?: { page?: number; limit?: number; status?: InkubasiStatus; periodId?: string }) => useQuery({
   queryKey: INKUBASI_KEYS.allApps(params),
   queryFn: () => api.getAllApplications(params),
 });
@@ -65,7 +67,7 @@ export const useSubmitApplication = () => {
     mutationFn: api.submitApplication,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: INKUBASI_KEYS.myApps });
-      qc.invalidateQueries({ queryKey: INKUBASI_KEYS.allApps() });
+      qc.invalidateQueries({ queryKey: INKUBASI_KEYS.allAppsRoot });
     },
   });
 };
@@ -75,7 +77,8 @@ export const useReviewApplication = () => {
   return useMutation({
     mutationFn: api.reviewApplication,
     onSuccess: (_, variables) => {
-      qc.invalidateQueries({ queryKey: INKUBASI_KEYS.allApps() });
+      qc.invalidateQueries({ queryKey: INKUBASI_KEYS.allAppsRoot });
+      qc.invalidateQueries({ queryKey: INKUBASI_KEYS.myApps });
       qc.invalidateQueries({ queryKey: INKUBASI_KEYS.appDetail(variables.id) });
     },
   });

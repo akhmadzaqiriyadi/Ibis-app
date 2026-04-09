@@ -23,7 +23,14 @@ export class InkubasiService {
   }
 
   async updatePeriod(id: string, data: { name?: string; startDate?: Date; endDate?: Date; isActive?: boolean; description?: string }) {
-    await this.findPeriodOrThrow(id);
+    const current = await this.findPeriodOrThrow(id);
+    const nextStartDate = data.startDate ?? current.startDate;
+    const nextEndDate = data.endDate ?? current.endDate;
+
+    if (nextStartDate >= nextEndDate) {
+      throw new AppError(400, 'Tanggal mulai harus sebelum tanggal selesai');
+    }
+
     return prisma.inkubasiPeriod.update({ where: { id }, data });
   }
 
@@ -114,11 +121,17 @@ export class InkubasiService {
     const now = new Date();
     if (now < period.startDate || now > period.endDate) throw new AppError(400, 'Periode pendaftaran belum dibuka atau sudah ditutup');
 
+    const kategori = await prisma.kategoriUsaha.findFirst({
+      where: { id: data.kategoriUsahaId, isActive: true },
+      select: { id: true },
+    });
+    if (!kategori) throw new AppError(400, 'Kategori usaha tidak valid atau tidak aktif');
+
     // Cek apakah sudah pernah daftar di periode ini
     const existing = await prisma.inkubasiApplication.findFirst({
-      where: { userId, periodId: data.periodId, status: { not: 'REJECTED' } },
+      where: { userId, periodId: data.periodId },
     });
-    if (existing) throw new AppError(400, 'Anda sudah memiliki pengajuan aktif di periode ini');
+    if (existing) throw new AppError(400, 'Anda sudah pernah mengajukan pada periode ini');
 
     return prisma.inkubasiApplication.create({ data: { userId, ...data } });
   }
