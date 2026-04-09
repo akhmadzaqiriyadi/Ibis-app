@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Configuration
 VPS_USER="uch"
@@ -6,10 +7,16 @@ VPS_HOST="10.10.10.200"
 APP_DIR="/home/uch/kewirausahaan-app"
 SSH_KEY="~/uch"
 DEPLOY_ACCEPT_DATA_LOSS="${DEPLOY_ACCEPT_DATA_LOSS:-false}"
+DEPLOY_RUN_SEED="${DEPLOY_RUN_SEED:-false}"
 
 echo "🚀 Deploying to $VPS_USER@$VPS_HOST..."
 
-ssh -i $SSH_KEY $VPS_USER@$VPS_HOST << EOF
+ssh -i "$SSH_KEY" "$VPS_USER@$VPS_HOST" \
+   DEPLOY_ACCEPT_DATA_LOSS="$DEPLOY_ACCEPT_DATA_LOSS" \
+   DEPLOY_RUN_SEED="$DEPLOY_RUN_SEED" \
+   'bash -se' << 'EOF'
+   set -euo pipefail
+
     # 1. Update Core Code
     cd $APP_DIR
     echo "⬇️ Pulling latest code..."
@@ -19,7 +26,7 @@ ssh -i $SSH_KEY $VPS_USER@$VPS_HOST << EOF
 
     # Pastikan BUN dapat diakses oleh SSH script
     source ~/.bashrc
-    export PATH="~/.bun/bin:$PATH"
+   export PATH="$HOME/.bun/bin:$PATH"
 
     # 2. Backend Update
     echo "📦 Updating Backend..."
@@ -33,7 +40,13 @@ ssh -i $SSH_KEY $VPS_USER@$VPS_HOST << EOF
       echo "ℹ️  Applying Prisma db push without --accept-data-loss"
       bun prisma db push
    fi
-    bun run prisma/seed-clean.ts
+
+   if [ "$DEPLOY_RUN_SEED" = "true" ]; then
+      echo "⚠️  Running seed script (DEPLOY_RUN_SEED=true)"
+      bun run prisma/seed-clean.ts
+   else
+      echo "ℹ️  Skipping seed script (DEPLOY_RUN_SEED=false)"
+   fi
     cd ..
 
     # 3. Frontend Update
@@ -65,6 +78,7 @@ echo "
 
 Deployment toggle:
    - Set DEPLOY_ACCEPT_DATA_LOSS=true only when you intentionally want Prisma to apply destructive schema changes.
+   - Set DEPLOY_RUN_SEED=true only when you intentionally want to reseed database data.
 
 2. Frontend .env.production:
    - NEXT_PUBLIC_API_URL=https://kewirausahaan.uty.ac.id/api/v1
