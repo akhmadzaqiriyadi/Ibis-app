@@ -37,9 +37,14 @@ export const konsultasiRoutes = new Elysia({ prefix: '/konsultasi' })
   // USER — Pengajuan & Tracking Status
   // ══════════════════════════════════════════════════════════
 
-  .get('/applications/my', async ({ user, set }: any) => {
+  .get('/applications/my', async ({ user, query, set }: any) => {
     try {
-      const data = await konsultasiService.getMyApplications(user.id);
+      const data = await konsultasiService.getMyApplications(user.id, {
+        status: query.status as KonsultasiStatus | undefined,
+        search: query.search || undefined,
+        page: query.page ? parseInt(query.page) : 1,
+        limit: query.limit ? parseInt(query.limit) : 10,
+      });
       return successResponse(data, 'Pengajuan konsultasi saya');
     } catch (err) {
       set.status = 500; return errorResponse('Gagal mengambil data');
@@ -51,6 +56,12 @@ export const konsultasiRoutes = new Elysia({ prefix: '/konsultasi' })
       summary: 'Lihat status pengajuan konsultasi saya',
       security: [{ BearerAuth: [] }],
     },
+    query: t.Object({
+      status: t.Optional(t.Enum(KonsultasiStatus)),
+      search: t.Optional(t.String()),
+      page: t.Optional(t.String()),
+      limit: t.Optional(t.String()),
+    }),
   })
 
   .post('/applications', async ({ body, user, set }: any) => {
@@ -79,6 +90,37 @@ export const konsultasiRoutes = new Elysia({ prefix: '/konsultasi' })
       topikKonsultasi: t.String({ minLength: 20 }),
       preferredDate: t.String({ format: 'date-time', example: '2026-03-20T10:00:00Z' }),
       metode: t.Enum(MetodeKonsultasi),
+    }),
+  })
+
+  // ══════════════════════════════════════════════════════════
+  // MENTOR — Lihat & Konfirmasi Tugas (harus sebelum /:id !)
+  // ══════════════════════════════════════════════════════════
+
+  .get('/applications/mentor/my', async ({ user, query, set }: any) => {
+    try {
+      const data = await konsultasiService.getMentorApplications(user.id, {
+        status: query.status as KonsultasiStatus | undefined,
+        search: query.search || undefined,
+        page: query.page ? parseInt(query.page) : 1,
+        limit: query.limit ? parseInt(query.limit) : 10,
+      });
+      return successResponse(data, 'Pengajuan konsultasi yang ditugaskan ke saya');
+    } catch (err) {
+      set.status = 500; return errorResponse('Gagal mengambil data');
+    }
+  }, {
+    beforeHandle: requireMentor,
+    detail: {
+      tags: ['Konsultasi'],
+      summary: 'Lihat pengajuan yang di-assign ke mentor ini (dengan filter & pagination)',
+      security: [{ BearerAuth: [] }],
+    },
+    query: t.Object({
+      status: t.Optional(t.Enum(KonsultasiStatus)),
+      search: t.Optional(t.String()),
+      page: t.Optional(t.String()),
+      limit: t.Optional(t.String()),
     }),
   })
 
@@ -240,24 +282,8 @@ export const konsultasiRoutes = new Elysia({ prefix: '/konsultasi' })
   })
 
   // ══════════════════════════════════════════════════════════
-  // MENTOR — Lihat & Konfirmasi Tugas
+  // MENTOR — Respon Tugas
   // ══════════════════════════════════════════════════════════
-
-  .get('/applications/mentor/my', async ({ user, set }: any) => {
-    try {
-      const data = await konsultasiService.getMentorApplications(user.id);
-      return successResponse(data, 'Pengajuan konsultasi yang ditugaskan ke saya');
-    } catch (err) {
-      set.status = 500; return errorResponse('Gagal mengambil data');
-    }
-  }, {
-    beforeHandle: requireMentor,
-    detail: {
-      tags: ['Konsultasi'],
-      summary: 'Lihat pengajuan yang di-assign ke mentor ini',
-      security: [{ BearerAuth: [] }],
-    },
-  })
 
   .patch('/applications/:id/mentor-response', async ({ params, body, user, set }: any) => {
     try {
@@ -280,5 +306,31 @@ export const konsultasiRoutes = new Elysia({ prefix: '/konsultasi' })
     body: t.Object({
       bersedia: t.Boolean({ description: 'true = bersedia, false = tidak bisa' }),
       declineReason: t.Optional(t.String({ description: 'Alasan jika tidak bersedia' })),
+    }),
+  })
+
+  // ══════════════════════════════════════════════════════════
+  // MAHASISWA — Submit Laporan Pasca Konsultasi
+  // ══════════════════════════════════════════════════════════
+
+  .post('/applications/:id/laporan', async ({ params, body, user, set }: any) => {
+    try {
+      const data = await konsultasiService.submitLaporan(params.id, user.id, body.laporanMahasiswa);
+      return successResponse(data, 'Laporan konsultasi berhasil dikirim. Terima kasih!');
+    } catch (err) {
+      if (err instanceof AppError) { set.status = err.statusCode; return errorResponse(err.message); }
+      set.status = 500; return errorResponse('Gagal mengirim laporan');
+    }
+  }, {
+    beforeHandle: requireAuth,
+    detail: {
+      tags: ['Konsultasi'],
+      summary: 'Submit laporan hasil konsultasi (Mahasiswa)',
+      description: 'Mahasiswa mengirimkan laporan/refleksi pasca sesi konsultasi. Hanya bisa jika status COMPLETED.',
+      security: [{ BearerAuth: [] }],
+    },
+    params: t.Object({ id: t.String() }),
+    body: t.Object({
+      laporanMahasiswa: t.String({ minLength: 20, description: 'Isi laporan / catatan hasil konsultasi' }),
     }),
   });

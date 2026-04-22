@@ -317,6 +317,10 @@ model KonsultasiApplication {
   // Completion
   completedAt DateTime?
 
+  // Laporan Mahasiswa (pasca konsultasi)
+  laporanMahasiswa    String?   @db.Text
+  laporanSubmittedAt  DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

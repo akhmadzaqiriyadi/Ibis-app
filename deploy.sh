@@ -34,13 +34,8 @@ ssh -i "$SSH_KEY" "$VPS_USER@$VPS_HOST" \
     cd backend
     bun install
     bun prisma generate
-   if [ "$DEPLOY_ACCEPT_DATA_LOSS" = "true" ]; then
-      echo "⚠️  Applying Prisma db push with --accept-data-loss"
-      bun prisma db push --accept-data-loss
-   else
-      echo "ℹ️  Applying Prisma db push without --accept-data-loss"
-      bun prisma db push
-   fi
+   echo "ℹ️  Running database migrations..."
+   bun prisma migrate deploy
 
    if [ "$DEPLOY_RUN_SEED" = "true" ]; then
       echo "⚠️  Running seed script (DEPLOY_RUN_SEED=true)"

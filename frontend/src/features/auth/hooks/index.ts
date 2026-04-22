@@ -53,10 +53,11 @@ export const useVerifyUser = () => {
 };
 
 // ─── CRUD USER MANAGEMENT ────────────────────────
-export const useUsers = (params?: Record<string, unknown>) => useQuery({
+export const useUsers = (params?: Record<string, unknown>, options?: { enabled?: boolean }) => useQuery({
   queryKey: AUTH_KEYS.users(params),
   queryFn: () => api.getUsers(params),
   placeholderData: keepPreviousData,
+  enabled: options?.enabled !== false,
 });
 
 export const useUpdateUser = () => {

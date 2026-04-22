@@ -263,14 +263,14 @@ export default function MasterDataPage() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 bg-white p-4 rounded-md border shadow-sm mb-6">
           <div className="w-full md:w-auto">
             <Label className="mb-2 block text-xs text-muted-foreground uppercase font-semibold">Pilih Entitas Master Data</Label>
-            <TabsList className="grid w-full sm:w-[400px] grid-cols-2 bg-slate-100">
+            <TabsList className="grid w-full sm:w-100 grid-cols-2 bg-slate-100">
               <TabsTrigger value="kategori">Kategori Usaha</TabsTrigger>
               <TabsTrigger value="prodi">Program Studi</TabsTrigger>
             </TabsList>
           </div>
 
           <div className="flex w-full md:w-auto flex-col sm:flex-row items-center gap-3">
-            <div className="relative w-full sm:w-[250px]">
+            <div className="relative w-full sm:w-62.5">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
@@ -282,7 +282,7 @@ export default function MasterDataPage() {
             </div>
             
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-[150px] bg-white h-10">
+              <SelectTrigger className="w-full sm:w-37.5 bg-white h-10">
                 <SelectValue placeholder="Semua Status" />
               </SelectTrigger>
               <SelectContent>
@@ -310,7 +310,7 @@ export default function MasterDataPage() {
             <Table>
                 <TableHeader>
                     <TableRow className="bg-slate-50">
-                        <TableHead className="w-[80px]"># Order</TableHead>
+                        <TableHead className="w-20"># Order</TableHead>
                         <TableHead>Nama Kategori</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead className="text-right">Aksi</TableHead>
@@ -359,7 +359,7 @@ export default function MasterDataPage() {
             <Table>
                 <TableHeader>
                     <TableRow className="bg-slate-50">
-                        <TableHead className="w-[80px]"># Order</TableHead>
+                        <TableHead className="w-20"># Order</TableHead>
                         <TableHead>Nama Program Studi</TableHead>
                         <TableHead>Kode / Fakultas</TableHead>
                         <TableHead>Status</TableHead>
@@ -425,7 +425,7 @@ export default function MasterDataPage() {
                             setPage(1);
                         }}
                     >
-                        <SelectTrigger className="h-8 w-[70px] bg-white border-slate-300" id="rows-per-page">
+                        <SelectTrigger className="h-8 w-17.5 bg-white border-slate-300" id="rows-per-page">
                             <SelectValue placeholder={pageSize} />
                         </SelectTrigger>
                         <SelectContent side="top">
@@ -571,7 +571,7 @@ export default function MasterDataPage() {
 
       {/* DIALOG DELETE */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-106.25">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-red-600">
                <AlertTriangle className="w-5 h-5" />

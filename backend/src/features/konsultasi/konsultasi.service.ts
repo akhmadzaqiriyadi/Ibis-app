@@ -4,27 +4,73 @@ import { KonsultasiStatus, MetodeKonsultasi, PlatformPenjualan, Role } from '@pr
 import { emailService } from '@/services/email.service';
 
 export class KonsultasiService {
-  async getMyApplications(userId: string) {
-    return prisma.konsultasiApplication.findMany({
-      where: { userId },
-      include: {
-        kategoriUsaha: { select: { name: true } },
-        assignedMentor: { select: { id: true, name: true, email: true } },
-        confirmedBy: { select: { name: true } },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+  async getMyApplications(userId: string, filters: {
+    status?: KonsultasiStatus;
+    search?: string;
+    page: number;
+    limit: number;
+  }) {
+    const { status, search, page, limit } = filters;
+
+    const where: any = { userId };
+    if (status) where.status = status;
+    if (search) {
+      where.OR = [
+        { namaPemilik: { contains: search, mode: 'insensitive' } },
+        { topikKonsultasi: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    const [items, total] = await Promise.all([
+      prisma.konsultasiApplication.findMany({
+        where,
+        include: {
+          kategoriUsaha: { select: { name: true } },
+          assignedMentor: { select: { id: true, name: true, email: true } },
+          confirmedBy: { select: { name: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.konsultasiApplication.count({ where }),
+    ]);
+
+    return { items, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
-  async getMentorApplications(mentorId: string) {
-    return prisma.konsultasiApplication.findMany({
-      where: { assignedMentorId: mentorId },
-      include: {
-        user: { select: { id: true, name: true, email: true } },
-        kategoriUsaha: { select: { name: true } },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+  async getMentorApplications(mentorId: string, filters: {
+    status?: KonsultasiStatus;
+    search?: string;
+    page: number;
+    limit: number;
+  }) {
+    const { status, search, page, limit } = filters;
+
+    const where: any = { assignedMentorId: mentorId };
+    if (status) where.status = status;
+    if (search) {
+      where.OR = [
+        { namaPemilik: { contains: search, mode: 'insensitive' } },
+        { topikKonsultasi: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    const [items, total] = await Promise.all([
+      prisma.konsultasiApplication.findMany({
+        where,
+        include: {
+          user: { select: { id: true, name: true, email: true } },
+          kategoriUsaha: { select: { name: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.konsultasiApplication.count({ where }),
+    ]);
+
+    return { items, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
   async getAllApplications(filters: {
@@ -86,6 +132,12 @@ export class KonsultasiService {
       metode: MetodeKonsultasi;
     }
   ) {
+    // Guard: pastikan user dengan ID dari token masih ada di database
+    const userExists = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
+    if (!userExists) {
+      throw new AppError(401, 'Sesi tidak valid. Silakan login ulang.');
+    }
+
     return prisma.konsultasiApplication.create({
       data: {
         userId,
@@ -101,8 +153,8 @@ export class KonsultasiService {
     data: { assignedMentorId: string; mentorResponseDeadline: string }
   ) {
     const app = await this.getApplicationById(id);
-    if (!(['PENDING', 'MENTOR_DECLINED', 'MENTOR_TIMEOUT'] as string[]).includes(app.status)) {
-      throw new AppError(400, 'Pengajuan tidak dalam status yang dapat di-assign');
+    if (!(['PENDING', 'ASSIGNED', 'MENTOR_DECLINED', 'MENTOR_TIMEOUT'] as string[]).includes(app.status)) {
+      throw new AppError(400, 'Pengajuan tidak dalam status yang dapat di-assign (harus PENDING, ASSIGNED, MENTOR_DECLINED, atau MENTOR_TIMEOUT)');
     }
 
     // Validasi mentor
@@ -225,7 +277,7 @@ export class KonsultasiService {
     const metode = app.metode === 'ONLINE' ? `Online via Zoom: ${app.meetingLink ?? '-'}` : `Offline di: ${app.meetingLocation ?? '-'}`;
 
     const pesan = encodeURIComponent(
-      `Halo ${user.name}, kami dari IBISTEK UTY ingin mengkonfirmasi jadwal konsultasi bisnis Anda.\n\n📅 Tanggal: ${tanggal}\n⏰ Jam: ${waktu} WIB\n📋 Metode: ${metode}\n\nSilakan hadir tepat waktu. Terima kasih!`
+      `Halo ${user.name}, kami dari IBISTEK UTY ingin mengkonfirmasi jadwal konsultasi bisnis Anda.\n\nTanggal  : ${tanggal}\nJam      : ${waktu} WIB\nMetode   : ${metode}\n\nSilakan hadir tepat waktu. Terima kasih!`
     );
 
     return { waLink: `https://wa.me/${userPhone}?text=${pesan}`, adminPhone };
@@ -260,6 +312,28 @@ export class KonsultasiService {
     return prisma.konsultasiApplication.update({
       where: { id },
       data: { status: KonsultasiStatus.COMPLETED, completedAt: new Date() },
+    });
+  }
+
+  async submitLaporan(id: string, userId: string, laporanMahasiswa: string) {
+    const app = await this.getApplicationById(id);
+
+    // Pastikan yang submit adalah pemilik pengajuan
+    if (app.userId !== userId) {
+      throw new AppError(403, 'Anda tidak berhak mengirim laporan untuk konsultasi ini');
+    }
+
+    // Laporan hanya bisa dikirim jika konsultasi sudah selesai
+    if (app.status !== KonsultasiStatus.COMPLETED) {
+      throw new AppError(400, 'Laporan hanya dapat dikirim setelah sesi konsultasi selesai (status COMPLETED)');
+    }
+
+    return prisma.konsultasiApplication.update({
+      where: { id },
+      data: {
+        laporanMahasiswa,
+        laporanSubmittedAt: new Date(),
+      },
     });
   }
 }

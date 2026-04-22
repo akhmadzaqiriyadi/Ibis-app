@@ -35,7 +35,11 @@ export interface KonsultasiApplication {
   cancelledAt?: string | null;
   cancelReason?: string | null;
   completedAt?: string | null;
-  
+
+  // Laporan pasca konsultasi
+  laporanMahasiswa?: string | null;
+  laporanSubmittedAt?: string | null;
+
   createdAt: string;
   updatedAt: string;
   
@@ -45,4 +49,17 @@ export interface KonsultasiApplication {
   assignedMentor?: Partial<User>;
   assignedBy?: Partial<User>;
   confirmedBy?: Partial<User>;
+}
+
+export interface KonsultasiApplicationListResponse {
+  items: KonsultasiApplication[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface KonsultasiWaLink {
+  waLink: string;
+  adminPhone: string;
 }
