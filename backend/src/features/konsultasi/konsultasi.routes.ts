@@ -133,6 +133,7 @@ export const konsultasiRoutes = new Elysia({ prefix: '/konsultasi' })
       const data = await konsultasiService.getAllApplications({
         status: query.status as KonsultasiStatus | undefined,
         mentorId: query.mentorId,
+        search: query.search || undefined,
         page: query.page ? parseInt(query.page) : 1,
         limit: query.limit ? parseInt(query.limit) : 10,
       });
@@ -150,6 +151,7 @@ export const konsultasiRoutes = new Elysia({ prefix: '/konsultasi' })
     query: t.Object({
       status: t.Optional(t.Enum(KonsultasiStatus)),
       mentorId: t.Optional(t.String()),
+      search: t.Optional(t.String()),
       page: t.Optional(t.String()),
       limit: t.Optional(t.String()),
     }),

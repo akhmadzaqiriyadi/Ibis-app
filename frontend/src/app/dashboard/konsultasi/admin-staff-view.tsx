@@ -9,6 +9,8 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Loader2,
+  Search,
+  X,
 } from "lucide-react";
 
 import { useUsers } from "@/features/auth/hooks";
@@ -17,6 +19,7 @@ import { KonsultasiStatus } from "@/types/konsultasi";
 import { getStatusBadgeClass, getStatusLabel } from "@/app/dashboard/konsultasi/components/status-utils";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
@@ -37,12 +40,25 @@ export default function AdminStaffView() {
   const [limit, setLimit] = useState(10);
   const [statusFilter, setStatusFilter] = useState<"all" | KonsultasiStatus>("all");
   const [mentorFilter, setMentorFilter] = useState<string>("all");
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSearch(searchInput.trim());
+  };
+
+  const handleClearSearch = () => {
+    setSearchInput("");
+    setSearch("");
+  };
 
   const { data: appsData, isLoading, isError } = useAllKonsultasiApplications({
     page,
     limit,
     status: statusFilter === "all" ? undefined : statusFilter,
     mentorId: mentorFilter === "all" ? undefined : mentorFilter,
+    search: search || undefined,
   });
 
   const { data: mentorsData } = useUsers({ page: 1, limit: 100, roleFilter: "MENTOR", statusFilter: "active" });
@@ -56,7 +72,7 @@ export default function AdminStaffView() {
 
   useEffect(() => {
     setPage(1);
-  }, [statusFilter, mentorFilter, limit]);
+  }, [statusFilter, mentorFilter, search, limit]);
 
   if (isLoading && !appsData) {
     return (
@@ -82,7 +98,26 @@ export default function AdminStaffView() {
         <p className="text-muted-foreground mt-2">Kelola pengajuan konsultasi: assign mentor, konfirmasi jadwal, dan monitoring status.</p>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+        <form onSubmit={handleSearch} className="relative flex items-center w-full sm:w-80">
+          <Search className="absolute left-3 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Input
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="Cari pemilik atau topik..."
+            className="pl-9 pr-8 bg-white"
+          />
+          {searchInput && (
+            <button
+              type="button"
+              onClick={handleClearSearch}
+              className="absolute right-2 text-muted-foreground hover:text-gray-700"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </form>
+
         <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
           <SelectTrigger className="w-full sm:w-55 bg-white">
             <SelectValue placeholder="Filter status" />
@@ -138,7 +173,9 @@ export default function AdminStaffView() {
             {applications.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="h-[60vh] text-center text-muted-foreground">
-                  Data konsultasi belum ada.
+                  {search || statusFilter !== "all" || mentorFilter !== "all" 
+                    ? "Tidak ada data yang cocok dengan filter." 
+                    : "Data konsultasi belum ada."}
                 </TableCell>
               </TableRow>
             ) : (

@@ -76,12 +76,14 @@ export const useSubmitKonsultasi = () => {
 export const useAllKonsultasiApplications = (filters: {
   status?: string;
   mentorId?: string;
+  search?: string;
   page?: number;
   limit?: number;
 }) => {
   const queryParams = new URLSearchParams();
   if (filters.status) queryParams.append('status', filters.status);
   if (filters.mentorId) queryParams.append('mentorId', filters.mentorId);
+  if (filters.search) queryParams.append('search', filters.search);
   if (filters.page) queryParams.append('page', filters.page.toString());
   if (filters.limit) queryParams.append('limit', filters.limit.toString());
 

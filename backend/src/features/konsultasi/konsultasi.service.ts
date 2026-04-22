@@ -76,13 +76,20 @@ export class KonsultasiService {
   async getAllApplications(filters: {
     status?: KonsultasiStatus;
     mentorId?: string;
+    search?: string;
     page: number;
     limit: number;
   }) {
-    const { status, mentorId, page, limit } = filters;
+    const { status, mentorId, search, page, limit } = filters;
     const where: any = {};
     if (status) where.status = status;
     if (mentorId) where.assignedMentorId = mentorId;
+    if (search) {
+      where.OR = [
+        { namaPemilik: { contains: search, mode: 'insensitive' } },
+        { topikKonsultasi: { contains: search, mode: 'insensitive' } },
+      ];
+    }
 
     const [items, total] = await Promise.all([
       prisma.konsultasiApplication.findMany({
