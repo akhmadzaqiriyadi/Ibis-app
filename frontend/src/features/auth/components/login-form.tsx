@@ -1,3 +1,5 @@
+"use client";
+
 import { useRef } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
@@ -51,14 +53,10 @@ export default function LoginForm() {
   const onSubmit = (data: LoginValues) => {
     loginMutation.mutate(data, {
       onSuccess: (res) => {
-        // Validation handled by Server based on response.data.data -> AuthResponse
         const { token, user } = res.data;
-        
-        // Integration: Update store and set Cookie for middleware
         setAuthStore(token, user);
-        Cookies.set("token", token, { expires: 7, sameSite: 'Strict' }); // 7 days expiration
-        
-        router.push("/dashboard"); // Redirect to dashboard
+        Cookies.set("token", token, { expires: 7, sameSite: 'Strict' });
+        router.push("/dashboard");
       },
       onError: (err: unknown) => {
         const axErr = err as AxiosError<{ message?: string; error?: string }>;
@@ -85,7 +83,7 @@ export default function LoginForm() {
             className="mx-auto mb-4"
         />
         <h1 className="text-2xl font-bold text-gray-900">Selamat Datang Kembali</h1>
-        <p className="text-sm text-gray-500 mt-2">Masuk ke dashboard admin IBISTEK</p>
+        <p className="text-sm text-gray-500 mt-2">Masuk ke dashboard IBISTEK UTY</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 login-form-content">

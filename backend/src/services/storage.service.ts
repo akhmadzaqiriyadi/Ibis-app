@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { NodeHttpHandler } from '@smithy/node-http-handler';
 import { config } from '@/config/env';
 import https from 'https';
@@ -42,6 +42,13 @@ export class StorageService {
     }));
 
     return `${this.publicUrl}/${this.bucket}/${fileName}`;
+  }
+
+  async getFile(key: string) {
+    return await this.client.send(new GetObjectCommand({
+      Bucket: this.bucket,
+      Key: key,
+    }));
   }
 
   async deleteFile(fileUrl: string): Promise<void> {

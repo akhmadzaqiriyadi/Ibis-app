@@ -4,6 +4,46 @@ import { authMiddleware } from '../auth/auth.middleware';
 import { successResponse, errorResponse } from '@/common/response';
 
 export const uploadRoutes = new Elysia({ prefix: '/upload' })
+  .get(
+    '/file/*',
+    async ({ params, set }) => {
+      try {
+        const key = (params as Record<string, string>)['*'];
+        console.log('[STORAGE PROXY] requested key:', key);
+        if (!key) {
+          set.status = 404;
+          return errorResponse('File key is required');
+        }
+
+        const s3Object = await storageService.getFile(key);
+        const contentType = s3Object.ContentType || 'application/octet-stream';
+        const bytes = await s3Object.Body?.transformToByteArray();
+
+        if (!bytes) {
+          set.status = 404;
+          return errorResponse('File not found');
+        }
+
+        return new Response(Buffer.from(bytes), {
+          headers: {
+            'Content-Type': contentType,
+            'Cache-Control': 'public, max-age=31536000, immutable',
+            'Content-Disposition': 'inline',
+          },
+        });
+      } catch (error) {
+        set.status = 404;
+        return errorResponse('File not found in storage');
+      }
+    },
+    {
+      detail: {
+        tags: ['Upload'],
+        summary: 'Stream / Proxy file from MinIO storage',
+        description: 'Streams a file directly from MinIO storage, bypassing client-side SSL and Mixed Content limitations.',
+      },
+    }
+  )
   .use(authMiddleware)
   .post(
     '/',
@@ -17,18 +57,18 @@ export const uploadRoutes = new Elysia({ prefix: '/upload' })
           return errorResponse('No file uploaded');
         }
 
-        // Validate file type (basic)
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        // Validate file type (image or PDF)
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml', 'application/pdf'];
         if (!allowedTypes.includes(file.type)) {
           set.status = 400;
-          return errorResponse('Only image files (JPEG, PNG, WEBP, GIF) are allowed');
+          return errorResponse('Hanya file gambar (JPEG, PNG, WEBP, GIF, SVG) atau dokumen PDF yang diperbolehkan');
         }
 
-        // Validate file size (e.g., 5MB)
-        const maxSize = 5 * 1024 * 1024; // 5MB
+        // Validate file size (max 25MB)
+        const maxSize = 25 * 1024 * 1024;
         if (file.size > maxSize) {
           set.status = 400;
-          return errorResponse('File size too large (max 5MB)');
+          return errorResponse('Ukuran file terlalu besar (maksimal 25MB)');
         }
 
         const url = await storageService.uploadFile(file, folder);
@@ -46,7 +86,7 @@ export const uploadRoutes = new Elysia({ prefix: '/upload' })
       detail: {
         tags: ['Upload'],
         summary: 'Upload a file',
-        description: 'Upload a file to storage (MinIO). Supported types: Images (JPEG, PNG, WEBP, GIF). Max size: 5MB.',
+        description: 'Upload a file to storage (MinIO). Supported types: Images (JPEG, PNG, WEBP, GIF) and PDF documents. Max size: 25MB.',
         security: [{ BearerAuth: [] }],
       },
       body: t.Object({

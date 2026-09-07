@@ -31,17 +31,17 @@ export const mikroKredensialRoutes = new Elysia({ prefix: '/mikro-kredensial' })
     detail: { tags: ['Mikro Kredensial'], summary: 'List semua kursus', description: 'Query param `all=true` untuk menampilkan yang non-aktif (Admin/Staff)' },
   })
 
-  .get('/kursus/:slug', async ({ params, set }) => {
+  .get('/kursus/:id', async ({ params, set }) => {
     try {
-      const data = await mikroKredensialService.getKursusBySlug(params.slug);
+      const data = await mikroKredensialService.getKursusByIdOrSlug(params.id);
       return successResponse(data, 'Detail kursus');
     } catch (err) {
       if (err instanceof AppError) { set.status = err.statusCode; return errorResponse(err.message); }
       set.status = 500; return errorResponse('Gagal mengambil detail');
     }
   }, {
-    detail: { tags: ['Mikro Kredensial'], summary: 'Get detail kursus via slug' },
-    params: t.Object({ slug: t.String() }),
+    detail: { tags: ['Mikro Kredensial'], summary: 'Get detail kursus via ID atau slug' },
+    params: t.Object({ id: t.String() }),
   })
 
   .post('/kursus', async ({ body, set }: any) => {
@@ -151,8 +151,43 @@ export const mikroKredensialRoutes = new Elysia({ prefix: '/mikro-kredensial' })
     query: t.Object({ page: t.Optional(t.String()), limit: t.Optional(t.String()), status: t.Optional(t.String()) }),
   })
 
-  .patch('/enroll/:id/complete', async ({ params, body, set }: any) => {
+  .get('/enroll/:id', async ({ params, user, set }: any) => {
     try {
+      if (!user) { set.status = 401; return errorResponse('Unauthorized'); }
+      const enrollment = await mikroKredensialService.getEnrollmentById(params.id);
+      if (!enrollment) { set.status = 404; return errorResponse('Data enrollment tidak ditemukan'); }
+
+      const isAdminOrStaff = [Role.ADMIN, Role.STAFF].includes(user.role);
+      const isOwner = enrollment.userId === user.id;
+
+      if (!isAdminOrStaff && !isOwner) {
+        set.status = 403; return errorResponse('Forbidden: Anda tidak memiliki akses ke data ini');
+      }
+
+      return successResponse(enrollment, 'Detail enrollment');
+    } catch (err) {
+      set.status = 500; return errorResponse('Gagal mengambil data enrollment');
+    }
+  }, {
+    beforeHandle: requireAuth,
+    detail: { tags: ['Mikro Kredensial'], summary: 'Lihat detail enrollment kursus', security: [{ BearerAuth: [] }] },
+    params: t.Object({ id: t.String() }),
+  })
+
+  .patch('/enroll/:id/complete', async ({ params, body, user, set }: any) => {
+    try {
+      if (!user) { set.status = 401; return errorResponse('Unauthorized'); }
+
+      const enrollment = await mikroKredensialService.getEnrollmentById(params.id);
+      if (!enrollment) { set.status = 404; return errorResponse('Data enrollment tidak ditemukan'); }
+
+      const isAdminOrStaff = [Role.ADMIN, Role.STAFF].includes(user.role);
+      const isOwner = enrollment.userId === user.id;
+
+      if (!isAdminOrStaff && !isOwner) {
+        set.status = 403; return errorResponse('Forbidden: Anda tidak memiliki akses untuk menyelesaikan kursus ini');
+      }
+
       const data = await mikroKredensialService.completeKursus(params.id, body.score);
       return successResponse(data, 'Progress kursus berhasil ditandai selesai.');
     } catch (err) {
@@ -160,7 +195,7 @@ export const mikroKredensialRoutes = new Elysia({ prefix: '/mikro-kredensial' })
       set.status = 500; return errorResponse('Gagal memproses penilaian kursus');
     }
   }, {
-    beforeHandle: requireAdminOrStaff,
+    beforeHandle: requireAuth,
     detail: { tags: ['Mikro Kredensial'], summary: 'Selesaikan kursus dan input nilai (Akan generate sertifikat jika lulus)', security: [{ BearerAuth: [] }] },
     params: t.Object({ id: t.String() }),
     body: t.Object({
@@ -195,4 +230,154 @@ export const mikroKredensialRoutes = new Elysia({ prefix: '/mikro-kredensial' })
   }, {
     detail: { tags: ['Mikro Kredensial'], summary: 'Verifikasi validitas sertifikat', description: 'Public endpoint untuk verifikasi sertifikat digital (contoh IBIS/KRED/2026/A1B2)' },
     params: t.Object({ certNumber: t.String() }),
+  })
+
+  // ══════════════════════════════════════════════════════════
+  // MODUL & MATERI
+  // ══════════════════════════════════════════════════════════
+
+  .get('/kursus/:id/modules', async ({ params, set }: any) => {
+    try {
+      const data = await mikroKredensialService.getModulesByKursusId(params.id);
+      return successResponse(data, 'Daftar modul kursus');
+    } catch (err) {
+      if (err instanceof AppError) { set.status = err.statusCode; return errorResponse(err.message); }
+      set.status = 500; return errorResponse('Gagal mengambil daftar modul');
+    }
+  }, {
+    detail: { tags: ['Mikro Kredensial'], summary: 'Daftar modul/materi kursus' },
+    params: t.Object({ id: t.String() }),
+  })
+
+  .post('/kursus/:id/modules', async ({ params, body, set }: any) => {
+    try {
+      const data = await mikroKredensialService.createModule(params.id, body);
+      set.status = 201;
+      return successResponse(data, 'Modul berhasil ditambahkan');
+    } catch (err) {
+      if (err instanceof AppError) { set.status = err.statusCode; return errorResponse(err.message); }
+      set.status = 500; return errorResponse('Gagal menambahkan modul');
+    }
+  }, {
+    beforeHandle: requireAdminOrStaff,
+    detail: { tags: ['Mikro Kredensial'], summary: 'Tambah modul baru ke kursus', security: [{ BearerAuth: [] }] },
+    params: t.Object({ id: t.String() }),
+    body: t.Object({
+      title: t.String({ minLength: 3 }),
+      content: t.String({ minLength: 10 }),
+      duration: t.Optional(t.Number()),
+      videoUrl: t.Optional(t.String()),
+      fileUrl: t.Optional(t.String()),
+      order: t.Optional(t.Number()),
+    }),
+  })
+
+  .put('/modules/:id', async ({ params, body, set }: any) => {
+    try {
+      const data = await mikroKredensialService.updateModule(params.id, body);
+      return successResponse(data, 'Modul berhasil diperbarui');
+    } catch (err) {
+      if (err instanceof AppError) { set.status = err.statusCode; return errorResponse(err.message); }
+      set.status = 500; return errorResponse('Gagal memperbarui modul');
+    }
+  }, {
+    beforeHandle: requireAdminOrStaff,
+    detail: { tags: ['Mikro Kredensial'], summary: 'Perbarui modul', security: [{ BearerAuth: [] }] },
+    params: t.Object({ id: t.String() }),
+    body: t.Object({
+      title: t.Optional(t.String()),
+      content: t.Optional(t.String()),
+      duration: t.Optional(t.Number()),
+      videoUrl: t.Optional(t.String()),
+      fileUrl: t.Optional(t.String()),
+      order: t.Optional(t.Number()),
+    }),
+  })
+
+  .delete('/modules/:id', async ({ params, set }: any) => {
+    try {
+      await mikroKredensialService.deleteModule(params.id);
+      return successResponse(null, 'Modul berhasil dihapus');
+    } catch (err) {
+      if (err instanceof AppError) { set.status = err.statusCode; return errorResponse(err.message); }
+      set.status = 500; return errorResponse('Gagal menghapus modul');
+    }
+  }, {
+    beforeHandle: requireAdminOrStaff,
+    detail: { tags: ['Mikro Kredensial'], summary: 'Hapus modul', security: [{ BearerAuth: [] }] },
+    params: t.Object({ id: t.String() }),
+  })
+
+  // ══════════════════════════════════════════════════════════
+  // BANK SOAL KUIS
+  // ══════════════════════════════════════════════════════════
+
+  .get('/kursus/:id/quizzes', async ({ params, set }: any) => {
+    try {
+      const data = await mikroKredensialService.getQuizzesByKursusId(params.id);
+      return successResponse(data, 'Daftar bank soal kuis');
+    } catch (err) {
+      if (err instanceof AppError) { set.status = err.statusCode; return errorResponse(err.message); }
+      set.status = 500; return errorResponse('Gagal mengambil daftar soal kuis');
+    }
+  }, {
+    detail: { tags: ['Mikro Kredensial'], summary: 'Daftar soal kuis kursus' },
+    params: t.Object({ id: t.String() }),
+  })
+
+  .post('/kursus/:id/quizzes', async ({ params, body, set }: any) => {
+    try {
+      const data = await mikroKredensialService.createQuiz(params.id, body);
+      set.status = 201;
+      return successResponse(data, 'Soal kuis berhasil ditambahkan');
+    } catch (err) {
+      if (err instanceof AppError) { set.status = err.statusCode; return errorResponse(err.message); }
+      set.status = 500; return errorResponse('Gagal menambahkan soal kuis');
+    }
+  }, {
+    beforeHandle: requireAdminOrStaff,
+    detail: { tags: ['Mikro Kredensial'], summary: 'Tambah soal kuis ke kursus', security: [{ BearerAuth: [] }] },
+    params: t.Object({ id: t.String() }),
+    body: t.Object({
+      question: t.String({ minLength: 5 }),
+      options: t.Array(t.String()),
+      correctAnswer: t.Number(),
+      explanation: t.Optional(t.String()),
+      order: t.Optional(t.Number()),
+    }),
+  })
+
+  .put('/quizzes/:id', async ({ params, body, set }: any) => {
+    try {
+      const data = await mikroKredensialService.updateQuiz(params.id, body);
+      return successResponse(data, 'Soal kuis berhasil diperbarui');
+    } catch (err) {
+      if (err instanceof AppError) { set.status = err.statusCode; return errorResponse(err.message); }
+      set.status = 500; return errorResponse('Gagal memperbarui soal kuis');
+    }
+  }, {
+    beforeHandle: requireAdminOrStaff,
+    detail: { tags: ['Mikro Kredensial'], summary: 'Perbarui soal kuis', security: [{ BearerAuth: [] }] },
+    params: t.Object({ id: t.String() }),
+    body: t.Object({
+      question: t.Optional(t.String()),
+      options: t.Optional(t.Array(t.String())),
+      correctAnswer: t.Optional(t.Number()),
+      explanation: t.Optional(t.String()),
+      order: t.Optional(t.Number()),
+    }),
+  })
+
+  .delete('/quizzes/:id', async ({ params, set }: any) => {
+    try {
+      await mikroKredensialService.deleteQuiz(params.id);
+      return successResponse(null, 'Soal kuis berhasil dihapus');
+    } catch (err) {
+      if (err instanceof AppError) { set.status = err.statusCode; return errorResponse(err.message); }
+      set.status = 500; return errorResponse('Gagal menghapus soal kuis');
+    }
+  }, {
+    beforeHandle: requireAdminOrStaff,
+    detail: { tags: ['Mikro Kredensial'], summary: 'Hapus soal kuis', security: [{ BearerAuth: [] }] },
+    params: t.Object({ id: t.String() }),
   });

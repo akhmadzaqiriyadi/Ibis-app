@@ -32,7 +32,7 @@ class EmailService {
   async sendAccountVerified(to: string, name: string): Promise<void> {
     await this.send({
       to,
-      subject: 'Akun IBISTEK UTY Anda Telah Diverifikasi ✅',
+      subject: 'Akun IBISTEK UTY Anda Telah Diverifikasi',
       html: `
         <h2>Halo, ${name}!</h2>
         <p>Selamat! Akun IBISTEK UTY Anda telah berhasil diverifikasi oleh Admin.</p>
@@ -61,7 +61,7 @@ class EmailService {
   async sendInkubasiApproved(to: string, name: string, periodName: string): Promise<void> {
     await this.send({
       to,
-      subject: 'Selamat! Pengajuan Inkubasi Bisnis Anda Diterima 🎉',
+      subject: 'Selamat! Pengajuan Inkubasi Bisnis Anda Diterima',
       html: `
         <h2>Halo, ${name}!</h2>
         <p>Selamat! Pengajuan program inkubasi bisnis Anda untuk <strong>${periodName}</strong> telah <strong>diterima</strong>.</p>
@@ -91,7 +91,7 @@ class EmailService {
   async sendKonsultasiAssigned(to: string, name: string, mentorName: string, deadline: Date): Promise<void> {
     await this.send({
       to,
-      subject: 'Pengajuan Konsultasi Sedang Diproses 🕐',
+      subject: 'Pengajuan Konsultasi Sedang Diproses',
       html: `
         <h2>Halo, ${name}!</h2>
         <p>Pengajuan konsultasi bisnis Anda sedang dalam proses konfirmasi. Mentor yang ditugaskan adalah <strong>${mentorName}</strong>.</p>
@@ -113,17 +113,17 @@ class EmailService {
     meetingLocation?: string
   ): Promise<void> {
     const metodeInfo = metode === 'ONLINE'
-      ? `<p>📹 <strong>Metode:</strong> Online via Zoom/GMeet<br/><a href="${meetingLink}">🔗 ${meetingLink}</a></p>`
-      : `<p>📍 <strong>Metode:</strong> Offline<br/>Lokasi: ${meetingLocation}</p>`;
+      ? `<p><strong>Metode:</strong> Online via Zoom/GMeet<br/><a href="${meetingLink}">${meetingLink}</a></p>`
+      : `<p><strong>Metode:</strong> Offline<br/>Lokasi: ${meetingLocation}</p>`;
 
     await this.send({
       to,
-      subject: 'Jadwal Konsultasi Bisnis Anda Telah Dikonfirmasi ✅',
+      subject: 'Jadwal Konsultasi Bisnis Anda Telah Dikonfirmasi',
       html: `
         <h2>Halo, ${name}!</h2>
         <p>Konsultasi bisnis Anda telah <strong>dikonfirmasi</strong>.</p>
-        <p>📅 <strong>Tanggal:</strong> ${confirmedDate.toLocaleDateString('id-ID', { dateStyle: 'long' })}, pukul ${confirmedDate.toLocaleTimeString('id-ID', { timeStyle: 'short' })} WIB</p>
-        <p>👨‍🏫 <strong>Mentor:</strong> ${mentorName}</p>
+        <p><strong>Tanggal:</strong> ${confirmedDate.toLocaleDateString('id-ID', { dateStyle: 'long' })}, pukul ${confirmedDate.toLocaleTimeString('id-ID', { timeStyle: 'short' })} WIB</p>
+        <p><strong>Mentor:</strong> ${mentorName}</p>
         ${metodeInfo}
         <p>Harap hadir tepat waktu. Jika ada kendala, silakan hubungi kami segera.</p>
         <small>IBISTEK UTY — Inkubator Bisnis dan Teknologi Universitas Teknologi Yogyakarta</small>

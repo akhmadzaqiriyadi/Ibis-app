@@ -16,10 +16,10 @@ const requireAdminOrStaff = ({ user, set }: any) => {
   }
 };
 
-const requireMahasiswa = ({ user, set }: any) => {
+const requireParticipant = ({ user, set }: any) => {
   if (!user) { set.status = 401; return errorResponse('Unauthorized'); }
-  if (user.role !== Role.MAHASISWA) {
-    set.status = 403; return errorResponse('Forbidden: Hanya Mahasiswa yang dapat mengakses fitur ini');
+  if (![Role.MAHASISWA, Role.UMKM].includes(user.role)) {
+    set.status = 403; return errorResponse('Forbidden: Hanya Mahasiswa dan UMKM yang dapat mengakses fitur ini');
   }
 };
 
@@ -74,7 +74,7 @@ export const konsultasiRoutes = new Elysia({ prefix: '/konsultasi' })
       set.status = 500; return errorResponse('Gagal mengirim pengajuan');
     }
   }, {
-    beforeHandle: requireMahasiswa,
+    beforeHandle: requireParticipant,
     detail: {
       tags: ['Konsultasi'],
       summary: 'Submit pengajuan konsultasi (Mahasiswa)',

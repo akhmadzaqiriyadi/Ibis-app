@@ -45,3 +45,29 @@ export interface Certificate {
   user?: Partial<User>;
   enrollment?: Partial<MikroKredensialEnrollment>;
 }
+
+export interface MikroKredensialModul {
+  id: string;
+  kursusId: string;
+  title: string;
+  content: string;
+  duration?: number | null;
+  videoUrl?: string | null;
+  fileUrl?: string | null;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MikroKredensialQuiz {
+  id: string;
+  kursusId: string;
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation?: string | null;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+}
+

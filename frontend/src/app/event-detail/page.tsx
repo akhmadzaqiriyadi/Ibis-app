@@ -4,6 +4,7 @@ import { Container } from "@/components/ui/container";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import Image from "next/image";
+import { getSafeImageUrl, getCoverFallback } from "@/lib/image-utils";
 import { Calendar, MapPin, ArrowLeft, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { CONTENT } from "@/constants/content";
@@ -55,11 +56,16 @@ export default function EventDetailPage() {
             {/* Featured Image */}
             <div className="relative w-full aspect-video mb-12 rounded-2xl overflow-hidden shadow-xl">
               <Image
-                src={event.image}
+                src={getSafeImageUrl(event.image, event.title, 'cover')}
                 alt={event.title}
                 fill
+                unoptimized
                 className="object-cover"
                 priority
+                onError={(e) => {
+                  const target = e.currentTarget as HTMLImageElement;
+                  target.src = getCoverFallback(event.title);
+                }}
               />
             </div>
 

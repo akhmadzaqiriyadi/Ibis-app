@@ -15,7 +15,7 @@ test.describe('API E2E Tests', () => {
     const eventsJson = await events.json();
     expect(eventsJson.data.data.length).toBeGreaterThan(0);
     // Check seeded event
-    const seededEvent = eventsJson.data.data.find((e: any) => e.slug === 'workshop-digital-2026');
+    const seededEvent = eventsJson.data.data.find((e: any) => e.slug === 'workshop-digital-marketing-2026');
     expect(seededEvent).toBeDefined();
 
     // 3. Programs (Public)
@@ -33,7 +33,7 @@ test.describe('API E2E Tests', () => {
     const teamJson = await team.json();
     expect(teamJson.data.length).toBeGreaterThan(0);
     // Check seeded team member
-    const seededMember = teamJson.data.find((m: any) => m.name === 'Dr. Budi Santoso');
+    const seededMember = teamJson.data.find((m: any) => m.name.includes('Dr. Budi Santoso'));
     expect(seededMember).toBeDefined();
 
     // 5. Updates (Public)
@@ -47,10 +47,10 @@ test.describe('API E2E Tests', () => {
   });
 
   test('Authentication Flow', async ({ request }) => {
-    // 1. Login as Member
+    // 1. Login as Mahasiswa
     const loginRes = await request.post('/api/v1/auth/login', {
       data: {
-        email: 'member@ibistek.com',
+        email: 'mahasiswa@ibistek.com',
         password: 'password123'
       }
     });
@@ -68,13 +68,13 @@ test.describe('API E2E Tests', () => {
     });
     expect(meRes.ok()).toBeTruthy();
     const meData = await meRes.json();
-    expect(meData.data.email).toBe('member@ibistek.com');
+    expect(meData.data.email).toBe('mahasiswa@ibistek.com');
   });
 
   test('RBAC Enforcement', async ({ request }) => {
-    // 1. Login as Member (has fewer permissions)
+    // 1. Login as Mahasiswa (has fewer permissions)
     const memberLogin = await request.post('/api/v1/auth/login', {
-      data: { email: 'member@ibistek.com', password: 'password123' }
+      data: { email: 'mahasiswa@ibistek.com', password: 'password123' }
     });
     const memberToken = (await memberLogin.json()).data.token;
 
@@ -133,7 +133,7 @@ test.describe('API E2E Tests', () => {
     const publicRes = await request.get('/api/v1/users');
     expect(publicRes.status()).toBe(401);
 
-    const memberToken = await login('member@ibistek.com', 'password123');
+    const memberToken = await login('mahasiswa@ibistek.com', 'password123');
     const memberRes = await request.get('/api/v1/users', {
       headers: { Authorization: `Bearer ${memberToken}` },
     });

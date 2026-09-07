@@ -4,6 +4,7 @@ import { Container } from "@/components/ui/container";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import Image from "next/image";
+import { getSafeImageUrl, getCoverFallback } from "@/lib/image-utils";
 import { Calendar, MapPin, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Event } from "@/types/event";
@@ -137,10 +138,15 @@ export default function EventPage() {
                       <div className="relative h-48 mb-4 rounded-xl overflow-hidden">
                         {event.image && event.image.trim() !== '' ? (
                           <Image
-                            src={event.image!}
+                            src={getSafeImageUrl(event.image, event.title, 'cover')}
                             alt={event.title}
                             fill
+                            unoptimized
                             className="object-cover group-hover:scale-110 transition-transform duration-500"
+                            onError={(e) => {
+                              const target = e.currentTarget as HTMLImageElement;
+                              target.src = getCoverFallback(event.title);
+                            }}
                           />
                         ) : (
                           <Image
@@ -240,10 +246,15 @@ export default function EventPage() {
                     <div className="relative h-48 overflow-hidden">
                       {event.image && event.image.trim() !== '' ? (
                         <Image
-                          src={event.image!}
+                          src={getSafeImageUrl(event.image, event.title, 'cover')}
                           alt={event.title}
                           fill
+                          unoptimized
                           className="object-cover group-hover:scale-110 transition-transform duration-500"
+                          onError={(e) => {
+                            const target = e.currentTarget as HTMLImageElement;
+                            target.src = getCoverFallback(event.title);
+                          }}
                         />
                       ) : (
                         <Image

@@ -2,6 +2,7 @@ import { Elysia } from 'elysia';
 import { cors } from '@elysiajs/cors';
 import { swagger } from '@elysiajs/swagger';
 import { config } from './config/env';
+import { AppError } from './common/errors';
 import { eventRoutes } from './features/events/event.routes';
 import { programRoutes } from './features/programs/program.routes';
 import { teamRoutes } from './features/team/team.routes';
@@ -14,6 +15,7 @@ import { masterDataRoutes } from './features/master-data/master-data.routes';
 import { inkubasiRoutes } from './features/inkubasi/inkubasi.routes';
 import { konsultasiRoutes } from './features/konsultasi/konsultasi.routes';
 import { mikroKredensialRoutes } from './features/mikro-kredensial/mikro-kredensial.routes';
+import { dashboardRoutes } from './features/dashboard/dashboard.routes';
 
 const app = new Elysia()
   .use(
@@ -31,6 +33,8 @@ const app = new Elysia()
           description: 'API Documentation for IBISTEK UTY Backend',
         },
         tags: [
+          { name: 'Auth', description: 'Autentikasi & manajemen sesi' },
+          { name: 'Dashboard', description: 'Statistik agregat dashboard platform' },
           { name: 'Events', description: 'Event management endpoints' },
           { name: 'Programs', description: 'Program management endpoints' },
           { name: 'Team', description: 'Team member management endpoints' },
@@ -69,10 +73,21 @@ const app = new Elysia()
       .use(inkubasiRoutes)
       .use(konsultasiRoutes)
       .use(mikroKredensialRoutes)
+      .use(dashboardRoutes)
   )
   .onError(({ error, code, set }) => {
     console.error('Error:', error);
     
+    if (error instanceof AppError || (error as any)?.statusCode) {
+      const statusCode = (error as any).statusCode || 400;
+      set.status = statusCode;
+      return {
+        success: false,
+        error: (error as any)?.name || 'Application Error',
+        message: (error as any)?.message || 'Something went wrong',
+      };
+    }
+
     if (code === 'VALIDATION') {
       set.status = 422;
       return {
@@ -100,7 +115,7 @@ const app = new Elysia()
   })
   .listen(config.port);
 
-console.log(`🚀 Server is running at http://localhost:${app.server?.port}`);
-console.log(`📚 API Documentation at http://localhost:${app.server?.port}/swagger`);
-console.log(`🏥 Health check at http://localhost:${app.server?.port}/health`);
-console.log(`📦 Environment: ${config.nodeEnv}`);
+console.log(`[INFO] Server is running at http://localhost:${app.server?.port}`);
+console.log(`[DOCS] API Documentation at http://localhost:${app.server?.port}/swagger`);
+console.log(`[HEALTH] Health check at http://localhost:${app.server?.port}/health`);
+console.log(`[ENV] Environment: ${config.nodeEnv}`);

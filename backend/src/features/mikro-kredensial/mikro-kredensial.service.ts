@@ -13,10 +13,21 @@ export class MikroKredensialService {
     });
   }
 
-  async getKursusBySlug(slug: string) {
-    const kursus = await prisma.mikroKredensialKursus.findUnique({ where: { slug } });
+  async getKursusByIdOrSlug(idOrSlug: string) {
+    const kursus = await prisma.mikroKredensialKursus.findFirst({
+      where: {
+        OR: [
+          { id: idOrSlug },
+          { slug: idOrSlug },
+        ],
+      },
+    });
     if (!kursus) throw new NotFoundError('Kursus tidak ditemukan');
     return kursus;
+  }
+
+  async getKursusBySlug(slug: string) {
+    return this.getKursusByIdOrSlug(slug);
   }
 
   async createKursus(data: { title: string; slug: string; description: string; duration?: number; thumbnail?: string; order?: number }) {
@@ -64,6 +75,17 @@ export class MikroKredensialService {
     });
   }
 
+  async getEnrollmentById(id: string) {
+    return prisma.mikroKredensialEnrollment.findUnique({
+      where: { id },
+      include: {
+        kursus: true,
+        user: true,
+        certificate: true,
+      },
+    });
+  }
+
   async getAllEnrollments(page = 1, limit = 10, status?: string) {
     const where = status ? { status: status as MikroKredensialStatus } : {};
     
@@ -97,27 +119,32 @@ export class MikroKredensialService {
     });
 
     if (!enrollment) throw new NotFoundError('Data enrollment tidak ditemukan');
-    if (enrollment.status === MikroKredensialStatus.COMPLETED) {
-      throw new AppError(400, 'Kursus ini sudah pernah diselesaikan');
-    }
 
-    const PASSING_GRADE = 70; // Hardcode dulu
+    const PASSING_GRADE = 70;
     const isPassed = score >= PASSING_GRADE;
     const newStatus = isPassed ? MikroKredensialStatus.COMPLETED : MikroKredensialStatus.FAILED;
+    const finalScore = enrollment.score ? Math.max(enrollment.score, score) : score;
 
     const updated = await prisma.mikroKredensialEnrollment.update({
       where: { id: enrollmentId },
-      data: { status: newStatus, score, completedAt: new Date() },
+      data: {
+        status: newStatus,
+        score: finalScore,
+        completedAt: isPassed ? (enrollment.completedAt || new Date()) : null,
+      },
     });
 
-    // Otomatis generate sertifikat jika lulus
+    // Otomatis generate/upsert sertifikat jika lulus
     let certificate = null;
     if (isPassed) {
-      certificate = await prisma.certificate.create({
-        data: {
+      certificate = await prisma.certificate.upsert({
+        where: { enrollmentId: enrollment.id },
+        update: {
+          issuedAt: new Date(),
+        },
+        create: {
           userId: enrollment.userId,
           enrollmentId: enrollment.id,
-          // Generate unique cert number: IBIS/KRED/[TAHUN]/[RANDOM_HEX_4]
           certificateNumber: `IBIS/KRED/${new Date().getFullYear()}/${uuidv4().split('-')[0].toUpperCase()}`,
         },
       });
@@ -149,6 +176,95 @@ export class MikroKredensialService {
 
     if (!cert) throw new NotFoundError('Sertifikat tidak valid atau tidak ditemukan');
     return cert;
+  }
+
+  // ─── Modul Materi ───────────────────────────────────────
+
+  async getModulesByKursusId(kursusId: string) {
+    return prisma.mikroKredensialModul.findMany({
+      where: { kursusId },
+      orderBy: { order: 'asc' },
+    });
+  }
+
+  async createModule(kursusId: string, data: { title: string; content: string; duration?: number; videoUrl?: string; fileUrl?: string; order?: number }) {
+    const kursus = await prisma.mikroKredensialKursus.findUnique({ where: { id: kursusId } });
+    if (!kursus) throw new NotFoundError('Kursus tidak ditemukan');
+
+    const highestOrder = await prisma.mikroKredensialModul.findFirst({
+      where: { kursusId },
+      orderBy: { order: 'desc' },
+      select: { order: true },
+    });
+    const order = data.order !== undefined ? data.order : (highestOrder?.order ?? -1) + 1;
+
+    return prisma.mikroKredensialModul.create({
+      data: {
+        kursusId,
+        title: data.title,
+        content: data.content,
+        duration: data.duration,
+        videoUrl: data.videoUrl,
+        fileUrl: data.fileUrl,
+        order,
+      },
+    });
+  }
+
+  async updateModule(id: string, data: { title?: string; content?: string; duration?: number; videoUrl?: string; fileUrl?: string; order?: number }) {
+    const modul = await prisma.mikroKredensialModul.findUnique({ where: { id } });
+    if (!modul) throw new NotFoundError('Modul tidak ditemukan');
+    return prisma.mikroKredensialModul.update({ where: { id }, data });
+  }
+
+  async deleteModule(id: string) {
+    const modul = await prisma.mikroKredensialModul.findUnique({ where: { id } });
+    if (!modul) throw new NotFoundError('Modul tidak ditemukan');
+    return prisma.mikroKredensialModul.delete({ where: { id } });
+  }
+
+  // ─── Bank Soal Kuis ─────────────────────────────────────
+
+  async getQuizzesByKursusId(kursusId: string) {
+    return prisma.mikroKredensialQuiz.findMany({
+      where: { kursusId },
+      orderBy: { order: 'asc' },
+    });
+  }
+
+  async createQuiz(kursusId: string, data: { question: string; options: string[]; correctAnswer: number; explanation?: string; order?: number }) {
+    const kursus = await prisma.mikroKredensialKursus.findUnique({ where: { id: kursusId } });
+    if (!kursus) throw new NotFoundError('Kursus tidak ditemukan');
+
+    const highestOrder = await prisma.mikroKredensialQuiz.findFirst({
+      where: { kursusId },
+      orderBy: { order: 'desc' },
+      select: { order: true },
+    });
+    const order = data.order !== undefined ? data.order : (highestOrder?.order ?? -1) + 1;
+
+    return prisma.mikroKredensialQuiz.create({
+      data: {
+        kursusId,
+        question: data.question,
+        options: data.options,
+        correctAnswer: data.correctAnswer,
+        explanation: data.explanation,
+        order,
+      },
+    });
+  }
+
+  async updateQuiz(id: string, data: { question?: string; options?: string[]; correctAnswer?: number; explanation?: string; order?: number }) {
+    const quiz = await prisma.mikroKredensialQuiz.findUnique({ where: { id } });
+    if (!quiz) throw new NotFoundError('Soal kuis tidak ditemukan');
+    return prisma.mikroKredensialQuiz.update({ where: { id }, data });
+  }
+
+  async deleteQuiz(id: string) {
+    const quiz = await prisma.mikroKredensialQuiz.findUnique({ where: { id } });
+    if (!quiz) throw new NotFoundError('Soal kuis tidak ditemukan');
+    return prisma.mikroKredensialQuiz.delete({ where: { id } });
   }
 }
 

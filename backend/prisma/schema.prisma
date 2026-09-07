@@ -347,9 +347,52 @@ model MikroKredensialKursus {
   updatedAt DateTime @updatedAt
 
   enrollments MikroKredensialEnrollment[]
+  modules     MikroKredensialModul[]
+  quizzes     MikroKredensialQuiz[]
 
   @@index([slug])
   @@index([isActive])
+}
+
+// ========================================
+// MIKRO KREDENSIAL - Modul & Materi
+// ========================================
+model MikroKredensialModul {
+  id        String   @id @default(cuid())
+  kursusId  String
+  kursus    MikroKredensialKursus @relation(fields: [kursusId], references: [id], onDelete: Cascade)
+  title     String
+  content   String   @db.Text
+  duration  Int?     // estimasi waktu baca (menit)
+  videoUrl  String?
+  fileUrl   String?  // URL file materi PDF / slide presentasi
+  order     Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([kursusId])
+  @@index([order])
+}
+
+// ========================================
+// MIKRO KREDENSIAL - Bank Soal Kuis
+// ========================================
+model MikroKredensialQuiz {
+  id            String   @id @default(cuid())
+  kursusId      String
+  kursus        MikroKredensialKursus @relation(fields: [kursusId], references: [id], onDelete: Cascade)
+  question      String   @db.Text
+  options       String[] // daftar opsi [opsi A, opsi B, opsi C, opsi D]
+  correctAnswer Int      // indeks opsi jawaban benar (0, 1, 2, 3)
+  explanation   String?  @db.Text
+  order         Int      @default(0)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([kursusId])
+  @@index([order])
 }
 
 // ========================================

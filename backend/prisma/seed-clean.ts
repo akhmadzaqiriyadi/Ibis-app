@@ -540,6 +540,39 @@ async function main() {
   console.log('  ✅ FAQs berhasil di-seed\n');
 
   // ============================================================
+  // 13. UPDATES (BERITA & KEGIATAN)
+  // ============================================================
+  console.log('📰 Seeding updates / berita...');
+
+  const sampleUpdates = [
+    {
+      title: 'Pembukaan Batch Baru Program Inkubasi 2026',
+      slug: 'pembukaan-batch-2026',
+      summary: 'IBISTEK UTY resmi membuka pendaftaran inkubasi bisnis batch 1 tahun 2026 untuk startup mahasiswa.',
+      content: 'Inkubator Bisnis dan Teknologi (IBISTEK) UTY kembali mengundang tim startup dan wirausaha mahasiswa aktif untuk bergabung dalam program pembinaan intensif batch 1 tahun 2026. Program ini menawarkan mentoring eksklusif, hibah modal usaha, dan akses jejaring industri.',
+      category: 'Program',
+      isPublished: true,
+    },
+    {
+      title: 'Sosialisasi Program Pembinaan Mahasiswa Wirausaha (P2MW)',
+      slug: 'sosialisasi-p2mw-2026',
+      summary: 'Sosialisasi pendanaan P2MW Kemdikbudristek bagi mahasiswa wirausaha di lingkungan kampus UTY.',
+      content: 'Dalam rangka mendorong pertumbuhan startup kampus, IBISTEK menyelenggarakan sesi mentoring dan bimbingan teknis proposal pendanaan P2MW 2026 bagi seluruh mahasiswa yang memiliki produk bisnis.',
+      category: 'Kegiatan',
+      isPublished: true,
+    },
+  ];
+
+  for (const upd of sampleUpdates) {
+    await prisma.update.upsert({
+      where: { slug: upd.slug },
+      update: {},
+      create: upd,
+    });
+  }
+  console.log('  ✅ Updates / Berita berhasil di-seed\n');
+
+  // ============================================================
   // SUMMARY
   // ============================================================
   console.log('========================================');

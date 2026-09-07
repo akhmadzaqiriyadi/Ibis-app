@@ -222,7 +222,7 @@ export default function KonsultasiDetailClient({ id }: { id: string }) {
       { id: application.id, laporanMahasiswa: laporanText.trim() },
       {
         onSuccess: () => {
-          toast.success("Laporan berhasil dikirim! Terima kasih 🎉");
+          toast.success("Laporan berhasil dikirim! Terima kasih.");
           setLaporanText("");
         },
         onError: (err: any) => toast.error(err?.response?.data?.error || err?.message || "Gagal mengirim laporan"),

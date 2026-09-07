@@ -60,6 +60,12 @@ export const useGetMyEnrollments = () => useQuery({
   queryFn: api.myEnrollments,
 });
 
+export const useGetEnrollmentById = (id: string) => useQuery({
+  queryKey: ['mikro-kredensial', 'enroll', id] as const,
+  queryFn: () => api.getEnrollmentById(id),
+  enabled: !!id,
+});
+
 export const useGetAllEnrollments = (params?: Record<string, unknown>) => useQuery({
   queryKey: MK_KEYS.allEnrollments(params),
   queryFn: () => api.getAllEnrollments(params),
@@ -97,3 +103,84 @@ export const useVerifyCertificate = (certNum: string) => useQuery({
   queryFn: () => api.verifyCertificate(certNum),
   enabled: !!certNum,
 });
+
+// ─── MODULES & MATERI HOOKS ─────────────────────────
+
+export const useGetModulesByKursus = (kursusId: string) => useQuery({
+  queryKey: ['mikro-kredensial', 'kursus', kursusId, 'modules'] as const,
+  queryFn: () => api.getModulesByKursus(kursusId),
+  enabled: !!kursusId,
+});
+
+export const useCreateModule = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ kursusId, ...data }: { kursusId: string; title: string; content: string; duration?: number; videoUrl?: string; fileUrl?: string; order?: number }) =>
+      api.createModule(kursusId, data),
+    onSuccess: (_, { kursusId }) => {
+      qc.invalidateQueries({ queryKey: ['mikro-kredensial', 'kursus', kursusId, 'modules'] });
+    },
+  });
+};
+
+export const useUpdateModule = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ kursusId, ...data }: { id: string; kursusId: string; title?: string; content?: string; duration?: number; videoUrl?: string; fileUrl?: string; order?: number }) =>
+      api.updateModule(data),
+    onSuccess: (_, { kursusId }) => {
+      qc.invalidateQueries({ queryKey: ['mikro-kredensial', 'kursus', kursusId, 'modules'] });
+    },
+  });
+};
+
+export const useDeleteModule = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, kursusId }: { id: string; kursusId: string }) => api.deleteModule(id),
+    onSuccess: (_, { kursusId }) => {
+      qc.invalidateQueries({ queryKey: ['mikro-kredensial', 'kursus', kursusId, 'modules'] });
+    },
+  });
+};
+
+// ─── QUIZ HOOKS ─────────────────────────────────────
+
+export const useGetQuizzesByKursus = (kursusId: string) => useQuery({
+  queryKey: ['mikro-kredensial', 'kursus', kursusId, 'quizzes'] as const,
+  queryFn: () => api.getQuizzesByKursus(kursusId),
+  enabled: !!kursusId,
+});
+
+export const useCreateQuiz = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ kursusId, ...data }: { kursusId: string; question: string; options: string[]; correctAnswer: number; explanation?: string; order?: number }) =>
+      api.createQuiz(kursusId, data),
+    onSuccess: (_, { kursusId }) => {
+      qc.invalidateQueries({ queryKey: ['mikro-kredensial', 'kursus', kursusId, 'quizzes'] });
+    },
+  });
+};
+
+export const useUpdateQuiz = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ kursusId, ...data }: { id: string; kursusId: string; question?: string; options?: string[]; correctAnswer?: number; explanation?: string; order?: number }) =>
+      api.updateQuiz(data),
+    onSuccess: (_, { kursusId }) => {
+      qc.invalidateQueries({ queryKey: ['mikro-kredensial', 'kursus', kursusId, 'quizzes'] });
+    },
+  });
+};
+
+export const useDeleteQuiz = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, kursusId }: { id: string; kursusId: string }) => api.deleteQuiz(id),
+    onSuccess: (_, { kursusId }) => {
+      qc.invalidateQueries({ queryKey: ['mikro-kredensial', 'kursus', kursusId, 'quizzes'] });
+    },
+  });
+};
+

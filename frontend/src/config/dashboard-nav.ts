@@ -3,7 +3,6 @@ import {
   LayoutDashboard,
   Calendar,
   Users,
-  Settings,
   GraduationCap,
   FileQuestionMark,
   BookOpen,      // Mikro Kredensial
@@ -11,7 +10,8 @@ import {
   MessageCircle, // Konsultasi
   Database,      // Master Data
   ShieldAlert,   // Verifikasi User
-  Award          // Sertifikat
+  Award,         // Sertifikat
+  Newspaper      // Berita / Updates
 } from "lucide-react";
 import { Role } from "@/types";
 
@@ -34,10 +34,10 @@ export const getNavItems = (role?: Role): NavItem[] => {
     { title: "Sertifikat", href: "/dashboard/certificates", icon: Award, color: "text-yellow-600" },
     { title: "Events (CMS)", href: "/dashboard/events", icon: Calendar, color: "text-violet-500" },
     { title: "Programs (CMS)", href: "/dashboard/programs", icon: GraduationCap, color: "text-pink-700" },
+    { title: "Updates (CMS)", href: "/dashboard/updates", icon: Newspaper, color: "text-amber-600" },
     { title: "Team (CMS)", href: "/dashboard/team", icon: Users, color: "text-emerald-500" },
     { title: "FAQ (CMS)", href: "/dashboard/faq", icon: FileQuestionMark, color: "text-blue-500" },
     { title: "Master Data", href: "/dashboard/master-data", icon: Database, color: "text-slate-500" },
-    // { title: "Settings", href: "/dashboard/settings", icon: Settings, color: "text-gray-500" },
   ];
 
   const mahasiswaItems: NavItem[] = [

@@ -54,7 +54,7 @@ export default function MahasiswaDashboard() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
           <div>
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900">Halo, {user?.name || "Mahasiswa"}! 👋</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-gray-900">Halo, {user?.name || "Mahasiswa"}!</h2>
           <p className="text-muted-foreground mt-2">
               Kembangkan potensimu melalui program-program inkubator kami.
           </p>

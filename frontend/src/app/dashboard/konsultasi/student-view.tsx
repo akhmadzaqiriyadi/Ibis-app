@@ -120,7 +120,7 @@ export default function StudentView() {
               <Loader2 className="h-5 w-5 animate-spin text-amber-500" />
             ) : hasActiveApplication ? (
               <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-800">
-                ⏳ Ada pengajuan yang sedang berjalan. Tunggu hingga selesai, dibatalkan, atau mentor menolak untuk mengajukan lagi.
+                Ada pengajuan yang sedang berjalan. Tunggu hingga selesai, dibatalkan, atau mentor menolak untuk mengajukan lagi.
               </div>
             ) : (
               <Button onClick={() => setShowSubmitForm(true)}>

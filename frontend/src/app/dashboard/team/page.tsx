@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getSafeImageUrl, getAvatarFallback } from '@/lib/image-utils';
 import { 
   Plus, 
   Search, 
@@ -290,7 +291,15 @@ export default function TeamManagementPage() {
                   <TableCell>
                     <div className="relative h-12 w-12 rounded-full overflow-hidden bg-linear-2 flex-shrink-0">
                       {member.image && member.image.trim() !== '' ? (
-                        <img src={member.image} alt={member.name} className="absolute inset-0 w-full h-full object-cover" referrerPolicy="no-referrer" />
+                        <img
+                          src={getSafeImageUrl(member.image, member.name)}
+                          alt={member.name}
+                          className="absolute inset-0 w-full h-full object-cover"
+                          referrerPolicy="no-referrer"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src = getAvatarFallback(member.name);
+                          }}
+                        />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">{member.name.charAt(0).toUpperCase()}</div>
                       )}
@@ -415,7 +424,7 @@ export default function TeamManagementPage() {
                   <div className="mt-2 flex items-center gap-3">
                     <div className="relative w-16 h-16 rounded-lg overflow-hidden border bg-gray-50 flex items-center justify-center">
                       <img 
-                        src={imageUrl} 
+                        src={getSafeImageUrl(imageUrl)} 
                         alt="Preview" 
                         className="w-full h-full object-cover" 
                         referrerPolicy="no-referrer"
@@ -428,7 +437,7 @@ export default function TeamManagementPage() {
                       />
                       <span className="absolute text-xs text-gray-400 pointer-events-none">Loading...</span>
                     </div>
-                    <a href={imageUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline flex items-center gap-1">Buka Gambar <ExternalLink className="w-3 h-3" /></a>
+                    <a href={getSafeImageUrl(imageUrl)} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline flex items-center gap-1">Buka Gambar <ExternalLink className="w-3 h-3" /></a>
                   </div>
                 )}
               </div>
@@ -491,7 +500,15 @@ export default function TeamManagementPage() {
               <div className="md:col-span-1 space-y-4">
                 <div className="aspect-square rounded-xl overflow-hidden bg-linear-2 border relative group">
                   {viewingMember.image ? (
-                    <img src={viewingMember.image} alt={viewingMember.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                    <img
+                      src={getSafeImageUrl(viewingMember.image, viewingMember.name)}
+                      alt={viewingMember.name}
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = getAvatarFallback(viewingMember.name);
+                      }}
+                    />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-purple-100 text-purple-600">
                       <Users className="w-16 h-16" />
@@ -499,7 +516,7 @@ export default function TeamManagementPage() {
                   )}
                   {viewingMember.image && (
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <a href={viewingMember.image} target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-white rounded-full text-sm font-medium hover:bg-gray-100 flex items-center gap-2">
+                      <a href={getSafeImageUrl(viewingMember.image)} target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-white rounded-full text-sm font-medium hover:bg-gray-100 flex items-center gap-2">
                         <ExternalLink className="w-4 h-4" /> Buka Full
                       </a>
                     </div>

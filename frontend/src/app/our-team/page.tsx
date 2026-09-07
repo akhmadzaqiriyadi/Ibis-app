@@ -7,6 +7,7 @@ import { Instagram, Linkedin } from "lucide-react";
 import { CONTENT } from "@/constants/content";
 import Link from "next/link";
 import { Footer } from "@/components/layout/footer";
+import { getSafeImageUrl, getAvatarFallback } from "@/lib/image-utils";
 import { useState, useEffect } from "react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
@@ -31,21 +32,47 @@ interface TeamMember {
 export default function OurTeamPage() {
   const [mentors, setMentors] = useState<TeamMember[]>([]);
   const [members, setMembers] = useState<TeamMember[]>([]);
-  const [batches, setBatches] = useState<number[]>([]);
+  const [batches, setBatches] = useState<number[]>([1, 2, 3]);
   const [selectedBatch, setSelectedBatch] = useState<number>(3);
 
-  // Fetch mentors (division = Pembina)
+  // Fetch mentors (type = MENTOR or division = Pembina)
   useEffect(() => {
     const fetchMentors = async () => {
       try {
-        const response = await fetch(`${API_URL}/team?active=true&division=Pembina`);
+        const response = await fetch(`${API_URL}/team?active=true`);
         const data = await response.json();
         if (data.success && Array.isArray(data.data)) {
-          const sortedMentors = data.data.sort((a: TeamMember, b: TeamMember) => (a.order || 0) - (b.order || 0));
-          setMentors(sortedMentors);
+          const mentorData = data.data.filter(
+            (m: TeamMember) => m.type === 'MENTOR' || m.division === 'Pembina'
+          );
+          if (mentorData.length > 0) {
+            const sortedMentors = mentorData.sort(
+              (a: TeamMember, b: TeamMember) => (a.order || 0) - (b.order || 0)
+            );
+            setMentors(sortedMentors);
+            return;
+          }
         }
       } catch (error) {
-        console.error("Failed to fetch mentors:", error);
+        console.error("Failed to fetch mentors from API:", error);
+      }
+
+      // Fallback to CONTENT mentors
+      if (CONTENT.team.mentors && CONTENT.team.mentors.length > 0) {
+        setMentors(
+          CONTENT.team.mentors.map((m, idx) => ({
+            id: `static-mentor-${idx}`,
+            name: m.name,
+            title: m.title,
+            type: 'MENTOR',
+            division: 'Pembina',
+            image: m.image,
+            instagram: m.instagram,
+            linkedin: m.linkedin,
+            order: idx + 1,
+            isActive: true,
+          }))
+        );
       }
     };
     fetchMentors();
@@ -58,22 +85,53 @@ export default function OurTeamPage() {
         const response = await fetch(`${API_URL}/team?active=true`);
         const data = await response.json();
         if (data.success && Array.isArray(data.data)) {
-          // Filter out Pembina division for member list
-          const memberData = data.data.filter((m: TeamMember) => m.division !== 'Pembina');
-          setMembers(memberData);
+          // Filter out Pembina/MENTOR division for member list
+          const memberData = data.data.filter(
+            (m: TeamMember) => m.division !== 'Pembina' && m.type !== 'MENTOR' && m.type !== 'LEADER'
+          );
           
-          // Get unique batches
-          const uniqueBatches = Array.from(new Set(memberData.map((m: TeamMember) => m.batch).filter(Boolean))) as number[];
-          uniqueBatches.sort((a, b) => a - b);
-          setBatches(uniqueBatches);
-          
-          // Set default batch to latest
-          if (uniqueBatches.length > 0) {
+          // Get unique batches if available in DB
+          const uniqueBatches = Array.from(
+            new Set(memberData.map((m: TeamMember) => m.batch).filter(Boolean))
+          ) as number[];
+
+          if (memberData.length > 0 && uniqueBatches.length > 0) {
+            uniqueBatches.sort((a, b) => a - b);
+            setMembers(memberData);
+            setBatches(uniqueBatches);
             setSelectedBatch(uniqueBatches[uniqueBatches.length - 1]);
+            return;
           }
         }
       } catch (error) {
-        console.error("Failed to fetch members:", error);
+        console.error("Failed to fetch members from API:", error);
+      }
+
+      // Fallback to static allMembers from CONTENT
+      if (CONTENT.team.allMembers && CONTENT.team.allMembers.length > 0) {
+        const staticMembers: TeamMember[] = CONTENT.team.allMembers.map((m, idx) => ({
+          id: `static-member-${idx}`,
+          name: m.name,
+          title: m.division,
+          type: 'MEMBER',
+          division: m.division,
+          image: m.image,
+          prodi: m.prodi,
+          batch: m.batch,
+          instagram: m.instagram,
+          linkedin: m.linkedin,
+          order: idx + 1,
+          isActive: true,
+        }));
+        setMembers(staticMembers);
+        const uniqueBatches = Array.from(
+          new Set(staticMembers.map((m) => m.batch).filter(Boolean))
+        ) as number[];
+        uniqueBatches.sort((a, b) => a - b);
+        setBatches(uniqueBatches.length > 0 ? uniqueBatches : [1, 2, 3]);
+        if (uniqueBatches.length > 0) {
+          setSelectedBatch(uniqueBatches[uniqueBatches.length - 1]);
+        }
       }
     };
     fetchMembers();
@@ -158,11 +216,15 @@ export default function OurTeamPage() {
                   <div className="relative mb-6">
                     <div className="relative w-56 h-56 rounded-full overflow-hidden bg-linear-2 shadow-2xl hover:scale-105 transition-all">
                       <Image
-                        src={mentor.image || "https://placehold.co/400?text=No+Image"}
+                        src={getSafeImageUrl(mentor.image, mentor.name)}
                         alt={mentor.name}
                         fill
                         className="object-cover"
                         unoptimized
+                        onError={(e) => {
+                          const target = e.currentTarget as HTMLImageElement;
+                          target.src = getAvatarFallback(mentor.name);
+                        }}
                       />
                     </div>
                   </div>
@@ -238,11 +300,15 @@ export default function OurTeamPage() {
                   <div className="relative mb-6">
                     <div className="relative w-full aspect-square rounded-full overflow-hidden bg-linear-2">
                       <Image
-                        src={member.image || "https://placehold.co/400?text=No+Image"}
+                        src={getSafeImageUrl(member.image, member.name)}
                         alt={member.name}
                         fill
                         className="object-cover"
                         unoptimized
+                        onError={(e) => {
+                          const target = e.currentTarget as HTMLImageElement;
+                          target.src = getAvatarFallback(member.name);
+                        }}
                       />
                     </div>
                   </div>

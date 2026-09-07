@@ -9,6 +9,7 @@ export const CONTENT = {
       { label: "Partners", href: "#partners" },
       { label: "Updates", href: "#updates" },
       { label: "Contact Us", href: "#contact" },
+      { label: "Verifikasi Sertifikat", href: "/verify-certificate" },
     ],
     cta: "Sign In",
   },

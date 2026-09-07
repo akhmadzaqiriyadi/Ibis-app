@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { getSafeImageUrl, getCoverFallback } from "@/lib/image-utils";
 import { ArrowLeft, ArrowRight, Instagram, Calendar, MapPin, Loader2 } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
@@ -112,9 +113,12 @@ export const UpdatesSection = () => {
                         </div>
                         <div className="relative h-48 mb-4 rounded-xl overflow-hidden group cursor-pointer shrink-0">
                             <img
-                                src={event.image || "/images/logos/brand-raw.webp"}
+                                src={getSafeImageUrl(event.image, event.title, 'cover')}
                                 alt={event.title}
                                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                onError={(e) => {
+                                    (e.currentTarget as HTMLImageElement).src = getCoverFallback(event.title);
+                                }}
                             />
                         </div>
                         <h3 className="text-xl font-semibold text-light mb-3 line-clamp-2">

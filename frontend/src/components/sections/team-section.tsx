@@ -9,6 +9,7 @@ import { useRef, useState, useEffect } from "react";
 import type { Swiper as SwiperType } from "swiper";
 import { CONTENT } from "@/constants/content";
 import Link from "next/link";
+import { getSafeImageUrl, getAvatarFallback } from "@/lib/image-utils";
 
 // Import Swiper styles
 import "swiper/css";
@@ -97,11 +98,15 @@ export const TeamSection = () => {
                       <div className="relative mb-6">
                         <div className="relative w-48 h-48 rounded-full overflow-hidden shadow-xl bg-linear-2">
                           <Image
-                            src={member.image || "https://placehold.co/400?text=No+Image"}
+                            src={getSafeImageUrl(member.image, member.name)}
                             alt={member.name}
                             fill
                             className="object-cover"
                             unoptimized
+                            onError={(e) => {
+                              const target = e.currentTarget as HTMLImageElement;
+                              target.src = getAvatarFallback(member.name);
+                            }}
                           />
                         </div>
                       </div>

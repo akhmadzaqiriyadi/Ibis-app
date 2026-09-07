@@ -16,6 +16,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import Image from 'next/image';
+import { getSafeImageUrl, getCoverFallback } from '@/lib/image-utils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -368,9 +369,12 @@ export default function EventsPage() {
                     <div className="relative h-12 w-12 rounded-md overflow-hidden bg-muted flex-shrink-0">
                       {event.image && event.image.trim() !== '' ? (
                         <img
-                          src={event.image}
+                          src={getSafeImageUrl(event.image, event.title, 'cover')}
                           alt={event.title}
                           className="absolute inset-0 w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src = getCoverFallback(event.title);
+                          }}
                         />
                       ) : (
                         <Image
@@ -742,27 +746,30 @@ export default function EventsPage() {
                 </div>
               </div>
               {imageUrl && (
-                <div className="mt-2 relative w-full h-40 rounded-lg overflow-hidden border bg-gray-50 group">
-                   <div className="absolute inset-0 z-0">
-                     <img 
-                        src={imageUrl} 
-                        alt="Preview" 
-                        className="w-full h-full object-cover"
-                     />
-                   </div>
-                   
-                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10">
-                      <a 
-                        href={imageUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="text-white text-sm font-medium flex items-center gap-2 hover:underline"
-                      >
-                        Buka Gambar <ExternalLink className="h-4 w-4" />
-                      </a>
-                   </div>
-                </div>
-              )}
+                 <div className="mt-2 relative w-full h-40 rounded-lg overflow-hidden border bg-gray-50 group">
+                    <div className="absolute inset-0 z-0">
+                      <img 
+                         src={getSafeImageUrl(imageUrl, 'Event Preview', 'cover')} 
+                         alt="Preview" 
+                         className="w-full h-full object-cover"
+                         onError={(e) => {
+                           (e.currentTarget as HTMLImageElement).src = getCoverFallback('Event Preview');
+                         }}
+                      />
+                    </div>
+                    
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10">
+                       <a 
+                         href={getSafeImageUrl(imageUrl, 'Event Preview', 'cover')} 
+                         target="_blank" 
+                         rel="noopener noreferrer" 
+                         className="text-white text-sm font-medium flex items-center gap-2 hover:underline"
+                       >
+                         Buka Gambar <ExternalLink className="h-4 w-4" />
+                       </a>
+                    </div>
+                 </div>
+               )}
             </div>
 
             <div className="grid gap-2">

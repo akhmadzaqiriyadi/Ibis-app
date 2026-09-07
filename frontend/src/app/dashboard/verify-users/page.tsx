@@ -168,7 +168,7 @@ export default function VerifyUsersPage() {
                 {users.length === 0 ? (
                     <TableRow>
                         <TableCell colSpan={4} className="h-[60vh] text-center text-muted-foreground">
-                            Tidak ada antrian pengguna yang perlu diverifikasi. Semua akun sudah bersih! 🎉
+                            Tidak ada antrian pengguna yang perlu diverifikasi. Semua akun sudah bersih.
                         </TableCell>
                     </TableRow>
                 ) : (

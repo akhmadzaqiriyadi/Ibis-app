@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { apiClient } from '@/lib/api';
 
-import { User, Role } from '@/types';
+import { User } from '@/types';
 
 interface AuthState {
   token: string | null;

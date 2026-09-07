@@ -22,16 +22,11 @@
     "forceConsistentCasingInFileNames": true,
     
     /* Path aliases */
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@/features/*": ["./src/features/*"],
-      "@/common/*": ["./src/common/*"],
-      "@/config/*": ["./src/config/*"]
+      "@/*": ["./src/*"]
     },
     
-    "types": ["bun-types"],
-    "ignoreDeprecations": "6.0"
+    "types": ["bun-types"]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"]
