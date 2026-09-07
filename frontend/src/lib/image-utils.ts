@@ -127,14 +127,17 @@ export function getSafeImageUrl(
   const isLocalMinio = trimmed.includes('localhost:9000');
 
   if (isCampusMinio || isLocalMinio) {
+    const apiPrefix = process.env.NEXT_PUBLIC_API_URL
+      ? `${process.env.NEXT_PUBLIC_API_URL}/upload/file`
+      : '/api/v1/upload/file';
+
     // Extract the bucket key: anything after '/ibisapp/'
     const bucketSplit = trimmed.split('/ibisapp/');
     if (bucketSplit.length > 1 && bucketSplit[1]) {
-      const key = bucketSplit[1];
-      return `/api/storage-proxy?key=${encodeURIComponent(key)}`;
+      const key = bucketSplit[1].replace(/^\/+/, '');
+      return `${apiPrefix}/${key}`;
     }
-    // Fallback if bucket name differs
-    return `/api/storage-proxy?url=${encodeURIComponent(trimmed)}`;
+    return trimmed;
   }
 
   return trimmed;
