@@ -185,11 +185,8 @@ export class KonsultasiService {
     });
 
     // Notifikasi ke user bahwa mentor sudah ditugaskan
-    try {
-      await emailService.sendKonsultasiAssigned(updated.user.email, updated.user.name, mentor.name, deadline);
-    } catch (e) {
-      console.error('⚠️  Gagal kirim email assign mentor:', e);
-    }
+    emailService.sendKonsultasiAssigned(updated.user.email, updated.user.name, mentor.name, deadline)
+      .catch((e) => console.error('⚠️  Gagal kirim email assign mentor:', e));
 
     return updated;
   }
@@ -248,19 +245,15 @@ export class KonsultasiService {
     });
 
     // Kirim email konfirmasi ke user
-    try {
-      await emailService.sendKonsultasiConfirmed(
-        updated.user.email,
-        updated.user.name,
-        updated.assignedMentor?.name ?? 'Mentor',
-        confirmedDate,
-        updated.metode,
-        data.meetingLink,
-        data.meetingLocation
-      );
-    } catch (e) {
-      console.error('⚠️  Gagal kirim email konfirmasi konsultasi:', e);
-    }
+    emailService.sendKonsultasiConfirmed(
+      updated.user.email,
+      updated.user.name,
+      updated.assignedMentor?.name ?? 'Mentor',
+      confirmedDate,
+      updated.metode,
+      data.meetingLink,
+      data.meetingLocation
+    ).catch((e) => console.error('⚠️  Gagal kirim email konfirmasi konsultasi:', e));
 
     return updated;
   }

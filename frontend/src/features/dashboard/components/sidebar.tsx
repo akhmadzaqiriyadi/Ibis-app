@@ -25,8 +25,8 @@ export function DashboardSidebar() {
 
   return (
     <aside aria-label="Sidebar" className="space-y-4 py-4 flex flex-col h-full bg-slate-900/50 backdrop-blur-xl border-r border-white/10 text-white">
-      <div className="px-3 py-2 flex-1">
-        <Link href="/dashboard" className="flex items-center pl-3 mb-14">
+      <div className="px-3 py-2 flex-1 overflow-y-auto">
+        <Link href="/dashboard" className="flex items-center pl-3 mb-8">
           <div className="relative w-8 h-8 mr-4">
             <Image
               fill
@@ -61,7 +61,7 @@ export function DashboardSidebar() {
       </div>
       
       {/* User & Logout Section */}
-      <div className="px-3 pb-4">
+      <div className="px-3 pb-4 shrink-0">
           <div className="bg-white/5 rounded-xl p-4 mb-4">
               <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-sm font-bold">

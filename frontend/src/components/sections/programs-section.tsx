@@ -7,11 +7,32 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import Image from "next/image";
 import { CONTENT } from "@/constants/content";
+import { usePrograms } from "@/hooks/usePrograms";
 
 gsap.registerPlugin(ScrollTrigger);
 
+const getProgramIcon = (type?: string, slug?: string) => {
+  if (slug?.includes("inkubasi") || type === "INKUBASI" || type === "INCUBATION") return "/svgs/incube.svg";
+  if (slug?.includes("konsultasi") || type === "KONSULTASI") return "/svgs/like-dislike.svg";
+  if (slug?.includes("kredensial") || type === "KREDENSIAL") return "/svgs/vuesax.svg";
+  return "/svgs/incube.svg";
+};
+
 export const ProgramsSection = () => {
   const containerRef = useRef(null);
+  const { data: programsData } = usePrograms({ active: true });
+
+  const displayPrograms =
+    programsData && programsData.length > 0
+      ? programsData.map((p) => ({
+          id: p.id,
+          title: p.title,
+          description: p.description,
+          icon: getProgramIcon(p.type, p.slug),
+          cta: p.ctaText || "Daftar Sekarang",
+          href: p.ctaUrl || `/register?program=${p.slug}`,
+        }))
+      : CONTENT.programs;
 
   useGSAP(() => {
     // Simple, robust animation that guarantees visibility eventually
@@ -27,7 +48,7 @@ export const ProgramsSection = () => {
       ease: "power3.out",
       clearProps: "all" // Wipes inline styles after animation to prevents stuck states
     });
-  }, { scope: containerRef });
+  }, { scope: containerRef, dependencies: [displayPrograms] });
 
   return (
     <section ref={containerRef} id="programs" className="pt-2 pb-24 relative">
@@ -58,7 +79,7 @@ export const ProgramsSection = () => {
 
           {/* Right Column - Programs List */}
           <div className="space-y-12 order-1 lg:order-2">
-            {CONTENT.programs.map((program) => (
+            {displayPrograms.map((program) => (
               <div key={program.id} className="flex gap-4 items-start program-item">
                 <div className="shrink-0">
                   <Image

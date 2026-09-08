@@ -14,6 +14,7 @@ export class InkubasiService {
     const now = new Date();
     return prisma.inkubasiPeriod.findFirst({
       where: { isActive: true, startDate: { lte: now }, endDate: { gte: now } },
+      orderBy: { createdAt: 'desc' },
     });
   }
 

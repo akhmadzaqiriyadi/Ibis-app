@@ -70,7 +70,7 @@ export const CONTENT = {
       description:
         "Inkubasi bisnis adalah program pembinaan, pendampingan, dan pengembangan terstruktur bagi usaha rintisan. Program inkubasi bisnis di IBISTEK UTY diselenggarakan secara periodik bagi sejumlah unit bisnis yang terpilih untuk diinkubasi.",
       cta: "Daftar Sekarang",
-      href: "/auth/register?program=inkubasi",
+      href: "/register?program=inkubasi",
       requiresAuth: true,
     },
     {
@@ -80,7 +80,7 @@ export const CONTENT = {
       description:
         "Konsultasi bisnis adalah layanan konsultasi dengan mentor atau praktisi untuk menyelesaikan problem-problem yang dihadapi pelaku bisnis secara gratis. Pendaftar dapat mengajukan layanan konsultasi bisnis ke IBISTEK UTY. Selanjutnya akan dijadwalkan waktu untuk berkonsultasi langsung dengan mentor atau praktisi yang sesuai. Ayo konsultasikan problem bisnismu.",
       cta: "Daftar Sekarang",
-      href: "/auth/register?program=konsultasi",
+      href: "/register?program=konsultasi",
       requiresAuth: true,
     },
     {
@@ -90,7 +90,7 @@ export const CONTENT = {
       description:
         "Kredensial Mikro adalah program pelatihan dan sertifikasi jangka pendek yang dirancang untuk meningkatkan pengetahuan dan keterampilan berwirausaha secara cepat, relevan dengan kebutuhan dunia usaha, dan diakui secara formal.",
       cta: "Daftar Sekarang",
-      href: "/auth/register?program=kredensial",
+      href: "/register?program=kredensial",
       requiresAuth: true,
     },
   ],

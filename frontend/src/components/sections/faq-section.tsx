@@ -69,7 +69,7 @@ export default function FAQSection() {
   };
 
   return (
-    <section className="relative py-20 overflow-hidden bg-light">
+    <section id="faq" data-testid="faq-section" className="relative py-20 overflow-hidden bg-light">
       <div className="container mx-auto px-4">
         {/* Title - Centered */}
         <div className="text-center mb-12">
@@ -109,6 +109,7 @@ export default function FAQSection() {
                   >
                     {/* Question Button */}
                     <button
+                      data-testid="faq-toggle"
                       onClick={() => toggleFAQ(index)}
                       className="w-full px-6 py-4 flex items-center justify-between text-left transition-all duration-300 text-white hover:bg-opacity-90"
                     >

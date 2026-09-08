@@ -136,7 +136,7 @@ export const Navbar = () => {
               ))}
               <div className="border-t border-light/20 mt-2 pt-2">
                 <Link
-                  href="/auth/login"
+                  href="/login"
                   className="block text-base font-medium text-light hover:bg-white/10 py-3 px-4 rounded-md transition-all"
                   onClick={() => setIsOpen(false)}
                 >

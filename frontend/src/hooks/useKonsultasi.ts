@@ -65,6 +65,7 @@ export const useSubmitKonsultasi = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-konsultasi-applications'] });
+      queryClient.invalidateQueries({ queryKey: ['my-konsultasi-applications-raw'] });
     },
   });
 };
@@ -142,6 +143,7 @@ export const useCancelKonsultasi = () => {
       queryClient.invalidateQueries({ queryKey: ['all-konsultasi-applications'] });
       queryClient.invalidateQueries({ queryKey: ['konsultasi-application', id] });
       queryClient.invalidateQueries({ queryKey: ['my-konsultasi-applications'] });
+      queryClient.invalidateQueries({ queryKey: ['my-konsultasi-applications-raw'] });
     },
   });
 };
@@ -153,6 +155,8 @@ export const useCompleteKonsultasi = () => {
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ['all-konsultasi-applications'] });
       queryClient.invalidateQueries({ queryKey: ['konsultasi-application', id] });
+      queryClient.invalidateQueries({ queryKey: ['my-konsultasi-applications'] });
+      queryClient.invalidateQueries({ queryKey: ['my-konsultasi-applications-raw'] });
     },
   });
 };

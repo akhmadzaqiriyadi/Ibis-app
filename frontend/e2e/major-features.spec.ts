@@ -23,12 +23,7 @@ test.describe('3 Major Features End-to-End Workflow', () => {
       await expect(page.locator('body')).toContainText(/Inkubasi Bisnis|Program Inkubasi/i, { timeout: 10000 });
 
       // Check active period banner or proposal status
-      const bodyText = await page.locator('body').textContent();
-      expect(
-        bodyText?.includes('Periode') ||
-        bodyText?.includes('Proposal') ||
-        bodyText?.includes('Inkubasi')
-      ).toBeTruthy();
+      await expect(page.locator('body')).toContainText(/Periode|Proposal|Inkubasi/i, { timeout: 10000 });
     });
 
     test('Admin can view Inkubasi applicant submissions and period management', async ({ page }) => {
@@ -40,12 +35,7 @@ test.describe('3 Major Features End-to-End Workflow', () => {
 
       // Admin should see management controls (Periode, Proposal, Review)
       await expect(page.locator('body')).toContainText(/Inkubasi Bisnis/i, { timeout: 10000 });
-      const content = await page.locator('body').textContent();
-      expect(
-        content?.includes('Periode') ||
-        content?.includes('Proposal') ||
-        content?.includes('Status')
-      ).toBeTruthy();
+      await expect(page.locator('body')).toContainText(/Periode|Proposal|Status/i, { timeout: 10000 });
     });
   });
 

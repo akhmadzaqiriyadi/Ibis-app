@@ -35,12 +35,30 @@ export const TeamSection = () => {
     const fetchMembers = async () => {
       try {
         const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
-        const response = await fetch(`${API_URL}/team?active=true&batch=3`);
-        const data = await response.json();
-        if (data.success && Array.isArray(data.data)) {
-          // Sort by order if available, or just take them
-          const sortedMembers = data.data.sort((a: TeamMember, b: TeamMember) => (Number(a.order || 0)) - (Number(b.order || 0)));
+        // Fetch active team members from API (batch 3 or all active)
+        let response = await fetch(`${API_URL}/team?active=true&batch=3`);
+        let data = await response.json();
+        if (!data.success || !Array.isArray(data.data) || data.data.length === 0) {
+          response = await fetch(`${API_URL}/team?active=true`);
+          data = await response.json();
+        }
+        if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+          const sortedMembers = data.data.sort(
+            (a: TeamMember, b: TeamMember) => Number(a.order || 0) - Number(b.order || 0)
+          );
           setMembers(sortedMembers);
+        } else if (CONTENT.team.mentors && CONTENT.team.mentors.length > 0) {
+          setMembers(
+            CONTENT.team.mentors.map((m, idx) => ({
+              name: m.name,
+              division: m.title,
+              prodi: 'UTY',
+              image: m.image,
+              instagram: m.instagram,
+              linkedin: m.linkedin,
+              order: idx + 1,
+            }))
+          );
         }
       } catch (error) {
         console.error("Failed to fetch team members:", error);

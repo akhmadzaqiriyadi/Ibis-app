@@ -378,7 +378,7 @@ async function main() {
         'Kredensial Mikro adalah program pelatihan dan sertifikasi jangka pendek untuk meningkatkan pengetahuan dan keterampilan berwirausaha. Ikuti materi dan kerjakan asesmen untuk mendapatkan sertifikat digital.',
       type: ProgramType.KREDENSIAL,
       ctaText: 'Mulai Belajar',
-      ctaUrl: '/dashboard/kredensial',
+      ctaUrl: '/dashboard/mikro-kredensial',
       requiresAuth: true,
       isActive: true,
       order: 3,
