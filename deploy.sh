@@ -5,7 +5,7 @@ set -euo pipefail
 VPS_USER="uch"
 VPS_HOST="10.10.10.200"
 APP_DIR="/home/uch/kewirausahaan-app"
-SSH_KEY="~/uch"
+SSH_KEY="${HOME}/uch"
 DEPLOY_ACCEPT_DATA_LOSS="${DEPLOY_ACCEPT_DATA_LOSS:-false}"
 DEPLOY_RUN_SEED="${DEPLOY_RUN_SEED:-false}"
 
