@@ -129,7 +129,7 @@ export default function InkubasiAdminPage() {
     );
   }
 
-  if (user.role === "MAHASISWA") {
+  if (user.role === "MAHASISWA" || user.role === "UMKM") {
     return <InkubasiMahasiswaView />;
   }
 

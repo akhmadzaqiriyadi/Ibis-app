@@ -52,14 +52,25 @@ export default function MentorView() {
   const applications = useMemo(() => data?.items ?? [], [data]);
   const totalPages = Math.max(1, data?.totalPages ?? 1);
 
+  // Auto debounced search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(searchInput.trim());
+      setPage(1);
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setSearch(searchInput.trim());
+    setPage(1);
   };
 
   const handleClearSearch = () => {
     setSearchInput("");
     setSearch("");
+    setPage(1);
   };
 
   if (isLoading && !data) {

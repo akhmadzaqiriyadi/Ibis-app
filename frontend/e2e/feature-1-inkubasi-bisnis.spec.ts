@@ -14,18 +14,18 @@ test.describe("Feature 1: Inkubasi Bisnis (Comprehensive & Negative Testing)", (
   const runId = Date.now();
   const testPeriodName = `Periode Inkubasi Batch ${runId}`;
 
-  test("1. Role Boundary: Non-student role (UMKM) is restricted from Inkubasi student application", async ({ page }) => {
-    // Login as UMKM
+  test("1. Role Boundary: Non-participant role (Mentor) is restricted from Inkubasi student application", async ({ page }) => {
+    // Login as Mentor
     await page.goto("/login");
-    await page.fill('input[type="email"]', umkmEmail);
-    await page.fill('input[type="password"]', umkmPassword);
+    await page.fill('input[type="email"]', "mentor@ibistek.com");
+    await page.fill('input[type="password"]', "password123");
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL(/\/dashboard/);
 
     // Navigate to /dashboard/inkubasi
     await page.goto("/dashboard/inkubasi");
 
-    // Must show restriction message because user is UMKM (neither MAHASISWA nor ADMIN/STAFF)
+    // Must show restriction message because user is MENTOR (neither participant nor ADMIN/STAFF)
     const restrictedHeader = page.locator("text=Halaman Admin Inkubasi");
     const restrictedDesc = page.locator("text=Halaman ini khusus role ADMIN/STAFF");
     await expect(restrictedHeader).toBeVisible();

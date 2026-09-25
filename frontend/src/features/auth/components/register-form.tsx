@@ -168,7 +168,7 @@ export default function RegisterForm() {
                 {...register("name")}
                 type="text"
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="John Doe"
+                placeholder="Contoh: Budi Santoso"
             />
             {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name.message}</p>}
             </div>
@@ -180,7 +180,7 @@ export default function RegisterForm() {
                 {...register("email")}
                 type="email"
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="email@example.com"
+                placeholder="nama@email.com"
             />
             {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>}
             </div>
@@ -192,7 +192,7 @@ export default function RegisterForm() {
                 {...register("noWhatsApp")}
                 type="text"
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="08123456789"
+                placeholder="Contoh: 081234567890"
             />
             {errors.noWhatsApp && <p className="mt-1 text-xs text-red-500">{errors.noWhatsApp.message}</p>}
             </div>
@@ -218,7 +218,7 @@ export default function RegisterForm() {
                         {...register("npm")}
                         type="text"
                         className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="NPM Anda"
+                        placeholder="Contoh: 5210411xxx"
                     />
                     {errors.npm && <p className="mt-1 text-xs text-red-500">{errors.npm.message}</p>}
                 </div>
@@ -236,7 +236,7 @@ export default function RegisterForm() {
                                 <SelectTrigger className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                                     <SelectValue placeholder="Pilih Program Studi" />
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent className="max-h-60 overflow-y-auto">
                                     {programStudiList.map((prodi: { id: string; name: string }) => (
                                         <SelectItem key={prodi.id} value={prodi.id}>
                                             {prodi.name}
@@ -258,7 +258,7 @@ export default function RegisterForm() {
                     <textarea
                         {...register("alamatUsaha")}
                         className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Detail Alamat Usaha"
+                        placeholder="Contoh: Jl. Ringroad Utara, Sleman, D.I. Yogyakarta"
                         rows={3}
                     />
                     {errors.alamatUsaha && <p className="mt-1 text-xs text-red-500">{errors.alamatUsaha.message}</p>}

@@ -6,11 +6,12 @@ import {
   useProgramStudiList, useCreateProgramStudi, useUpdateProgramStudi, useDeleteProgramStudi 
 } from "@/features/master-data/hooks";
 import { 
-  Loader2, Plus, Edit, Trash2, Database, AlertTriangle, 
+  Loader2, Plus, Edit, Trash2, Database, AlertTriangle, ShieldAlert,
   Check, X, Search, ChevronLeft, ChevronRight, 
   ChevronsLeft, ChevronsRight 
 } from "lucide-react";
 import { toast } from "sonner";
+import { useAuthStore } from "@/stores/auth-store";
 import {
   Dialog,
   DialogContent,
@@ -27,6 +28,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { KategoriUsaha, ProgramStudi } from "@/types";
 
 export default function MasterDataPage() {
+  const { user: currentUser } = useAuthStore();
+  const isAdmin = currentUser?.role === "ADMIN";
+
   const [activeTab, setActiveTab] = useState("kategori");
 
   // Local Filters
@@ -240,6 +244,20 @@ export default function MasterDataPage() {
       });
     }
   };
+
+  if (currentUser && !isAdmin) {
+    return (
+      <div className="flex h-[60vh] w-full flex-col items-center justify-center text-center px-4">
+        <div className="max-w-md p-8 rounded-2xl border border-red-200 bg-red-50 text-red-800 space-y-3 shadow-sm">
+          <ShieldAlert className="h-12 w-12 text-red-600 mx-auto" />
+          <h2 className="text-xl font-bold">Akses Ditolak</h2>
+          <p className="text-sm text-red-700 leading-relaxed">
+            Halaman Master Data merupakan kontrol sistem tingkat tinggi yang hanya dapat diakses oleh Administrator.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (loadingKat && loadingProdi) {
     return <div className="flex h-[60vh] w-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-blue-500" /></div>;

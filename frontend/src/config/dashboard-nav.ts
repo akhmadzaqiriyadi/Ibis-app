@@ -24,7 +24,7 @@ export interface NavItem {
 }
 
 export const getNavItems = (role?: Role): NavItem[] => {
-  const adminStaffItems: NavItem[] = [
+  const adminItems: NavItem[] = [
     { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard, color: "text-sky-500" },
     { title: "Manajemen User", href: "/dashboard/users", icon: Users, color: "text-blue-600" },
     { title: "Verifikasi User", href: "/dashboard/verify-users", icon: ShieldAlert, color: "text-red-500" },
@@ -40,6 +40,20 @@ export const getNavItems = (role?: Role): NavItem[] => {
     { title: "Master Data", href: "/dashboard/master-data", icon: Database, color: "text-slate-500" },
   ];
 
+  const staffItems: NavItem[] = [
+    { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard, color: "text-sky-500" },
+    { title: "Verifikasi User", href: "/dashboard/verify-users", icon: ShieldAlert, color: "text-red-500" },
+    { title: "Inkubasi Bisnis", href: "/dashboard/inkubasi", icon: Briefcase, color: "text-orange-500" },
+    { title: "Konsultasi", href: "/dashboard/konsultasi", icon: MessageCircle, color: "text-amber-500" },
+    { title: "Mikro Kredensial", href: "/dashboard/mikro-kredensial", icon: BookOpen, color: "text-green-600" },
+    { title: "Sertifikat", href: "/dashboard/certificates", icon: Award, color: "text-yellow-600" },
+    { title: "Events (CMS)", href: "/dashboard/events", icon: Calendar, color: "text-violet-500" },
+    { title: "Programs (CMS)", href: "/dashboard/programs", icon: GraduationCap, color: "text-pink-700" },
+    { title: "Updates (CMS)", href: "/dashboard/updates", icon: Newspaper, color: "text-amber-600" },
+    { title: "Team (CMS)", href: "/dashboard/team", icon: Users, color: "text-emerald-500" },
+    { title: "FAQ (CMS)", href: "/dashboard/faq", icon: FileQuestionMark, color: "text-blue-500" },
+  ];
+
   const mahasiswaItems: NavItem[] = [
     { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard, color: "text-sky-500" },
     { title: "Inkubasi Bisnis", href: "/dashboard/inkubasi", icon: Briefcase, color: "text-orange-500" },
@@ -50,6 +64,8 @@ export const getNavItems = (role?: Role): NavItem[] => {
 
   const umkmItems: NavItem[] = [
     { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard, color: "text-sky-500" },
+    { title: "Inkubasi Bisnis", href: "/dashboard/inkubasi", icon: Briefcase, color: "text-orange-500" },
+    { title: "Konsultasi", href: "/dashboard/konsultasi", icon: MessageCircle, color: "text-amber-500" },
     { title: "Mikro Kredensial", href: "/dashboard/mikro-kredensial", icon: BookOpen, color: "text-green-600" },
     { title: "Sertifikat Saya", href: "/dashboard/certificates/my", icon: Award, color: "text-yellow-600" },
   ];
@@ -59,11 +75,11 @@ export const getNavItems = (role?: Role): NavItem[] => {
     { title: "Tugas Konsultasi", href: "/dashboard/konsultasi/mentor", icon: MessageCircle, color: "text-amber-500" },
   ];
 
-  // Default to Admin/Staff for previous unsupported legacy roles like MEMBER/USER 
-  // until fully migrated, but restrict logically on pages
+  if (role === 'ADMIN') return adminItems;
+  if (role === 'STAFF') return staffItems;
   if (role === 'MAHASISWA') return mahasiswaItems;
   if (role === 'UMKM') return umkmItems;
   if (role === 'MENTOR') return mentorItems;
 
-  return adminStaffItems;
+  return [];
 };

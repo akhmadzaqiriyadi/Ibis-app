@@ -57,7 +57,7 @@ test.describe('Comprehensive Clickable Elements & User Actions Test', () => {
       await expect(page.locator('#programs')).toBeInViewport();
 
       // Hero scroll down button
-      const scrollDownBtn = page.locator('a[href="#about"]').first();
+      const scrollDownBtn = page.locator('#home a[href="#about"], .hero-cta').first();
       await expect(scrollDownBtn).toBeVisible();
       await scrollDownBtn.click();
       await expect(page.locator('#about')).toBeInViewport();

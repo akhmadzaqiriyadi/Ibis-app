@@ -88,6 +88,9 @@ export class KonsultasiService {
       where.OR = [
         { namaPemilik: { contains: search, mode: 'insensitive' } },
         { topikKonsultasi: { contains: search, mode: 'insensitive' } },
+        { uraianProduk: { contains: search, mode: 'insensitive' } },
+        { user: { name: { contains: search, mode: 'insensitive' } } },
+        { user: { email: { contains: search, mode: 'insensitive' } } },
       ];
     }
 

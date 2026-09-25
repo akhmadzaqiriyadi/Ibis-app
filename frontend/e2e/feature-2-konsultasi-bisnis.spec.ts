@@ -26,7 +26,7 @@ test.describe("Feature 2: Konsultasi Bisnis (Comprehensive & Negative Testing)",
     );
   });
 
-  test("1. Role Boundary: Non-student/non-mentor role (UMKM) is restricted from Konsultasi workspace", async ({ page }) => {
+  test("1. Role Access: UMKM participant has access to Konsultasi workspace", async ({ page }) => {
     // Login as UMKM
     await page.goto("/login");
     await page.fill('input[type="email"]', umkmEmail);
@@ -37,12 +37,8 @@ test.describe("Feature 2: Konsultasi Bisnis (Comprehensive & Negative Testing)",
     // Navigate to /dashboard/konsultasi
     await page.goto("/dashboard/konsultasi");
 
-    // Expect restricted boundary message
-    await expect(page.locator("text=Anda tidak memiliki akses ke halaman ini.")).toBeVisible();
-
-    // Ensure student application form & mentor tables are NOT visible
-    await expect(page.locator("text=+ Ajukan Konsultasi Baru")).not.toBeVisible();
-    await expect(page.locator("text=Tugas Konsultasi Saya")).not.toBeVisible();
+    // Expect participant konsultasi view
+    await expect(page.locator("text=Pengajuan Konsultasi Saya")).toBeVisible();
   });
 
   test("2. Business Rule Guard: Student with already active application cannot apply again", async ({ page }) => {

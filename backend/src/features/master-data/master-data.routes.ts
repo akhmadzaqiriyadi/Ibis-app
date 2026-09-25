@@ -5,10 +5,10 @@ import { AppError } from '@/common/errors';
 import { authMiddleware } from '../auth/auth.middleware';
 import { Role } from '@prisma/client';
 
-const isAdminOrStaff = ({ user, set }: any) => {
+const isAdminOnly = ({ user, set }: any) => {
   if (!user) { set.status = 401; return errorResponse('Unauthorized'); }
-  if (![Role.ADMIN, Role.STAFF].includes(user.role)) {
-    set.status = 403; return errorResponse('Forbidden: Admin atau Staff saja');
+  if (user.role !== Role.ADMIN) {
+    set.status = 403; return errorResponse('Forbidden: Admin access required');
   }
 };
 
@@ -36,7 +36,7 @@ export const masterDataRoutes = new Elysia({ prefix: '/master-data' })
       set.status = 500; return errorResponse('Gagal menambahkan kategori usaha');
     }
   }, {
-    beforeHandle: isAdminOrStaff,
+    beforeHandle: isAdminOnly,
     detail: { tags: ['Master Data'], summary: 'Tambah kategori usaha', security: [{ BearerAuth: [] }] },
     body: t.Object({
       name: t.String({ minLength: 2, example: 'Makanan dan Minuman' }),
@@ -53,7 +53,7 @@ export const masterDataRoutes = new Elysia({ prefix: '/master-data' })
       set.status = 500; return errorResponse('Gagal memperbarui kategori usaha');
     }
   }, {
-    beforeHandle: isAdminOrStaff,
+    beforeHandle: isAdminOnly,
     detail: { tags: ['Master Data'], summary: 'Update kategori usaha', security: [{ BearerAuth: [] }] },
     params: t.Object({ id: t.String() }),
     body: t.Object({
@@ -72,7 +72,7 @@ export const masterDataRoutes = new Elysia({ prefix: '/master-data' })
       set.status = 500; return errorResponse('Gagal menghapus kategori usaha');
     }
   }, {
-    beforeHandle: isAdminOrStaff,
+    beforeHandle: isAdminOnly,
     detail: { tags: ['Master Data'], summary: 'Hapus (soft-delete) kategori usaha', security: [{ BearerAuth: [] }] },
     params: t.Object({ id: t.String() }),
   })
@@ -98,7 +98,7 @@ export const masterDataRoutes = new Elysia({ prefix: '/master-data' })
       set.status = 500; return errorResponse('Gagal menambahkan program studi');
     }
   }, {
-    beforeHandle: isAdminOrStaff,
+    beforeHandle: isAdminOnly,
     detail: { tags: ['Master Data'], summary: 'Tambah program studi', security: [{ BearerAuth: [] }] },
     body: t.Object({
       name: t.String({ minLength: 2, example: 'Teknik Informatika' }),
@@ -117,7 +117,7 @@ export const masterDataRoutes = new Elysia({ prefix: '/master-data' })
       set.status = 500; return errorResponse('Gagal memperbarui program studi');
     }
   }, {
-    beforeHandle: isAdminOrStaff,
+    beforeHandle: isAdminOnly,
     detail: { tags: ['Master Data'], summary: 'Update program studi', security: [{ BearerAuth: [] }] },
     params: t.Object({ id: t.String() }),
     body: t.Object({
@@ -138,7 +138,7 @@ export const masterDataRoutes = new Elysia({ prefix: '/master-data' })
       set.status = 500; return errorResponse('Gagal menghapus program studi');
     }
   }, {
-    beforeHandle: isAdminOrStaff,
+    beforeHandle: isAdminOnly,
     detail: { tags: ['Master Data'], summary: 'Hapus (soft-delete) program studi', security: [{ BearerAuth: [] }] },
     params: t.Object({ id: t.String() }),
   });

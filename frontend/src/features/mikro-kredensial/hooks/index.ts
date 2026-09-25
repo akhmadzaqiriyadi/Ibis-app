@@ -85,8 +85,8 @@ export const useCompleteEnrollment = () => {
     mutationFn: api.completeEnrollment,
     onSuccess: () => {
       // Auto ceritificate created or failed status updated
-      qc.invalidateQueries({ queryKey: MK_KEYS.allEnrollments() });
-      qc.invalidateQueries({ queryKey: MK_KEYS.myEnrollments }); // just in case user is viewing their own somehow? admin side usually
+      qc.invalidateQueries({ queryKey: ['mikro-kredensial', 'enroll'] });
+      qc.invalidateQueries({ queryKey: ['mikro-kredensial', 'certificates'] });
     },
   });
 };

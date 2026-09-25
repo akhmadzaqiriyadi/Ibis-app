@@ -150,14 +150,16 @@ test.describe('Role-Based Access Control (RBAC) & Authentication Matrix', () => 
 
     // UMKM menus
     await expect(sidebar.locator('text=Dashboard')).toBeVisible();
+    await expect(sidebar.locator('text=Inkubasi Bisnis')).toBeVisible();
+    await expect(sidebar.locator('text=Konsultasi')).toBeVisible();
     await expect(sidebar.locator('text=Mikro Kredensial')).toBeVisible();
     await expect(sidebar.locator('text=Sertifikat Saya')).toBeVisible();
 
-    // Inkubasi & Konsultasi are Mahasiswa only and must NOT be in UMKM sidebar
+    // Admin menus MUST NOT be in UMKM sidebar
     const sidebarText = await sidebar.textContent();
-    expect(sidebarText?.includes('Inkubasi Bisnis')).toBeFalsy();
-    expect(sidebarText?.includes('Konsultasi')).toBeFalsy();
     expect(sidebarText?.includes('Manajemen User')).toBeFalsy();
+    expect(sidebarText?.includes('Master Data')).toBeFalsy();
+    expect(sidebarText?.includes('Verifikasi User')).toBeFalsy();
 
     // Access Mikro Kredensial
     await page.goto('/dashboard/mikro-kredensial');

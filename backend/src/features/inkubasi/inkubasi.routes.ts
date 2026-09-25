@@ -16,10 +16,10 @@ const requireAdminOrStaff = ({ user, set }: any) => {
   }
 };
 
-const requireMahasiswa = ({ user, set }: any) => {
+const requireMahasiswaOrUmkm = ({ user, set }: any) => {
   if (!user) { set.status = 401; return errorResponse('Unauthorized'); }
-  if (user.role !== Role.MAHASISWA) {
-    set.status = 403; return errorResponse('Forbidden: Hanya Mahasiswa yang dapat mengakses fitur ini');
+  if (![Role.MAHASISWA, Role.UMKM].includes(user.role)) {
+    set.status = 403; return errorResponse('Forbidden: Hanya Mahasiswa dan UMKM yang dapat mengakses fitur ini');
   }
 };
 
@@ -185,8 +185,8 @@ export const inkubasiRoutes = new Elysia({ prefix: '/inkubasi' })
       set.status = 500; return errorResponse('Gagal mengirim pengajuan');
     }
   }, {
-    beforeHandle: requireMahasiswa,
-    detail: { tags: ['Inkubasi'], summary: 'Submit pengajuan inkubasi (Mahasiswa)', security: [{ BearerAuth: [] }] },
+    beforeHandle: requireMahasiswaOrUmkm,
+    detail: { tags: ['Inkubasi'], summary: 'Submit pengajuan inkubasi (Mahasiswa & UMKM)', security: [{ BearerAuth: [] }] },
     body: t.Object({
       periodId: t.String(),
       namaPemilik: t.String({ minLength: 2 }),

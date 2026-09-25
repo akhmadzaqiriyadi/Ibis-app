@@ -1,5 +1,5 @@
 import { prisma } from '@/config/database';
-import { NotFoundError, AppError } from '@/common/errors';
+import { NotFoundError, AppError, BadRequestError } from '@/common/errors';
 import type { Prisma, User, Role } from '@prisma/client';
 
 export class UserService {
@@ -98,10 +98,83 @@ export class UserService {
   }
 
   // Delete user
-  async delete(id: string): Promise<User> {
+  async delete(id: string, currentUserId?: string): Promise<User> {
     await this.getById(id); // Check existence
-    return prisma.user.delete({
-      where: { id },
+
+    if (currentUserId && currentUserId === id) {
+      throw new BadRequestError('Anda tidak dapat menghapus akun Anda sendiri.');
+    }
+
+    return prisma.$transaction(async (tx) => {
+      // 1. Unlink administrative / relation references where this user acted as reviewer, assigner, creator, or verifier
+      await tx.userProfile.updateMany({
+        where: { verifiedById: id },
+        data: { verifiedById: null },
+      });
+
+      await tx.inkubasiPeriod.updateMany({
+        where: { createdById: id },
+        data: { createdById: null },
+      });
+
+      await tx.inkubasiApplication.updateMany({
+        where: { reviewedById: id },
+        data: { reviewedById: null },
+      });
+
+      await tx.konsultasiApplication.updateMany({
+        where: { assignedMentorId: id },
+        data: { assignedMentorId: null },
+      });
+
+      await tx.konsultasiApplication.updateMany({
+        where: { assignedById: id },
+        data: { assignedById: null },
+      });
+
+      await tx.konsultasiApplication.updateMany({
+        where: { confirmedById: id },
+        data: { confirmedById: null },
+      });
+
+      // 2. Delete certificates associated with user or user's enrollments
+      await tx.certificate.deleteMany({
+        where: { userId: id },
+      });
+
+      const userEnrollments = await tx.mikroKredensialEnrollment.findMany({
+        where: { userId: id },
+        select: { id: true },
+      });
+      if (userEnrollments.length > 0) {
+        await tx.certificate.deleteMany({
+          where: { enrollmentId: { in: userEnrollments.map((e) => e.id) } },
+        });
+      }
+
+      // 3. Delete enrollments
+      await tx.mikroKredensialEnrollment.deleteMany({
+        where: { userId: id },
+      });
+
+      // 4. Delete applications
+      await tx.inkubasiApplication.deleteMany({
+        where: { userId: id },
+      });
+
+      await tx.konsultasiApplication.deleteMany({
+        where: { userId: id },
+      });
+
+      // 5. Delete profile
+      await tx.userProfile.deleteMany({
+        where: { userId: id },
+      });
+
+      // 6. Delete user
+      return tx.user.delete({
+        where: { id },
+      });
     });
   }
 }

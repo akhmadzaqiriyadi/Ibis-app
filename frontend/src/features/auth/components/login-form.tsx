@@ -94,7 +94,7 @@ export default function LoginForm() {
             {...register("email")}
             type="email"
             className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-            placeholder="admin@ibistek.com"
+            placeholder="nama@email.com"
           />
           {errors.email && (
             <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>

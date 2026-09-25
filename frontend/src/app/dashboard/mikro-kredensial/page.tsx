@@ -493,7 +493,7 @@ function AdminStaffView() {
   const [manageContentKursus, setManageContentKursus] = useState<MikroKredensialKursus | null>(null);
 
   const { data: kursusResponse, isLoading: loadingKursus } = useGetKursusList(true);
-  const { data: enrollmentsResponse, isLoading: loadingEnrollments } = useGetAllEnrollments();
+  const { data: enrollmentsResponse, isLoading: loadingEnrollments, refetch: refetchEnrollments } = useGetAllEnrollments();
 
   const createMutation = useCreateKursus();
   const updateMutation = useUpdateKursus();
@@ -577,6 +577,7 @@ function AdminStaffView() {
         id: gradeModalEnrollment.id,
         score: gradeScore,
       });
+      await refetchEnrollments();
       toast.success('Nilai berhasil disimpan & status kelulusan diperbarui.');
       setGradeModalEnrollment(null);
     } catch (err: any) {
@@ -783,7 +784,7 @@ function AdminStaffView() {
                           )}
                         </TableCell>
                         <TableCell>
-                          {enrollment.certificate?.certificateNumber ? (
+                          {isCompleted && enrollment.certificate?.certificateNumber ? (
                             <span className="font-mono text-xs text-indigo-600 bg-indigo-50 px-2 py-1 rounded">
                               {enrollment.certificate.certificateNumber}
                             </span>

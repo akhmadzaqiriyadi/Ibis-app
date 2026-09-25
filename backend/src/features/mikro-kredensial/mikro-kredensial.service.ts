@@ -123,14 +123,17 @@ export class MikroKredensialService {
     const PASSING_GRADE = 70;
     const isPassed = score >= PASSING_GRADE;
     const newStatus = isPassed ? MikroKredensialStatus.COMPLETED : MikroKredensialStatus.FAILED;
-    const finalScore = enrollment.score ? Math.max(enrollment.score, score) : score;
-
     const updated = await prisma.mikroKredensialEnrollment.update({
       where: { id: enrollmentId },
       data: {
         status: newStatus,
-        score: finalScore,
+        score,
         completedAt: isPassed ? (enrollment.completedAt || new Date()) : null,
+      },
+      include: {
+        user: { select: { id: true, name: true, email: true } },
+        kursus: { select: { id: true, title: true } },
+        certificate: true,
       },
     });
 
@@ -147,6 +150,11 @@ export class MikroKredensialService {
           enrollmentId: enrollment.id,
           certificateNumber: `IBIS/KRED/${new Date().getFullYear()}/${uuidv4().split('-')[0].toUpperCase()}`,
         },
+      });
+    } else {
+      // Hapus sertifikat jika nilai di bawah syarat kelulusan
+      await prisma.certificate.deleteMany({
+        where: { enrollmentId: enrollment.id },
       });
     }
 

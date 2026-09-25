@@ -382,6 +382,16 @@ export default function InkubasiMahasiswaView() {
               </div>
             )}
 
+            {!hasActivePeriod && !loadingPeriod && (
+              <div className="rounded-xl border border-amber-300 bg-amber-50 p-5 text-center space-y-2">
+                <AlertTriangle className="h-7 w-7 text-amber-600 mx-auto" />
+                <h4 className="font-semibold text-amber-900">Pendaftaran Inkubasi Sedang Ditutup</h4>
+                <p className="text-sm text-amber-800 max-w-md mx-auto">
+                  Saat ini belum ada periode batch inkubasi yang dibuka. Formulir pendaftaran proposal dinonaktifkan hingga periode pendaftaran batch berikutnya resmi dibuka oleh admin.
+                </p>
+              </div>
+            )}
+
             <div className="grid gap-2">
               <Label>Periode Pendaftaran</Label>
               <Input value={activePeriod?.name || "Belum ada periode aktif"} disabled className="h-12 bg-slate-50" />

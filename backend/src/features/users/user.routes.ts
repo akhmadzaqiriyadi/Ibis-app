@@ -173,17 +173,17 @@ export const userRoutes = new Elysia({ prefix: '/users' })
   })
 
   // Delete User
-  .delete('/:id', async ({ params, set }) => {
+  .delete('/:id', async ({ params, user, set }: { params: { id: string }; user: { id: string; role: Role } | null; set: any }) => {
     try {
-      await userService.delete(params.id);
+      await userService.delete(params.id, user?.id);
       return successResponse(null, 'User deleted successfully');
-    } catch (err) {
+    } catch (err: any) {
       if (err instanceof AppError) {
         set.status = err.statusCode;
         return errorResponse(err.message);
       }
       set.status = 500;
-      return errorResponse('Failed to delete user');
+      return errorResponse(err?.message || 'Failed to delete user');
     }
   }, {
     beforeHandle: ({ user, set }: { user: { id: string; role: Role } | null; set: any }) => {
@@ -211,6 +211,16 @@ export const userRoutes = new Elysia({ prefix: '/users' })
         data: t.Optional(t.Any()),
         message: t.Optional(t.String()),
         error: t.Optional(t.String()),
+      }),
+      400: t.Object({
+        success: t.Boolean({ example: false }),
+        error: t.Optional(t.String()),
+        message: t.Optional(t.String()),
+      }),
+      500: t.Object({
+        success: t.Boolean({ example: false }),
+        error: t.Optional(t.String()),
+        message: t.Optional(t.String()),
       }),
     },
   });

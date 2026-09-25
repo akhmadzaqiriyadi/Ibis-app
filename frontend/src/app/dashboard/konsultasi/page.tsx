@@ -20,6 +20,7 @@ export default function KonsultasiPage() {
     case 'MENTOR':
       return <MentorView />;
     case 'MAHASISWA':
+    case 'UMKM':
       return <StudentView />;
     default:
       return <div>Anda tidak memiliki akses ke halaman ini.</div>;

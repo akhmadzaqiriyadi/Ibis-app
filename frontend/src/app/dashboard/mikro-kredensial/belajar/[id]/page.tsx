@@ -923,8 +923,19 @@ export default function StudyRoomPage() {
       </div>
 
       {/* MODAL HASIL KELULUSAN KUIS */}
-      <Dialog open={resultModalOpen} onOpenChange={setResultModalOpen}>
-        <DialogContent className="max-w-md text-center p-8">
+      <Dialog
+        open={resultModalOpen}
+        onOpenChange={(open) => {
+          if (!open) return;
+          setResultModalOpen(open);
+        }}
+      >
+        <DialogContent
+          className="max-w-md text-center p-8 [&>button]:hidden"
+          onInteractOutside={(e) => e.preventDefault()}
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => e.preventDefault()}
+        >
           <DialogHeader>
             <div className="mx-auto mb-2">
               {isPassed ? (

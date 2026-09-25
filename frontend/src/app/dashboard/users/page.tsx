@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useUsers, useUpdateUser, useDeleteUser } from "@/features/auth/hooks";
-import { Loader2, Check, X, AlertTriangle, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Edit, Trash2, Users } from "lucide-react";
+import { Loader2, Check, X, AlertTriangle, ShieldAlert, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Edit, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
+import { useAuthStore } from "@/stores/auth-store";
 import {
   Dialog,
   DialogContent,
@@ -36,6 +37,9 @@ import {
 import { User, Role } from "@/types";
 
 export default function ManageUsersPage() {
+  const { user: currentUser } = useAuthStore();
+  const isAdmin = currentUser?.role === "ADMIN";
+
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
@@ -157,6 +161,20 @@ export default function ManageUsersPage() {
               toast.error(error.message || "Gagal menghapus pengguna.");
           }
       });
+  }
+
+  if (currentUser && !isAdmin) {
+    return (
+      <div className="flex h-[60vh] w-full flex-col items-center justify-center text-center px-4">
+        <div className="max-w-md p-8 rounded-2xl border border-red-200 bg-red-50 text-red-800 space-y-3 shadow-sm">
+          <ShieldAlert className="h-12 w-12 text-red-600 mx-auto" />
+          <h2 className="text-xl font-bold">Akses Ditolak</h2>
+          <p className="text-sm text-red-700 leading-relaxed">
+            Halaman Manajemen User merupakan kontrol sistem tingkat tinggi yang hanya dapat diakses oleh Administrator.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   if (isLoading && !response) {

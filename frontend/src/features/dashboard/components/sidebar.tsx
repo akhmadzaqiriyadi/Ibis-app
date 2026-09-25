@@ -40,23 +40,32 @@ export function DashboardSidebar() {
           </h1>
         </Link>
         <div className="space-y-1">
-          {navItems.map((route) => (
-            <Link
-              key={route.href}
-              href={route.href}
-              className={cn(
-                "text-sm group flex p-3 w-full justify-start font-medium cursor-pointer hover:text-white hover:bg-white/10 rounded-lg transition",
-                pathname === route.href
-                  ? "text-white bg-white/10"
-                  : "text-zinc-400"
-              )}
-            >
-              <div className="flex items-center flex-1">
-                <route.icon className={cn("h-5 w-5 mr-3", route.color)} />
-                {route.title}
-              </div>
-            </Link>
-          ))}
+          {navItems.length === 0 ? (
+            <div className="space-y-2 p-2">
+              <div className="h-9 bg-white/5 rounded-lg animate-pulse" />
+              <div className="h-9 bg-white/5 rounded-lg animate-pulse" />
+              <div className="h-9 bg-white/5 rounded-lg animate-pulse" />
+              <div className="h-9 bg-white/5 rounded-lg animate-pulse" />
+            </div>
+          ) : (
+            navItems.map((route) => (
+              <Link
+                key={route.href}
+                href={route.href}
+                className={cn(
+                  "text-sm group flex p-3 w-full justify-start font-medium cursor-pointer hover:text-white hover:bg-white/10 rounded-lg transition",
+                  pathname === route.href
+                    ? "text-white bg-white/10"
+                    : "text-zinc-400"
+                )}
+              >
+                <div className="flex items-center flex-1">
+                  <route.icon className={cn("h-5 w-5 mr-3", route.color)} />
+                  {route.title}
+                </div>
+              </Link>
+            ))
+          )}
         </div>
       </div>
       
@@ -68,8 +77,8 @@ export function DashboardSidebar() {
                     {user?.name?.charAt(0) || 'A'}
                   </div>
                   <div className="overflow-hidden">
-                      <p className="text-sm font-medium truncate">{user?.name || 'Admin User'}</p>
-                      <p className="text-xs text-zinc-400 truncate">{user?.email || 'admin@ibistek.com'}</p>
+                      <p className="text-sm font-medium truncate">{user?.name || 'Pengguna'}</p>
+                      <p className="text-xs text-zinc-400 truncate">{user?.email || ''}</p>
                   </div>
               </div>
           </div>

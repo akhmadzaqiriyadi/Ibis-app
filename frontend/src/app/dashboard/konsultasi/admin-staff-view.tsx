@@ -43,14 +43,25 @@ export default function AdminStaffView() {
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
 
+  // Auto debounced search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(searchInput.trim());
+      setPage(1);
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setSearch(searchInput.trim());
+    setPage(1);
   };
 
   const handleClearSearch = () => {
     setSearchInput("");
     setSearch("");
+    setPage(1);
   };
 
   const { data: appsData, isLoading, isError } = useAllKonsultasiApplications({

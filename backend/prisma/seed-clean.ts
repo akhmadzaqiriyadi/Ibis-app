@@ -200,12 +200,16 @@ async function main() {
 
   const periodeAktif = await prisma.inkubasiPeriod.upsert({
     where: { id: 'period-2026-01' },
-    update: {},
+    update: {
+      startDate: new Date('2026-01-01'),
+      endDate: new Date('2026-12-31'),
+      isActive: true,
+    },
     create: {
       id: 'period-2026-01',
       name: 'Periode 1 Tahun 2026',
-      startDate: new Date('2026-03-01'),
-      endDate: new Date('2026-04-30'),
+      startDate: new Date('2026-01-01'),
+      endDate: new Date('2026-12-31'),
       isActive: true,
       description: 'Pendaftaran program inkubasi bisnis dan teknologi IBISTEK UTY periode pertama tahun 2026.',
       createdById: adminUser.id,
@@ -289,6 +293,33 @@ async function main() {
         assignedAt: new Date(),
         assignedById: adminUser.id,
         mentorResponseDeadline: new Date('2026-03-15T23:59:59Z'),
+      },
+    });
+  }
+
+  const existingKonsultasiUmkm = await prisma.konsultasiApplication.findFirst({
+    where: { userId: umkmUser.id },
+  });
+
+  if (!existingKonsultasiUmkm && kategoriBisnis) {
+    await prisma.konsultasiApplication.create({
+      data: {
+        userId: umkmUser.id,
+        namaPemilik: 'Sari Batik Jogja',
+        tahunBerdiri: 2022,
+        kategoriUsahaId: kategoriBisnis.id,
+        rataOmsetPerBulan: '10-25 juta',
+        platformPenjualan: PlatformPenjualan.KEDUANYA,
+        uraianProduk: 'Batik kontemporer khas Yogyakarta berbasis e-commerce.',
+        topikKonsultasi: 'Optimalisasi ekspor produk batik ke pasar regional ASEAN.',
+        preferredDate: new Date('2026-04-10T14:00:00Z'),
+        metode: MetodeKonsultasi.ONLINE,
+        status: KonsultasiStatus.CONFIRMED,
+        assignedMentorId: mentorUser.id,
+        assignedAt: new Date(),
+        assignedById: adminUser.id,
+        confirmedDate: new Date('2026-04-10T14:00:00Z'),
+        meetingLink: 'https://meet.google.com/ibi-stek-cns',
       },
     });
   }

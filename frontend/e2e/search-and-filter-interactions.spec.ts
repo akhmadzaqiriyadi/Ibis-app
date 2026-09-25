@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 test.describe("Comprehensive Search & Filter Interactions (Feature 1 & Feature 2)", () => {
   const adminEmail = "admin@ibistek.com";
   const adminPassword = "password123";
-  const studentEmail = "student.konsultasi@ibistek.com";
+  const studentEmail = "mahasiswa@ibistek.com";
   const studentPassword = "password123";
   const mentorEmail = "mentor@ibistek.com";
   const mentorPassword = "password123";
@@ -25,8 +25,11 @@ test.describe("Comprehensive Search & Filter Interactions (Feature 1 & Feature 2
     const periodTrigger = inkubasiSection.locator('button[role="combobox"]').first();
     const statusTrigger = inkubasiSection.locator('button[role="combobox"]').nth(1);
 
+    await statusTrigger.scrollIntoViewIfNeeded();
     await statusTrigger.click();
-    await page.getByRole("option", { name: "APPROVED", exact: true }).click();
+    const approvedOption = page.getByRole("option", { name: "APPROVED", exact: true });
+    await approvedOption.scrollIntoViewIfNeeded();
+    await approvedOption.click({ force: true });
 
     // Verify all displayed rows or items have APPROVED badge (if any exist)
     const approvedBadges = page.locator('span:has-text("APPROVED")');
@@ -86,10 +89,10 @@ test.describe("Comprehensive Search & Filter Interactions (Feature 1 & Feature 2
     await expect(searchInput).toBeVisible();
 
     // 1. Valid Search: search for existing keyword
-    await searchInput.fill("Rian");
+    await searchInput.fill("Ahmad");
     await searchInput.press("Enter");
-    // Verify result contains Rian
-    await expect(page.locator('tr:has-text("Rian")').first()).toBeVisible();
+    // Verify result contains Ahmad
+    await expect(page.locator('tr:has-text("Ahmad")').first()).toBeVisible();
 
     // 2. Clear Search using 'X' button
     const clearBtn = page.locator('button:has(svg.lucide-x)');
@@ -169,11 +172,11 @@ test.describe("Comprehensive Search & Filter Interactions (Feature 1 & Feature 2
 
     // 4. Filter Status
     await page.click('button:has-text("Filter status"), button:has-text("Semua Status")');
-    await page.locator('[role="option"]:has-text("Dijadwalkan")').click();
-    await expect(page.locator('span:has-text("Jadwal Dikonfirmasi")').first()).toBeVisible();
+    await page.locator('[role="option"]:has-text("Mentor Ditugaskan")').click();
+    await expect(page.locator('span:has-text("Menunggu Respon Mentor")').first()).toBeVisible();
 
     // Reset status filter
-    await page.click('button:has-text("Dijadwalkan")');
+    await page.click('button:has-text("Mentor Ditugaskan")');
     await page.locator('[role="option"]:has-text("Semua Status")').click();
     await expect(page.locator('tr:has-text("Strategi")').first()).toBeVisible();
   });
@@ -193,9 +196,9 @@ test.describe("Comprehensive Search & Filter Interactions (Feature 1 & Feature 2
     await expect(searchInput).toBeVisible();
 
     // 1. Search valid
-    await searchInput.fill("Rian");
+    await searchInput.fill("Ahmad");
     await searchInput.press("Enter");
-    await expect(page.locator('tr:has-text("Rian")').first()).toBeVisible();
+    await expect(page.locator('tr:has-text("Ahmad")').first()).toBeVisible();
 
     // 2. Search invalid
     await searchInput.fill("Data_Kosong_9999");
@@ -209,11 +212,11 @@ test.describe("Comprehensive Search & Filter Interactions (Feature 1 & Feature 2
 
     // 4. Status filter in mentor view
     await page.click('button:has-text("Filter status"), button:has-text("Semua Status")');
-    await page.locator('[role="option"]:has-text("Dijadwalkan")').click();
-    await expect(page.locator('span:has-text("Jadwal Dikonfirmasi")').first()).toBeVisible();
+    await page.locator('[role="option"]:has-text("Assigned")').click();
+    await expect(page.locator('span:has-text("Menunggu Respon Mentor")').first()).toBeVisible();
 
     // Reset status filter
-    await page.click('button:has-text("Dijadwalkan")');
+    await page.click('button:has-text("Assigned")');
     await page.locator('[role="option"]:has-text("Semua Status")').click();
   });
 });

@@ -100,7 +100,7 @@ export default function AdminCertificatesPage() {
                   </TableCell>
                   <TableCell>
                     <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">
-                      {item.score || 100} / 100
+                      {item.score !== null && item.score !== undefined ? item.score : 100} / 100
                     </span>
                   </TableCell>
                   <TableCell className="text-xs text-gray-500">

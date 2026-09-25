@@ -13,7 +13,7 @@ test.describe('Authentication & Role Access Boundaries', () => {
     await expect(page.locator('form')).toContainText(/salah|gagal|invalid/i, { timeout: 8000 });
   });
 
-  test('UMKM role enforcement: exclusive Mikro Kredensial, Inkubasi & Konsultasi restricted', async ({ page }) => {
+  test('UMKM role enforcement: exclusive Mikro Kredensial, Inkubasi & Konsultasi access, restricted from Admin features', async ({ page }) => {
     await page.goto('/login');
     await page.waitForLoadState('domcontentloaded');
 
@@ -24,36 +24,22 @@ test.describe('Authentication & Role Access Boundaries', () => {
     // Wait for dashboard navigation
     await page.waitForURL('**/dashboard**', { timeout: 15000 });
 
-    // UMKM should see Mikro Kredensial and Sertifikat Saya
+    // UMKM should see Mikro Kredensial, Inkubasi, Konsultasi and Sertifikat Saya
     await expect(page.locator('aside, nav')).toContainText(/Mikro Kredensial/i, { timeout: 10000 });
+    await expect(page.locator('aside, nav')).toContainText(/Inkubasi Bisnis/i, { timeout: 10000 });
+    await expect(page.locator('aside, nav')).toContainText(/Konsultasi/i, { timeout: 10000 });
     await expect(page.locator('aside, nav')).toContainText(/Sertifikat Saya/i, { timeout: 10000 });
 
-    // UMKM MUST NOT see Inkubasi Bisnis or Konsultasi Bisnis in sidebar navigation
+    // UMKM MUST NOT see Admin menus
     const navText = await page.locator('aside, nav').first().textContent();
-    expect(navText?.includes('Inkubasi Bisnis')).toBeFalsy();
-    expect(navText?.includes('Konsultasi Bisnis')).toBeFalsy();
+    expect(navText?.includes('Manajemen User')).toBeFalsy();
+    expect(navText?.includes('Master Data')).toBeFalsy();
+    expect(navText?.includes('Verifikasi User')).toBeFalsy();
 
-    // Direct navigation attempt to /dashboard/inkubasi should be blocked or restricted
-    await page.goto('/dashboard/inkubasi');
+    // Direct navigation attempt to /dashboard/users should be blocked
+    await page.goto('/dashboard/users');
     await page.waitForLoadState('domcontentloaded');
-    const inkubasiContent = await page.locator('body').textContent();
-    expect(
-      inkubasiContent?.toLowerCase().includes('khusus mahasiswa') ||
-      inkubasiContent?.toLowerCase().includes('tidak memiliki akses') ||
-      inkubasiContent?.toLowerCase().includes('bukan untuk umkm') ||
-      page.url().includes('/dashboard')
-    ).toBeTruthy();
-
-    // Direct navigation attempt to /dashboard/konsultasi should be blocked or restricted
-    await page.goto('/dashboard/konsultasi');
-    await page.waitForLoadState('domcontentloaded');
-    const konsultasiContent = await page.locator('body').textContent();
-    expect(
-      konsultasiContent?.toLowerCase().includes('khusus mahasiswa') ||
-      konsultasiContent?.toLowerCase().includes('tidak memiliki akses') ||
-      konsultasiContent?.toLowerCase().includes('bukan untuk umkm') ||
-      page.url().includes('/dashboard')
-    ).toBeTruthy();
+    await expect(page.locator('body')).toContainText(/Akses Ditolak|khusus Admin/i);
   });
 
   test('Mentor role has access to mentor consultation panel', async ({ page }) => {
